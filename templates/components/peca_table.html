@@ -1,0 +1,11 @@
+<div class="table-responsive">
+<table class="table align-middle mb-0">
+  <thead><tr><th scope="col">Peça / código</th><th scope="col">Aplicação</th><th scope="col">Localização</th><th scope="col">Quantidade</th><th scope="col">Preço</th><th scope="col">Situação</th><th scope="col">Ações</th></tr></thead>
+  <tbody>{% for peca in pecas %}<tr>
+    <td><div class="d-flex align-items-center gap-3"><a href="{% url 'estoque:detalhe' peca.pk %}" aria-label="Ver {{ peca.nome }}">{% include 'components/peca_foto.html' %}</a><div><strong><a href="{% url 'estoque:detalhe' peca.pk %}">{{ peca.nome }}</a></strong><small class="d-block text-secondary">{{ peca.codigo }} · {{ peca.categoria }}</small></div></div></td>
+    <td>{{ peca.marca }} {{ peca.aplicacao|default:'—' }}{% if peca.posicao %}<small class="d-block text-secondary">{{ peca.posicao }}</small>{% endif %}</td>
+    <td>{{ peca.localizacao|default:'Não informada' }}</td><td>{{ peca.quantidade }}</td><td class="text-nowrap">R$ {{ peca.preco_venda|floatformat:2 }}</td>
+    <td><span class="stock-badge status-{{ peca.status }}">{{ peca.get_status_display }}</span></td>
+    <td>{% if perms.estoque.change_peca %}<a class="btn btn-sm btn-outline-primary" href="{% url 'estoque:editar' peca.pk %}">Editar</a>{% endif %} <a class="btn btn-sm btn-outline-secondary" href="{% url 'estoque:etiqueta' peca.pk %}" target="_blank" rel="noopener">Etiqueta</a></td>
+  </tr>{% endfor %}</tbody>
+</table></div>

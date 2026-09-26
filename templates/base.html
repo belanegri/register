@@ -1,0 +1,56 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include 'components/site_icons.html' %}
+  <meta name="theme-color" content="#152723">
+  <title>{% block title %}Painel{% endblock %} · PontoCar</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<a class="visually-hidden-focusable skip-link" href="#conteudo">Ir para o conteúdo</a>
+{% if user.is_authenticated %}
+<aside class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="menu" aria-labelledby="menu-title">
+  <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu PontoCar</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
+  <div class="offcanvas-body d-flex flex-column">
+    <a class="brand" href="{% url 'dashboard:index' %}">PontoCar<span>COMÉRCIO DE PEÇAS</span></a>
+    <div class="nav-label">ÁREA DE TRABALHO</div>
+    <nav aria-label="Menu principal" class="nav flex-column gap-2">
+      <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}"><span aria-hidden="true">◫</span> Visão geral</a>
+      {% if perms.vendas.usar_pdv %}<a class="nav-link {% if request.resolver_match.url_name == 'pdv' %}active{% endif %}" href="{% url 'vendas:pdv' %}"><span aria-hidden="true">▣</span> Frente de caixa</a>{% endif %}
+      {% if perms.vendas.view_venda %}<a class="nav-link" href="{% url 'vendas:lista' %}"><span aria-hidden="true">▤</span> Vendas</a>{% endif %}
+      {% if perms.caixa.operar_caixa %}<a class="nav-link" href="{% url 'caixa:painel' %}"><span aria-hidden="true">$</span> Meu caixa</a>{% endif %}
+      {% if perms.contas.view_contapagar %}<a class="nav-link" href="{% url 'contas:lista' %}"><span aria-hidden="true">▧</span> Contas a pagar</a>{% endif %}
+      {% if perms.clientes.view_cliente %}<a class="nav-link" href="{% url 'clientes:lista' %}"><span aria-hidden="true">♙</span> Clientes</a>{% endif %}
+      {% if perms.vendas.ver_relatorios %}<a class="nav-link" href="{% url 'vendas:relatorios' %}"><span aria-hidden="true">▥</span> Relatórios</a>{% endif %}
+      {% if perms.estoque.view_peca %}<a class="nav-link {% if request.resolver_match.app_name == 'estoque' %}active{% endif %}" href="{% url 'estoque:lista' %}"><span aria-hidden="true">▤</span> Estoque de peças</a>{% endif %}
+      {% if user.is_staff %}
+      {% if perms.veiculos.view_veiculo %}<a class="nav-link" href="{% url 'admin:veiculos_veiculo_changelist' %}"><span aria-hidden="true">▱</span> Veículos de origem</a>{% endif %}
+      {% if perms.estoque.view_categoria %}<a class="nav-link" href="{% url 'admin:estoque_categoria_changelist' %}"><span aria-hidden="true">⊞</span> Categorias</a>{% endif %}
+      {% if perms.estoque.view_localizacao %}<a class="nav-link" href="{% url 'admin:estoque_localizacao_changelist' %}"><span aria-hidden="true">⌖</span> Localizações</a>{% endif %}
+      <a class="nav-link" href="{% url 'admin:index' %}"><span aria-hidden="true">⚙</span> Administração</a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-note mt-auto"><span class="status-dot"></span> Seu estoque, organizado.<small>Da origem da peça ao balcão.</small></div>
+  </div>
+</aside>
+<div class="workspace">
+  <header class="topbar">
+    <div class="d-flex align-items-center gap-3"><button class="btn btn-outline-secondary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu" aria-label="Abrir menu">☰</button><span class="topbar-label">Gestão de estoque</span></div>
+    <div class="d-flex align-items-center gap-3"><a class="user-name" href="{% url 'accounts:password_change' %}">{{ user.get_short_name|default:user.username }}</a><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Sair</button></form></div>
+  </header>
+  <main id="conteudo" class="main-content">
+    {% include 'components/messages.html' %}
+    {% block content %}{% endblock %}
+    <footer class="page-footer">PontoCar Comércio de Peças <span>Organização que move o seu negócio.</span></footer>
+  </main>
+</div>
+{% else %}
+<main id="conteudo">{% include 'components/messages.html' %}{% block public_content %}{% endblock %}</main>
+{% endif %}
+<script src="{% static 'vendor/bootstrap.bundle.min.js' %}" defer></script>
+</body>
+</html>

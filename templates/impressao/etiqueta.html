@@ -1,0 +1,9 @@
+{% extends 'impressao/base.html' %}{% load static %}
+{% block title %}Etiqueta {{ peca.codigo }} · 57 × 29 mm{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="{% static 'css/etiqueta.css' %}">{% endblock %}
+{% block classe_corpo %}impressao-etiqueta{% endblock %}
+{% block botao_imprimir %}Etiqueta{% endblock %}
+{% block instrucoes %}Selecione etiqueta de 57 mm de largura × 29 mm de altura, escala 100%, sem margens e sem cabeçalhos/rodapés. Configure essas medidas também no driver da impressora.{% endblock %}
+{% block atributos_papel %}data-etiqueta="57x29"{% endblock %}
+{% block voltar %}<a href="{% url 'estoque:lista' %}">Voltar ao estoque</a>{% endblock %}
+{% block papel %}<div class="etiqueta-marca">PontoCar Comércio de Peças</div><div class="etiqueta-codigo">{{ peca.codigo }}</div><div class="etiqueta-nome">{{ peca.nome }}</div><div class="etiqueta-linha">{{ peca.marca }} {{ peca.aplicacao }}{% if peca.ano_inicial or peca.ano_final %} · {{ peca.ano_inicial|default:'—' }}–{{ peca.ano_final|default:'—' }}{% endif %}</div><div class="etiqueta-linha">{{ peca.categoria.nome }}{% if peca.posicao %} · {{ peca.posicao }}{% endif %}{% if peca.motor %} · {{ peca.motor }}{% endif %}</div><div class="etiqueta-linha">Local: {{ peca.localizacao|default:'Não informada' }}</div>{% endblock %}

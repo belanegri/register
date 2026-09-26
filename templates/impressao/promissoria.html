@@ -1,0 +1,12 @@
+{% extends 'impressao/base.html' %}
+{% block title %}{{ nota.codigo }} · Promissória 58 mm{% endblock %}
+{% block voltar %}<a href="{% url 'vendas:detalhe' nota.pagamento.venda_id %}">Voltar à venda</a>{% endblock %}
+{% block papel %}<header><h1>NOTA PROMISSÓRIA</h1><p>{{ nota.codigo }}<br>Venda {{ nota.pagamento.venda.codigo }}</p></header>
+{% if nota.pagamento.venda.status == 'cancelada' %}<h2>NOTA CANCELADA</h2>{% elif nota.saldo == 0 %}<h2>SEM SALDO A RECEBER</h2>{% endif %}
+<h2>Valor: R$ {{ nota.pagamento.valor|floatformat:2 }}</h2><p><strong>Vencimento: {{ nota.vencimento|date:'d/m/Y' }}</strong></p>
+<p>Por esta nota promissória, prometo pagar a {{ nota.beneficiario }}, ou à sua ordem, a quantia de R$ {{ nota.pagamento.valor|floatformat:2 }}, em {{ nota.vencimento|date:'d/m/Y' }}, no local de pagamento indicado abaixo.</p>
+<p><strong>Beneficiário:</strong><br>{{ nota.beneficiario }}{% if nota.documento_beneficiario %}<br>CPF/CNPJ: {{ nota.documento_beneficiario }}{% endif %}</p>
+<p><strong>Local de pagamento:</strong><br>{{ nota.local_pagamento }}</p><p><strong>Emitente:</strong><br>{{ nota.emitente }}<br>CPF/CNPJ: {{ nota.documento }}{% if nota.endereco %}<br>{{ nota.endereco }}{% endif %}</p>
+<p><strong>Emissão:</strong><br>{{ nota.local_emissao }}<br>{{ nota.emitida_em|date:'d/m/Y' }}</p>
+<div style="padding-top:16mm;break-inside:avoid"><p style="border-top:1px solid;padding-top:2mm;text-align:center">Assinatura do emitente<br>{{ nota.emitente }}</p></div>
+{% if nota.movimentos.all %}<hr><h2>Movimentações</h2>{% for movimento in nota.movimentos.all %}<p>{{ movimento.criado_em|date:'d/m/Y' }} · {{ movimento.get_tipo_display }}: R$ {{ movimento.valor|floatformat:2 }}</p>{% endfor %}<p><strong>Saldo a receber: R$ {{ nota.saldo|floatformat:2 }}</strong></p>{% endif %}{% endblock %}
