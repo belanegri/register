@@ -4,4 +4,7 @@
 {% block classe_corpo %}impressao-etiqueta{% endblock %}
 {% block botao_imprimir %}Imprimir etiqueta{% endblock %}
 {% block voltar %}<a href="{% url 'estoque:lista' %}">Voltar ao estoque</a>{% endblock %}
-{% block papel %}<header class="centro"><h1>PontoCar</h1><div>Comércio de Peças</div><h2>ETIQUETA DA PEÇA</h2></header><div class="etiqueta-nome">{{ peca.nome }}</div><img class="etiqueta-barras" src="{% url 'estoque:codigo_barras' peca.pk %}" alt="Código de barras {{ peca.codigo }}"><div class="etiqueta-codigo">{{ peca.codigo }}</div><div class="etiqueta-linha">Local: {{ peca.localizacao|default:'Não informada' }}</div>{% endblock %}
+{% block papel %}<header class="centro"><h1>PontoCar</h1><div>Comércio de Peças</div><h2>ETIQUETA DA PEÇA</h2></header><div class="etiqueta-nome">{{ peca.nome }}</div><div class="etiqueta-linha"><strong>Marca:</strong> {{ peca.marca|default:'Não informada' }}</div>
+<div class="etiqueta-linha"><strong>Modelo:</strong> {{ peca.aplicacao|default:'Não informado' }}</div>
+<div class="etiqueta-linha"><strong>Ano:</strong> {% if peca.ano_inicial and peca.ano_final %}{{ peca.ano_inicial }}{% if peca.ano_final != peca.ano_inicial %} a {{ peca.ano_final }}{% endif %}{% elif peca.ano_inicial %}A partir de {{ peca.ano_inicial }}{% elif peca.ano_final %}Até {{ peca.ano_final }}{% else %}Não informado{% endif %}</div>
+<img class="etiqueta-barras" src="{% url 'estoque:codigo_barras' peca.pk %}" alt="Código de barras {{ peca.codigo }}"><div class="etiqueta-codigo">{{ peca.codigo }}</div><div class="etiqueta-linha">Local: {{ peca.localizacao|default:'Não informada' }}</div>{% endblock %}
