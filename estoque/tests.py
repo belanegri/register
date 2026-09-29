@@ -26,8 +26,8 @@ class EstoqueTests(TestCase):
         self.assertNotContains(response, "250,00")
         self.assertNotContains(response, "R$")
         self.assertContains(response, self.localizacao.codigo)
-        self.assertContains(response, "57 × 29 mm")
-        self.assertContains(response, 'data-etiqueta="57x29"')
+        self.assertContains(response, "58 mm")
+        self.assertNotContains(response, 'data-etiqueta="57x29"')
         self.assertContains(self.client.get(reverse("estoque:lista")), url)
         self.assertEqual(self.client.get(reverse("estoque:etiqueta", args=[999999])).status_code, 404)
 
@@ -102,7 +102,7 @@ class EstoqueTests(TestCase):
     def test_codigo_automatico_unico_e_preservado_ao_editar(self):
         primeira = Peca.objects.create(nome="Peça automática", categoria=self.categoria, preco_venda=10)
         segunda = Peca.objects.create(nome="Outra peça", categoria=self.categoria, preco_venda=20)
-        self.assertRegex(primeira.codigo, r"^PC-\d{6,}$")
+        self.assertRegex(primeira.codigo, r"^REG\d{6,}$")
         self.assertNotEqual(primeira.codigo, segunda.codigo)
         codigo = primeira.codigo
         primeira.nome = "Nome atualizado"
@@ -119,7 +119,7 @@ class EstoqueTests(TestCase):
         self.assertIsInstance(form.fields["marca"].widget, forms.Select)
         self.assertNotIn("codigo", form.fields)
         self.assertTrue(form.is_valid(), form.errors)
-        self.assertTrue(form.save().codigo.startswith("PC-"))
+        self.assertTrue(form.save().codigo.startswith("REG"))
 
     @classmethod
     def setUpTestData(cls):

@@ -1,3 +1,5 @@
+from django.urls import reverse
+from django.utils.html import format_html
 from django.contrib import admin
 from .models import Categoria, Localizacao, Peca, FotoPeca
 from .forms import PecaAdminForm
@@ -80,10 +82,10 @@ class PecaAdmin(admin.ModelAdmin):
         "veiculo_origem__codigo", "veiculo_origem__marca", "veiculo_origem__modelo", "localizacao__codigo", "localizacao__nome"]
     autocomplete_fields = ["categoria", "veiculo_origem", "localizacao"]
     list_select_related = ["categoria", "veiculo_origem", "localizacao"]
-    readonly_fields = ["codigo_automatico", "identificador", "criado_em", "atualizado_em"]
+    readonly_fields = ["codigo_automatico", "codigo_barras", "identificador", "criado_em", "atualizado_em"]
     inlines = [FotoPecaInline]
     fieldsets = [
-        ("Identificação", {"fields": ["versao_estoque", "codigo_automatico", "nome", "marca", "aplicacao", "categoria", "veiculo_origem"]}),
+        ("Identificação", {"fields": ["versao_estoque", "codigo_automatico", "codigo_barras", "nome", "marca", "aplicacao", "categoria", "veiculo_origem"]}),
         ("Aplicação", {"fields": [("ano_inicial", "ano_final"), "motor", "posicao"]}),
         ("Estoque e valores", {"fields": ["condicao", "localizacao", "custo", "preco_venda", "quantidade", "status"]}),
         ("Informações adicionais", {"fields": ["observacoes", "identificador", "criado_em", "atualizado_em"]}),
@@ -92,6 +94,14 @@ class PecaAdmin(admin.ModelAdmin):
     @admin.display(description="Código interno")
     def codigo_automatico(self, obj):
         return obj.codigo if obj and obj.codigo else "Gerado automaticamente ao salvar"
+
+    @admin.display(description="Código de barras")
+    def codigo_barras(self, obj):
+        if not obj or not obj.pk:
+            return "Disponível após salvar a peça."
+        return format_html('<img src="{}" alt="Código de barras {}" style="max-width:100%;width:260px;height:65px;object-fit:contain;background:white"><br><a href="{}" target="_blank" rel="noopener">Imprimir etiqueta</a>',
+            reverse("estoque:codigo_barras", args=[obj.pk]), obj.codigo,
+            reverse("estoque:etiqueta", args=[obj.pk]))
 
     def save_model(self, request, obj, form, change):
         campos = ["nome", "preco_venda", "custo", "quantidade", "status", "marca", "aplicacao", "localizacao_id"]

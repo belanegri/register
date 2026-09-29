@@ -80,6 +80,14 @@ def carrinho(request):
     dados = request.session.get("carrinho", {})
     acao, pk = request.POST.get("acao"), request.POST.get("peca")
     try:
+        if acao == "codigo":
+            codigo = request.POST.get("codigo", "").strip()
+            if not codigo or len(codigo) > 40:
+                raise ValidationError("Informe um código de peça válido.")
+            peca_codigo = Peca.objects.filter(codigo=codigo).first()
+            if peca_codigo is None:
+                raise ValidationError("Nenhuma peça encontrada para esse código de barras.")
+            pk, acao = str(peca_codigo.pk), "adicionar"
         if acao == "limpar":
             dados = {}
         elif acao == "remover":
@@ -97,8 +105,12 @@ def carrinho(request):
             quantidade = services.quantidade_inteira(request.POST.get("quantidade", "1"))
             if acao == "adicionar":
                 quantidade += dados.get(pk, {}).get("quantidade", 0)
-            if peca.status != "disponivel" or quantidade > peca.quantidade:
-                raise ValidationError("Quantidade indisponível em estoque.")
+            if peca.quantidade == 0:
+                raise ValidationError("Peça sem estoque.")
+            if peca.status != "disponivel":
+                raise ValidationError(f"Peça indisponível: {peca.get_status_display()}.")
+            if quantidade > peca.quantidade:
+                raise ValidationError(f"Saldo insuficiente: existem {peca.quantidade} unidades; confira a quantidade já adicionada ao carrinho.")
             if len(dados) >= 100 and pk not in dados:
                 raise ValidationError("O carrinho suporta até 100 peças diferentes.")
             dados[pk] = {**dados.get(pk, {}), "quantidade": quantidade, "preco": dados.get(pk, {}).get("preco", str(peca.preco_venda))}

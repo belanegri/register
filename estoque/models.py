@@ -117,7 +117,7 @@ class Peca(TimestampedModel):
         return f"{self.codigo} · {self.nome}"
 
     def save(self, *args, **kwargs):
-        atribuir_codigo(self, "estoque_peca_codigo_seq", "PC", kwargs)
+        atribuir_codigo(self, "estoque_peca_codigo_seq", "REG", kwargs, separador="")
         return super().save(*args, **kwargs)
 
 

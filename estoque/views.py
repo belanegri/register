@@ -85,3 +85,18 @@ def editar(request, pk):
 def detalhe(request, pk):
     peca = get_object_or_404(Peca.objects.select_related("categoria", "veiculo_origem", "localizacao").prefetch_related("fotos"), pk=pk)
     return render(request, "estoque/detalhe.html", {"peca": peca})
+
+
+@login_required
+@permission_required("estoque.view_peca", raise_exception=True)
+def codigo_barras(request, pk):
+    from django.http import HttpResponse
+    from .codigo_barras import gerar_svg
+    peca = get_object_or_404(Peca, pk=pk)
+    try:
+        response = HttpResponse(gerar_svg(peca.codigo), content_type="image/svg+xml")
+    except ValueError:
+        return HttpResponse("Código incompatível com Code 128.", status=400, content_type="text/plain")
+    response["Cache-Control"] = "private, no-store"
+    response["X-Content-Type-Options"] = "nosniff"
+    return response

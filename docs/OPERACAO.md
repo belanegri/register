@@ -118,3 +118,14 @@ Na página da conta, **Gerar PDF desta conta** abre um documento A4 para salvar 
 O cadastro e a edição têm campos opcionais para comprovante e link. A seção **Comprovantes e links de acesso** permite acrescentar outros documentos, inclusive em contas pagas. Aceita PDF, JPG e PNG de até 10 MB por arquivo e links HTTP/HTTPS. Os PDFs individuais relacionam nomes dos comprovantes e links; não incorporam o conteúdo dos arquivos anexados.
 
 Arquivos ficam em `.local/comprovantes`, fora de `/media/`, com nomes internos aleatórios. Downloads exigem login e permissão de consulta das contas. Inclua essa pasta nos backups, juntamente com o banco. A criação de anexos é auditada. A geração dos PDFs utiliza ReportLab, registrado nos arquivos de dependências.
+
+
+## Código de barras e leitor USB
+
+As peças novas recebem código REG com seis dígitos (ex.: REG000001), continuando a sequência existente. Códigos antigos, incluindo PC-, são preservados; editar uma peça não muda seu código. A sequência é atômica no PostgreSQL e pode ter intervalos após cadastros cancelados, sem reutilização dos números.
+
+O Code 128 é gerado dinamicamente, sem arquivos de imagem no armazenamento. No cadastro administrativo, aparece após salvar; também aparece nas páginas de visualização e edição da peça.
+
+No PDV, clique em **Ler código de barras** e use um leitor USB em modo teclado, configurado para enviar Enter ao final. Também é possível digitar o código e clicar em Adicionar. Cada leitura adiciona uma unidade, inclusive de códigos antigos. Aguarde a página atualizar antes da próxima leitura. A pesquisa manual continua disponível. A leitura não finaliza a venda nem baixa o estoque: as validações são repetidas ao finalizar.
+
+Use **Imprimir etiqueta** para imprimir em papel de 58 mm, escala 100%, com margens de 3 mm e sem cabeçalhos do navegador, como os comprovantes. O comprimento acompanha o conteúdo. A etiqueta contém nome, código, barras e localização, sem preço. Teste uma etiqueta na impressora e leitor antes de imprimir em lote; contraste e escala do driver afetam a leitura.
