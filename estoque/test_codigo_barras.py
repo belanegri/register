@@ -51,3 +51,29 @@ class CodigoBarrasTests(TestCase):
         with self.assertRaises(ValueError):
             gerar_svg("PEÇA")
         self.assertIn("<svg", gerar_svg("PC-000123"))
+
+    def test_fotos_opcionais_no_cadastro_e_remocao_da_ultima(self):
+        from django.test import RequestFactory
+        from .admin import FotoPecaInline
+        from .models import FotoPeca
+        request = RequestFactory().get("/")
+        request.user = self.user
+        inline = FotoPecaInline(Peca, site)
+        FormSet = inline.get_formset(request)
+        prefix = FormSet.get_default_prefix()
+        dados = {f"{prefix}-TOTAL_FORMS": "1", f"{prefix}-INITIAL_FORMS": "0", f"{prefix}-0-ordem": "0"}
+        novo = FormSet(dados, instance=Peca())
+        self.assertTrue(novo.is_valid(), novo.errors)
+        from io import BytesIO
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        arquivo = BytesIO()
+        Image.new("RGB", (10, 10)).save(arquivo, format="JPEG")
+        foto = FotoPeca.objects.create(peca=self.peca, imagem=SimpleUploadedFile(
+            "exemplo.jpg", arquivo.getvalue(), content_type="image/jpeg"))
+        dados.update({f"{prefix}-INITIAL_FORMS": "1", f"{prefix}-0-id": str(foto.pk),
+                      f"{prefix}-0-DELETE": "on"})
+        editar = FormSet(dados, instance=self.peca)
+        self.assertTrue(editar.is_valid(), editar.errors)
+        editar.save()
+        self.assertFalse(self.peca.fotos.exists())

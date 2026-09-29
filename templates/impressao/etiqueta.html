@@ -14,6 +14,7 @@
 <div><strong>Marca:</strong> {{ peca.marca|default:'Não informada' }}</div>
 <div><strong>Modelo:</strong> {{ peca.aplicacao|default:'Não informado' }}</div>
 <div><strong>Ano:</strong> {% if peca.ano_inicial and peca.ano_final %}{{ peca.ano_inicial }}{% if peca.ano_final != peca.ano_inicial %} a {{ peca.ano_final }}{% endif %}{% elif peca.ano_inicial %}A partir de {{ peca.ano_inicial }}{% elif peca.ano_final %}Até {{ peca.ano_final }}{% else %}Não informado{% endif %}</div>
+<div><strong>Lado / posição:</strong> {{ peca.posicao|default:'Não informado' }}</div>
 <div><strong>Cód. da peça:</strong> {{ peca.codigo }}</div>
 </div></div>
 <img class="etiqueta-barras" src="{% url 'estoque:codigo_barras' peca.pk %}" alt="Código de barras {{ peca.codigo }}">

@@ -27,6 +27,7 @@ def gerar_etiqueta_pdf(peca):
               f"<b>Marca:</b> {escape(peca.marca or 'Não informada')}",
               f"<b>Modelo:</b> {escape(peca.aplicacao or 'Não informado')}",
               f"<b>Ano:</b> {ano}",
+              f"<b>Lado / posição:</b> {escape(peca.posicao or 'Não informado')}",
               f"<b>Cód. da peça:</b> {escape(peca.codigo)}"]
     tamanho = 7
     while True:

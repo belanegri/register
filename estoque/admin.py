@@ -29,7 +29,6 @@ class LocalizacaoAdmin(admin.ModelAdmin):
         return obj.codigo if obj and obj.codigo else "Gerado automaticamente ao salvar"
 
 
-from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 
 
@@ -54,21 +53,9 @@ class FotoUploadForm(forms.ModelForm):
                 arquivo.seek(0)
         return arquivo
 
-class FotosObrigatoriasFormSet(BaseInlineFormSet):
-    def clean(self):
-        super().clean()
-        if any(self.errors):
-            return
-        tem_foto = any(f.cleaned_data.get("imagem") and not f.cleaned_data.get("DELETE") for f in self.forms if hasattr(f,"cleaned_data"))
-        # Cadastros antigos sem foto continuam editáveis até a regularização.
-        exigida = not self.instance.pk or self.instance.fotos.exists()
-        if exigida and not tem_foto:
-            raise ValidationError("Cadastre pelo menos uma foto. A última foto não pode ser removida.")
-
-
 class FotoPecaInline(admin.TabularInline):
     model = FotoPeca
-    formset = FotosObrigatoriasFormSet
+    min_num = 0
     form = FotoUploadForm
     extra = 1
 
