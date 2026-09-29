@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% include 'components/site_icons.html' %}
-  <meta name="theme-color" content="#152723">
+  <meta name="theme-color" content="#ff8500">
   <title>{% block title %}Painel{% endblock %} · PontoCar</title>
   <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
@@ -14,7 +14,7 @@
 <a class="visually-hidden-focusable skip-link" href="#conteudo">Ir para o conteúdo</a>
 {% if user.is_authenticated %}
 <aside class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="menu" aria-labelledby="menu-title">
-  <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu PontoCar</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
+  <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu PontoCar</h2><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
   <div class="offcanvas-body d-flex flex-column">
     <a class="brand" href="{% url 'dashboard:index' %}">PontoCar<span>COMÉRCIO DE PEÇAS</span></a>
     <div class="nav-label">ÁREA DE TRABALHO</div>
