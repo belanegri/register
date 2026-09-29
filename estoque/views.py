@@ -37,7 +37,10 @@ def pecas_filtradas(params):
 @permission_required("estoque.view_peca", raise_exception=True)
 def etiqueta(request, pk):
     peca = get_object_or_404(Peca.objects.select_related("categoria", "localizacao"), pk=pk)
-    response = render(request, "impressao/etiqueta.html", {"peca": peca})
+    from django.http import HttpResponse
+    from .etiqueta_pdf import gerar_etiqueta_pdf
+    response = HttpResponse(gerar_etiqueta_pdf(peca), content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="etiqueta.pdf"'
     response["Cache-Control"] = "private, no-store"
     return response
 

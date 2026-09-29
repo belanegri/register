@@ -37,17 +37,12 @@ class CodigoBarrasTests(TestCase):
 
     def test_exibicao_e_etiqueta(self):
         self.client.force_login(self.user)
-        for rota in ["detalhe", "editar", "etiqueta"]:
+        for rota in ["detalhe", "editar"]:
             resposta = self.client.get(reverse("estoque:"+rota,args=[self.peca.pk]))
             self.assertContains(resposta, reverse("estoque:codigo_barras",args=[self.peca.pk]))
         resposta = self.client.get(reverse("estoque:etiqueta",args=[self.peca.pk]))
-        self.assertNotContains(resposta, "R$")
-        self.assertContains(resposta, "57 × 30 mm")
-        self.assertNotContains(resposta, "js/termica.js")
-        self.assertNotContains(resposta, "Local:")
-        self.assertNotContains(resposta, "ETIQUETA DA PEÇA")
-        self.assertContains(resposta, "Cód. da peça:")
-        self.assertContains(resposta,"Imprimir etiqueta")
+        self.assertEqual(resposta["Content-Type"], "application/pdf")
+        self.assertTrue(resposta.content.startswith(b"%PDF-"))
         admin = site._registry[Peca]
         self.assertIn("Disponível após salvar",admin.codigo_barras(None))
         self.assertIn("codigo-barras.svg",admin.codigo_barras(self.peca))
