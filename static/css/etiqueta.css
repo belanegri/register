@@ -1,8 +1,8 @@
 *{box-sizing:border-box}
 body{margin:0;background:#edf0ec;color:#000;font-family:Arial,sans-serif}
 .controles{max-width:600px;padding:16px;font-size:14px;line-height:1.5}
-.controles button{padding:12px 18px;background:#102044;color:#fff;border:0;border-radius:5px;cursor:pointer}
-.controles a{color:#102044;margin-left:10px}
+.controles button{padding:12px 18px;background:#21654d;color:#fff;border:0;border-radius:5px;cursor:pointer}
+.controles a{color:#21654d;margin-left:10px}
 .etiqueta{width:57mm;height:30mm;padding:1mm 2.5mm;background:#fff;margin:0;break-inside:avoid;page-break-inside:avoid}
 .etiqueta-texto{height:19mm;font-size:9px;line-height:1.1;overflow-wrap:anywhere}
 .etiqueta-nome{font-weight:bold}
