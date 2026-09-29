@@ -7,7 +7,7 @@
   "scope": "/",
   "display": "standalone",
   "background_color": "#f5f7f4",
-  "theme_color": "#d9a06b",
+  "theme_color": "#102044",
   "icons": [
     {
       "src": "/static/img/register-gear-192.png",
