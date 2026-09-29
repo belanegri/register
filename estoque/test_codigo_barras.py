@@ -42,7 +42,11 @@ class CodigoBarrasTests(TestCase):
             self.assertContains(resposta, reverse("estoque:codigo_barras",args=[self.peca.pk]))
         resposta = self.client.get(reverse("estoque:etiqueta",args=[self.peca.pk]))
         self.assertNotContains(resposta, "R$")
-        self.assertNotContains(resposta, 'data-etiqueta="57x29"')
+        self.assertContains(resposta, "57 × 30 mm")
+        self.assertNotContains(resposta, "js/termica.js")
+        self.assertNotContains(resposta, "Local:")
+        self.assertNotContains(resposta, "ETIQUETA DA PEÇA")
+        self.assertContains(resposta, "Cód. da peça:")
         self.assertContains(resposta,"Imprimir etiqueta")
         admin = site._registry[Peca]
         self.assertIn("Disponível após salvar",admin.codigo_barras(None))

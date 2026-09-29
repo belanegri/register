@@ -1,1 +1,15 @@
-.etiqueta-nome{font-size:13px;font-weight:bold;margin:2mm 0;overflow-wrap:anywhere}.etiqueta-barras{display:block;width:100%;height:15mm;object-fit:contain;background:#fff;margin:2mm auto 0}.etiqueta-codigo{text-align:center;font-size:17px;font-weight:bold;line-height:1.35;margin-bottom:2mm}.etiqueta-linha{font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+*{box-sizing:border-box}
+body{margin:0;background:#edf0ec;color:#000;font-family:Arial,sans-serif}
+.controles{max-width:600px;padding:16px;font-size:14px;line-height:1.5}
+.controles button{padding:12px 18px;background:#102044;color:#fff;border:0;border-radius:5px;cursor:pointer}
+.controles a{color:#102044;margin-left:10px}
+.etiqueta{width:57mm;height:30mm;padding:1mm 2.5mm;background:#fff;margin:0;break-inside:avoid;page-break-inside:avoid}
+.etiqueta-texto{height:19mm;font-size:9px;line-height:1.1;overflow-wrap:anywhere}
+.etiqueta-nome{font-weight:bold}
+.etiqueta-barras{display:block;width:52mm;height:9mm;object-fit:fill;margin:0}
+@page{size:57mm 30mm;margin:0}
+@media print{
+ html,body{width:57mm;height:30mm;margin:0!important;padding:0!important;background:#fff}
+ .controles{display:none!important}
+ .etiqueta{position:absolute;top:0;left:0;margin:0!important}
+}

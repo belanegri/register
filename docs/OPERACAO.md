@@ -101,7 +101,7 @@ Para vender a prazo, selecione **Nota promissória**. Cadastre e selecione o cli
 
 A emissão registra um valor a receber; somente **Registrar recebimento** lança entrada no caixa. Permite recebimentos parciais, com saldo atualizado. Vendedor/Caixa acessam apenas suas vendas; gestores acessam todas. Na devolução, primeiro se abate a dívida pendente; somente a diferença já recebida é reembolsada. No cancelamento, o saldo pendente é cancelado e os recebimentos anteriores são estornados. Notas e seus movimentos são protegidos contra alteração/exclusão no banco.
 
-Recibos, promissórias e etiquetas usam papel de 58 mm e área útil de 52 mm. Na impressão, configure papel 58 mm, escala 100% e desative cabeçalhos/rodapés. O comprimento acompanha o conteúdo. A conferência em impressora física depende do equipamento e do driver utilizados.
+Recibos e promissórias usam papel de 58 mm e área útil de 52 mm. Na impressão, configure papel 58 mm, escala 100% e desative cabeçalhos/rodapés. O comprimento acompanha o conteúdo. A conferência em impressora física depende do equipamento e do driver utilizados.
 
 
 ## Preço negociado e contas a pagar
@@ -128,4 +128,4 @@ O Code 128 é gerado dinamicamente, sem arquivos de imagem no armazenamento. No 
 
 No PDV, clique em **Ler código de barras** e use um leitor USB em modo teclado, configurado para enviar Enter ao final. Também é possível digitar o código e clicar em Adicionar. Cada leitura adiciona uma unidade, inclusive de códigos antigos. Aguarde a página atualizar antes da próxima leitura. A pesquisa manual continua disponível. A leitura não finaliza a venda nem baixa o estoque: as validações são repetidas ao finalizar.
 
-Use **Imprimir etiqueta** para imprimir em papel de 58 mm, escala 100%, com margens de 3 mm e sem cabeçalhos do navegador, como os comprovantes. O comprimento acompanha o conteúdo. A etiqueta contém nome, código, barras e localização, sem preço. Teste uma etiqueta na impressora e leitor antes de imprimir em lote; contraste e escala do driver afetam a leitura.
+Use **Imprimir etiqueta** com papel personalizado de **57 × 30 mm** no driver, escala 100%, margens nenhuma e cabeçalhos/rodapés desativados. A etiqueta começa no topo e tem comprimento fixo, independente dos comprovantes de 58 mm. Contém somente nome da peça, marca, modelo, ano, código da peça e código de barras. Se a prévia mostrar uma bobina longa, ajuste o tamanho no driver; desative avanço extra/corte adicional quando disponível. Teste uma unidade na impressora e leitor antes de imprimir em lote.

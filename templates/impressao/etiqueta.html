@@ -1,10 +1,20 @@
-{% extends 'impressao/base.html' %}{% load static %}
-{% block title %}Etiqueta {{ peca.codigo }} · 58 mm{% endblock %}
-{% block estilos %}<link rel="stylesheet" href="{% static 'css/etiqueta.css' %}">{% endblock %}
-{% block classe_corpo %}impressao-etiqueta{% endblock %}
-{% block botao_imprimir %}Imprimir etiqueta{% endblock %}
-{% block voltar %}<a href="{% url 'estoque:lista' %}">Voltar ao estoque</a>{% endblock %}
-{% block papel %}<header class="centro"><h1>PontoCar</h1><div>Comércio de Peças</div><h2>ETIQUETA DA PEÇA</h2></header><div class="etiqueta-nome">{{ peca.nome }}</div><div class="etiqueta-linha"><strong>Marca:</strong> {{ peca.marca|default:'Não informada' }}</div>
-<div class="etiqueta-linha"><strong>Modelo:</strong> {{ peca.aplicacao|default:'Não informado' }}</div>
-<div class="etiqueta-linha"><strong>Ano:</strong> {% if peca.ano_inicial and peca.ano_final %}{{ peca.ano_inicial }}{% if peca.ano_final != peca.ano_inicial %} a {{ peca.ano_final }}{% endif %}{% elif peca.ano_inicial %}A partir de {{ peca.ano_inicial }}{% elif peca.ano_final %}Até {{ peca.ano_final }}{% else %}Não informado{% endif %}</div>
-<img class="etiqueta-barras" src="{% url 'estoque:codigo_barras' peca.pk %}" alt="Código de barras {{ peca.codigo }}"><div class="etiqueta-codigo">{{ peca.codigo }}</div><div class="etiqueta-linha">Local: {{ peca.localizacao|default:'Não informada' }}</div>{% endblock %}
+{% load static %}<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etiqueta {{ peca.codigo }} · 57 × 30 mm</title>
+{% include 'components/site_icons.html' %}
+<link rel="stylesheet" href="{% static 'css/etiqueta.css' %}">
+<script src="{% static 'js/etiqueta.js' %}" defer></script></head>
+<body><nav class="controles" aria-label="Impressão">
+<button type="button" id="imprimir">Imprimir etiqueta</button> <a href="{% url 'estoque:lista' %}">Voltar ao estoque</a>
+<p>No driver da impressora, configure papel personalizado de 57 × 30 mm. Na impressão, use escala 100%, margens nenhuma e desative cabeçalhos e rodapés. Desative avanço extra/corte adicional, se disponível.</p>
+</nav>
+<main class="etiqueta" id="papel">
+<div class="etiqueta-texto" id="etiqueta-texto"><div id="etiqueta-conteudo">
+<div class="etiqueta-nome">{{ peca.nome }}</div>
+<div><strong>Marca:</strong> {{ peca.marca|default:'Não informada' }}</div>
+<div><strong>Modelo:</strong> {{ peca.aplicacao|default:'Não informado' }}</div>
+<div><strong>Ano:</strong> {% if peca.ano_inicial and peca.ano_final %}{{ peca.ano_inicial }}{% if peca.ano_final != peca.ano_inicial %} a {{ peca.ano_final }}{% endif %}{% elif peca.ano_inicial %}A partir de {{ peca.ano_inicial }}{% elif peca.ano_final %}Até {{ peca.ano_final }}{% else %}Não informado{% endif %}</div>
+<div><strong>Cód. da peça:</strong> {{ peca.codigo }}</div>
+</div></div>
+<img class="etiqueta-barras" src="{% url 'estoque:codigo_barras' peca.pk %}" alt="Código de barras {{ peca.codigo }}">
+</main></body></html>
