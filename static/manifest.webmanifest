@@ -10,13 +10,13 @@
   "theme_color": "#102044",
   "icons": [
     {
-      "src": "/static/img/register-gear-navy-192.png",
+      "src": "/static/img/register-symbol-navy-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/static/img/register-gear-navy-512.png",
+      "src": "/static/img/register-symbol-navy-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
