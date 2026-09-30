@@ -35,8 +35,8 @@ def gerar_pdf(contas, individual=False, filtros=None):
         c = contas[0]
         linhas = [("Conta",c.codigo),("Categoria / identificação",c.titulo),("Fornecedor",c.fornecedor),
             ("Tipo de conta",c.get_tipo_conta_display() or "Não informado"),("Valor",moeda(c.valor)),
-            ("Vencimento",data(c.vencimento)),("Pagamento programado",data(c.data_programada)),
-            ("Forma prevista",c.forma_prevista or "Não informada"),("Situação","Vencida" if c.atrasada else c.get_status_display())]
+            ("Valor pago",moeda(c.valor_pago)),("Saldo",moeda(c.saldo)),("Vencimento",data(c.vencimento)),("Pagamento programado",data(c.data_programada)),
+            ("Forma prevista",c.forma_prevista or "Não informada"),("Situação",c.situacao)]
         if c.status == "paga":
             linhas += [("Pagamento realizado",data(c.pago_em)),("Forma utilizada",c.forma_nome),("Registrado por",c.pago_por or "—")]
         tabela = LongTable([[p(k),p(v)] for k,v in linhas],colWidths=[150,doc.width-150],splitInRow=1)
@@ -51,7 +51,7 @@ def gerar_pdf(contas, individual=False, filtros=None):
             elementos.append(p("Comprovantes e links cadastrados","Heading2"))
             for anexo in anexos:
                 if anexo.arquivo:
-                    elementos.append(p("Comprovante: " + anexo.nome_arquivo))
+                    elementos.append(p(anexo.get_tipo_display() + ": " + anexo.nome_arquivo))
                 if anexo.link:
                     elementos.append(p("Link: " + anexo.link))
             elementos.append(p("Os arquivos dos comprovantes estão disponíveis na página da conta no sistema."))
@@ -59,7 +59,7 @@ def gerar_pdf(contas, individual=False, filtros=None):
         elementos += [p("Filtros aplicados: " + " | ".join(filtros or ["Todas as contas"])),Spacer(1,12)]
         linhas = [[p(v,"HeaderCell") for v in ["Conta","Fornecedor / categoria","Tipo","Vencimento","Programado","Forma prevista","Situação","Valor"]]]
         for c in contas:
-            linhas.append([p(c.codigo),p(c.fornecedor+"\n"+c.titulo),p(c.get_tipo_conta_display()),p(data(c.vencimento)),p(data(c.data_programada)),p(c.forma_prevista),p("Vencida" if c.atrasada else c.get_status_display()),p(moeda(c.valor))])
+            linhas.append([p(c.codigo),p(c.fornecedor+"\n"+c.titulo),p(c.get_tipo_conta_display()),p(data(c.vencimento)),p(data(c.data_programada)),p(c.forma_prevista),p(c.situacao),p(moeda(c.valor))])
         if contas:
             pesos=[65,190,65,70,70,105,75,95]
             tabela=LongTable(linhas,colWidths=[doc.width*x/sum(pesos) for x in pesos],repeatRows=1,splitInRow=1)
@@ -68,8 +68,8 @@ def gerar_pdf(contas, individual=False, filtros=None):
         else:
             elementos.append(p("Nenhuma conta encontrada para os filtros selecionados."))
         elementos += [Spacer(1,14),p(f"{len(contas)} conta(s) | Total: {moeda(sum((c.valor for c in contas),Decimal('0')))}","Heading2")]
-        for status,nome in [("pendente","Pendentes"),("paga","Pagas"),("cancelada","Canceladas")]:
-            elementos.append(p(nome+": "+moeda(sum((c.valor for c in contas if c.status==status),Decimal("0")))))
+        for status,nome in [("pendente","Aguardando / programadas"),("parcial","Parcialmente pagas"),("paga","Pagas"),("cancelada","Canceladas")]:
+            elementos.append(p(nome+": "+moeda(sum(((c.saldo if c.em_aberto else c.valor) for c in contas if c.status==status),Decimal("0")))))
     elementos += [Spacer(1,12),p("Documento de controle interno. Não substitui comprovante bancário ou documento fiscal.")]
     def rodape(canvas,document):
         canvas.saveState()

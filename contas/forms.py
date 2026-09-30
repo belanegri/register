@@ -3,6 +3,8 @@ from django.utils import timezone
 from core.forms import EstiloForm
 from vendas.models import FormaPagamento
 from .models import ContaPagar
+from decimal import Decimal
+import uuid
 
 def validar_comprovante(arquivo):
     if not arquivo:
@@ -42,6 +44,8 @@ class CamposAnexo(forms.Form):
 
 
 class AnexoForm(EstiloForm, CamposAnexo):
+    from .models import AnexoConta
+    tipo = forms.ChoiceField(label='Tipo do documento', choices=AnexoConta.TIPOS, initial='cobranca', required=False)
     def clean(self):
         dados = super().clean()
         if not dados.get("comprovante") and not dados.get("link_acesso"):
@@ -49,21 +53,98 @@ class AnexoForm(EstiloForm, CamposAnexo):
         return dados
 
 
+class ArquivosWidget(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class ArquivosField(forms.FileField):
+    def clean(self, data, initial=None):
+        arquivos = data if isinstance(data, (list, tuple)) else ([data] if data else [])
+        if len(arquivos) > 10:
+            raise forms.ValidationError('Selecione no máximo 10 documentos por vez.')
+        return [super(ArquivosField, self).clean(arquivo, initial) for arquivo in arquivos]
+
+
 class ContaForm(EstiloForm, CamposAnexo, forms.ModelForm):
+    chave = forms.UUIDField(initial=uuid.uuid4, widget=forms.HiddenInput)
+    competencia = forms.DateField(label='Competência (mês/ano)', required=False, input_formats=['%Y-%m'],
+                                  widget=forms.DateInput(attrs={'type': 'month'}, format='%Y-%m'))
+    quantidade_lancamentos = forms.IntegerField(label='Quantidade de lançamentos / parcelas', min_value=2, max_value=120, required=False)
+    documentos = ArquivosField(label='Documentos da cobrança', required=False,
+        widget=ArquivosWidget(attrs={'accept': '.pdf,.jpg,.jpeg,.png'}), validators=[validar_comprovante],
+        help_text='Até 10 arquivos em PDF, JPG ou PNG, com até 10 MB cada. Não registra pagamento.')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['descricao'].required = True
+        self.fields['valor_original'].required = True
+        self.fields['valor_original'].min_value = Decimal('0.01')
+        for nome in ['valor_original', 'desconto', 'juros', 'multa', 'acrescimos']:
+            self.fields[nome].widget.attrs.update({'inputmode': 'decimal', 'data-valor-conta': nome})
+            if nome != 'valor_original':
+                self.fields[nome].required = False
         self.fields["categoria"].required = True
         self.fields["tipo_conta"].required = True
         self.fields["forma_prevista"].queryset = FormaPagamento.objects.filter(ativa=True, promissoria=False)
-        self.fields["forma_prevista"].required = True
+        self.fields["forma_prevista"].required = False
+        if not self.instance.pk:
+            self.initial.setdefault('modo', 'unica')
+        else:
+            self.fields['chave'].required = False
+            for nome in ['modo', 'frequencia', 'quantidade_lancamentos']:
+                self.fields[nome].disabled = True
+            self.initial['quantidade_lancamentos'] = self.instance.total_parcelas if self.instance.total_parcelas > 1 else None
+        if self.instance.pk and self.instance.valor_pago:
+            for nome in ['valor_original', 'desconto', 'juros', 'multa', 'acrescimos']:
+                self.fields[nome].disabled = True
+        for nome in ['observacoes', 'pix_copia_cola']:
+            self.fields[nome].widget.attrs['rows'] = 3
+
+    def clean(self):
+        dados = super().clean()
+        for nome in ['desconto', 'juros', 'multa', 'acrescimos']:
+            dados[nome] = dados.get(nome) or Decimal('0')
+        valores = [dados.get(nome) for nome in ['valor_original', 'desconto', 'juros', 'multa', 'acrescimos']]
+        if all(valor is not None for valor in valores):
+            original, desconto, juros, multa, acrescimos = valores
+            if original <= 0 or any(v < 0 for v in valores[1:]):
+                raise forms.ValidationError('Informe um valor original positivo e ajustes não negativos.')
+            total = original - desconto + juros + multa + acrescimos
+            if total <= 0 or total > Decimal('9999999999.99'):
+                raise forms.ValidationError('O valor total deve ser positivo e não pode ultrapassar R$ 9.999.999.999,99.')
+            self.instance.valor = total
+            if self.instance.valor_pago > total:
+                raise forms.ValidationError('O total não pode ser inferior ao valor já pago.')
+            if not self.instance.pk and dados.get('modo') == 'parcelada' and dados.get('quantidade_lancamentos'):
+                if total < Decimal(dados['quantidade_lancamentos']) / 100:
+                    raise forms.ValidationError('Cada parcela precisa ter pelo menos R$ 0,01.')
+        if not self.instance.pk and dados.get('modo') in ['recorrente', 'parcelada']:
+            if not dados.get('quantidade_lancamentos'):
+                self.add_error('quantidade_lancamentos', 'Informe entre 2 e 120 lançamentos.')
+            if dados.get('modo') == 'recorrente' and not dados.get('frequencia'):
+                self.add_error('frequencia', 'Selecione a frequência.')
+        if dados.get('emissao') and dados.get('vencimento') and dados['emissao'] > dados['vencimento']:
+            self.add_error('vencimento', 'O vencimento não pode ser anterior à emissão.')
+        return dados
 
     class Meta:
         model = ContaPagar
-        fields = ["fornecedor", "tipo_conta", "categoria", "valor", "vencimento", "forma_prevista", "data_programada", "pix_copia_cola", "observacoes"]
-        widgets = {campo: forms.DateInput(attrs={"type":"date"}, format="%Y-%m-%d") for campo in ["vencimento", "data_programada"]}
-        localized_fields = ["valor"]
+        fields = ['descricao', 'fornecedor', 'tipo_conta', 'categoria', 'subcategoria', 'centro_custo', 'numero_documento',
+                  'competencia', 'valor_original', 'desconto', 'juros', 'multa', 'acrescimos', 'emissao', 'vencimento',
+                  'forma_prevista', 'data_programada', 'pix_copia_cola', 'modo', 'frequencia', 'observacoes']
+        widgets = {campo: forms.DateInput(attrs={"type":"date"}, format="%Y-%m-%d") for campo in ['emissao', "vencimento", "data_programada"]}
+        localized_fields = ['valor_original', 'desconto', 'juros', 'multa', 'acrescimos']
+        labels = {'forma_prevista': 'Forma de pagamento prevista', 'modo': 'Tipo de lançamento', 'emissao': 'Data de emissão',
+                  'vencimento': 'Data de vencimento', 'valor_original': 'Valor original (R$)', 'desconto': 'Desconto (R$)',
+                  'juros': 'Juros (R$)', 'multa': 'Multa (R$)', 'acrescimos': 'Outros acréscimos (R$)'}
 
 class PagamentoForm(EstiloForm, forms.Form):
+    chave = forms.UUIDField(initial=uuid.uuid4, widget=forms.HiddenInput)
+    valor = forms.DecimalField(label='Valor pago (R$)', min_value=Decimal('0.01'), max_digits=12, decimal_places=2, localize=True)
+    juros = forms.DecimalField(label='Juros adicionais neste pagamento (R$)', min_value=0, max_digits=12, decimal_places=2, required=False, initial=0, localize=True)
+    desconto = forms.DecimalField(label='Desconto adicional neste pagamento (R$)', min_value=0, max_digits=12, decimal_places=2, required=False, initial=0, localize=True)
+    comprovante = forms.FileField(label='Comprovante de pagamento', required=False, validators=[validar_comprovante])
+    observacao = forms.CharField(label='Observação', required=False, max_length=2000, widget=forms.Textarea(attrs={'rows': 3}))
     data = forms.DateField(label="Data do pagamento", initial=timezone.localdate, widget=forms.DateInput(attrs={"type":"date"}, format="%Y-%m-%d"))
     forma = forms.ModelChoiceField(label="Forma de pagamento", queryset=FormaPagamento.objects.filter(ativa=True, promissoria=False))
     origem = forms.ChoiceField(label="Origem do pagamento", choices=[("externo","Pago fora do caixa do sistema"),("caixa","Retirar dinheiro do meu caixa aberto")])
@@ -88,7 +169,9 @@ class CancelamentoForm(EstiloForm, forms.Form):
 
 
 class FiltroContaForm(EstiloForm, forms.Form):
-    status = forms.ChoiceField(label="Situação", choices=[("pendente","Pendentes"),("atrasada","Vencidas"),("paga","Pagas"),("cancelada","Canceladas"),("todas","Todas")])
+    status = forms.ChoiceField(label="Situação", choices=[('pendente', 'Em aberto'), ('aguardando', 'Aguardando'),
+        ('programada', 'Programadas'), ('atrasada', 'Atrasadas'), ('parcial', 'Parcialmente pagas'),
+        ('paga', 'Pagas'), ('cancelada', 'Canceladas'), ('todas', 'Todas')])
     tipo_conta = forms.ChoiceField(label="Tipo de conta", required=False, choices=[("","Todos"),("residencial","Residencial"),("empresa","Empresa")])
     data_referencia = forms.ChoiceField(label="Datas de", choices=[("vencimento","Vencimento"),("data_programada","Pagamento programado"),("pago_em","Pagamento realizado")])
     inicio = forms.DateField(label="De", required=False, widget=forms.DateInput(attrs={"type":"date"}))

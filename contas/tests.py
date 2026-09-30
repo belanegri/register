@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 from decimal import Decimal
 from django.test import TestCase
@@ -17,7 +18,7 @@ class ContasTests(TestCase):
         self.forma=FormaPagamento.objects.get(nome="Dinheiro")
 
     def pagar(self,origem="externo"):
-        return self.client.post(reverse("contas:pagar",args=[self.conta.pk]),{"data":timezone.localdate().isoformat(),"forma":self.forma.pk,"origem":origem})
+        return self.client.post(reverse("contas:pagar",args=[self.conta.pk]),{"chave":str(uuid.uuid4()),"valor":"100","data":timezone.localdate().isoformat(),"forma":self.forma.pk,"origem":origem})
 
     def test_paginas_e_pagamento_externo(self):
         for nome,args in [("lista",[]),("nova",[]),("detalhe",[self.conta.pk]),("editar",[self.conta.pk]),("cancelar",[self.conta.pk])]:
@@ -51,12 +52,12 @@ class ContasTests(TestCase):
         self.client.force_login(get_user_model().objects.create_user("sem_acesso"))
         self.assertEqual(self.client.get(reverse("contas:lista")).status_code,403)
 
-    def test_novos_campos_sem_descricao(self):
+    def test_novos_campos_com_descricao(self):
         from .forms import ContaForm
         from .categorias import CATEGORIAS
         self.assertEqual(len(CATEGORIAS),92)
-        self.assertNotIn("descricao",ContaForm().fields)
-        dados={"fornecedor":"Fornecedor teste","tipo_conta":"residencial","categoria":"Energia Elétrica","valor":"150,50","vencimento":"2026-10-15","data_programada":"2026-10-10","forma_prevista":self.forma.pk}
+        self.assertTrue(ContaForm().fields["descricao"].required)
+        dados={"chave":str(uuid.uuid4()),"modo":"unica","descricao":"Energia do mês","fornecedor":"Fornecedor teste","tipo_conta":"residencial","categoria":"Energia Elétrica","valor_original":"150,50","vencimento":"2026-10-15","data_programada":"2026-10-10","forma_prevista":self.forma.pk}
         response=self.client.post(reverse("contas:nova"),dados)
         self.assertEqual(response.status_code,302)
         conta=ContaPagar.objects.get(fornecedor="Fornecedor teste")
@@ -65,7 +66,7 @@ class ContasTests(TestCase):
         self.assertEqual(conta.categoria,"Energia Elétrica")
         self.assertEqual(str(conta.data_programada),"2026-10-10")
         self.assertEqual(conta.forma_prevista_id,self.forma.pk)
-        self.assertEqual(conta.descricao,"")
+        self.assertEqual(conta.descricao,"Energia do mês")
         self.assertEqual(conta.status,"pendente")
         self.assertContains(self.client.get(reverse("contas:detalhe",args=[conta.pk])),"10/10/2026")
         dados["tipo_conta"]="empresa"
@@ -172,7 +173,7 @@ class ContasTests(TestCase):
     def test_pix_copia_cola_salvo_e_exibido(self):
         from .forms import ContaForm
         codigo = "000201TESTE<>&"
-        dados = {"fornecedor":"Fornecedor PIX","tipo_conta":"empresa","categoria":"Internet","valor":"50,00","vencimento":"2026-10-15","forma_prevista":self.forma.pk,"pix_copia_cola":codigo}
+        dados = {"descricao":"Internet","modo":"unica","fornecedor":"Fornecedor PIX","tipo_conta":"empresa","categoria":"Internet","valor_original":"50,00","vencimento":"2026-10-15","forma_prevista":self.forma.pk,"pix_copia_cola":codigo}
         form = ContaForm(dados, instance=self.conta)
         self.assertTrue(form.is_valid(), form.errors)
         form.save()
