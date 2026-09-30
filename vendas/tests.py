@@ -17,6 +17,52 @@ from .services import finalizar, cancelar, devolver
 
 
 class OperacaoTests(TestCase):
+    def test_empresa_da_venda_congelada_na_emissao(self):
+        from core.models import ConfiguracaoEmpresa
+        from django.test import override_settings
+        with override_settings(LEGACY_PONTOCAR_DOCUMENTS=False):
+            empresa = ConfiguracaoEmpresa.objects.create(nome_fantasia="Empresa A", documento="123")
+            venda = self.vender()
+            empresa.nome_fantasia = "Empresa B"
+            empresa.save()
+            venda.refresh_from_db()
+            self.assertEqual(venda.empresa_emissao["nome_fantasia"], "Empresa A")
+            self.client.force_login(self.user)
+            resposta = self.client.get(reverse("vendas:recibo", args=[venda.pk]))
+            self.assertContains(resposta, "Empresa A")
+            self.assertNotContains(resposta, "Empresa B")
+            self.assertNotContains(resposta, "PontoCar")
+            with self.assertRaises(DatabaseError), transaction.atomic():
+                Venda.objects.filter(pk=venda.pk).update(empresa_emissao={"nome_fantasia": "Alterada"})
+
+    def test_empresa_vazia_nao_assume_pontocar(self):
+        from django.test import override_settings
+        from core.documentos import identidade_relatorio
+        from vendas.forms import CheckoutForm
+        with override_settings(LEGACY_PONTOCAR_DOCUMENTS=False):
+            venda = self.vender()
+            self.assertEqual(venda.empresa_emissao, {})
+            self.assertIn("empresa não configurada", venda.empresa_nome_documento)
+            self.assertNotIn("PontoCar", identidade_relatorio())
+            self.assertEqual(CheckoutForm().initial["beneficiario"], "")
+
+    def test_legado_nao_consulta_empresa_atual(self):
+        from core.models import ConfiguracaoEmpresa
+        from django.test import override_settings
+        ConfiguracaoEmpresa.objects.create(nome_fantasia="Outra empresa")
+        antiga = Venda(empresa_emissao=None)
+        with override_settings(LEGACY_PONTOCAR_DOCUMENTS=True):
+            self.assertEqual(antiga.empresa_nome_documento, "PontoCar Comércio de Peças")
+        with override_settings(LEGACY_PONTOCAR_DOCUMENTS=False):
+            self.assertIn("empresa não configurada", antiga.empresa_nome_documento)
+
+    def test_sugestao_promissoria_respeita_dados_informados(self):
+        from core.models import ConfiguracaoEmpresa
+        from vendas.forms import CheckoutForm
+        ConfiguracaoEmpresa.objects.create(razao_social="Empresa configurada", documento="123")
+        self.assertEqual(CheckoutForm().initial["beneficiario"], "Empresa configurada")
+        self.assertEqual(CheckoutForm(initial={"beneficiario": "Original"}).initial["beneficiario"], "Original")
+
     def test_recibo_historico_e_permissoes(self):
         venda = self.vender()
         self.client.force_login(self.user)

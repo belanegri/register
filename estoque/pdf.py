@@ -1,3 +1,4 @@
+from core.documentos import identidade_relatorio
 from io import BytesIO
 from xml.sax.saxutils import escape
 
@@ -11,11 +12,12 @@ from .models import Peca
 
 
 def gerar_pdf(pecas, consulta="", status=""):
+    empresa = identidade_relatorio()
     pecas = list(pecas)
     output = BytesIO()
     doc = SimpleDocTemplate(output, pagesize=landscape(A4), rightMargin=28, leftMargin=28,
-        topMargin=38, bottomMargin=36, title="PontoCar - Estoque de peças",
-        author="PontoCar Comércio de Peças")
+        topMargin=38, bottomMargin=36, title="REGISTER - Estoque de peças",
+        author=empresa)
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name="StockCell", parent=styles["BodyText"], fontName="Helvetica",
         fontSize=7, leading=9, spaceAfter=0, wordWrap="LTR"))
@@ -30,7 +32,7 @@ def gerar_pdf(pecas, consulta="", status=""):
         filtros.append(f"Busca: {consulta}")
     if status:
         filtros.append(f"Disponibilidade: {dict(Peca.Status.choices).get(status, status)}")
-    elementos = [cell("PontoCar Comércio de Peças", "Title"), cell("Estoque de peças", "Heading2"),
+    elementos = [cell(empresa, "Title"), cell("Estoque de peças", "Heading2"),
         cell("Emitido em " + timezone.localtime().strftime("%d/%m/%Y %H:%M"))]
     if filtros:
         elementos.append(cell("Filtros aplicados: " + " | ".join(filtros)))
@@ -68,7 +70,7 @@ def gerar_pdf(pecas, consulta="", status=""):
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.HexColor("#66736b"))
-        canvas.drawString(28, 20, "PontoCar | Estoque de peças")
+        canvas.drawString(28, 20, "REGISTER | Estoque de peças")
         canvas.drawRightString(document.pagesize[0] - 28, 20, f"Página {document.page}")
         canvas.restoreState()
 

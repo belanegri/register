@@ -12,10 +12,20 @@ class CheckoutForm(EstiloForm, forms.Form):
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(ativo=True), required=False, empty_label="Consumidor não identificado")
     desconto = forms.DecimalField(label="Desconto total (R$)", min_value=0, max_digits=12, decimal_places=2, initial=0, localize=True)
     vencimento = forms.DateField(label="Vencimento da promissória", required=False, widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
-    beneficiario = forms.CharField(label="Beneficiário (nome / razão social)", max_length=160, initial="PontoCar Comércio de Peças", required=False)
+    beneficiario = forms.CharField(label="Beneficiário (nome / razão social)", max_length=160, required=False)
     documento_beneficiario = forms.CharField(label="CPF/CNPJ do beneficiário", max_length=20, required=False)
     local_emissao = forms.CharField(label="Local de emissão (cidade/UF)", max_length=160, required=False)
     local_pagamento = forms.CharField(label="Local de pagamento (endereço/cidade)", max_length=200, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from core.documentos import empresa_atual
+        empresa = empresa_atual()
+        sugestoes = {"beneficiario": empresa.get("razao_social") or empresa.get("nome_fantasia", ""),
+                    "documento_beneficiario": empresa.get("documento", ""),
+                    "local_emissao": "/".join(filter(None, [empresa.get("cidade"), empresa.get("estado")]))}
+        for campo, valor in sugestoes.items():
+            self.initial.setdefault(campo, valor)
 
 
 class FormaWidget(forms.Select):

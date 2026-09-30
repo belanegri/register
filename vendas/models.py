@@ -23,6 +23,7 @@ class FormaPagamento(TimestampedModel):
 
 
 class Venda(models.Model):
+    empresa_emissao = models.JSONField(null=True, blank=True, editable=False)
     substitui = models.OneToOneField("self", null=True, blank=True, on_delete=models.PROTECT, related_name="substituta")
     chave = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     criado_em = models.DateTimeField(auto_now_add=True)
@@ -45,6 +46,17 @@ class Venda(models.Model):
         constraints = [models.CheckConstraint(condition=Q(total__gt=0), name="venda_total_positivo"),
             models.CheckConstraint(condition=Q(desconto__gte=0) & Q(desconto__lte=models.F("subtotal")), name="venda_desconto_valido"),
             models.CheckConstraint(condition=Q(total=models.F("subtotal")-models.F("desconto")), name="venda_total_consistente")]
+
+    @property
+    def empresa_documento(self):
+        if self.empresa_emissao is None and settings.LEGACY_PONTOCAR_DOCUMENTS:
+            return {"nome_fantasia": "PontoCar Comércio de Peças"}
+        return self.empresa_emissao or {}
+
+    @property
+    def empresa_nome_documento(self):
+        from core.documentos import nome_empresa
+        return nome_empresa(self.empresa_documento)
 
     @property
     def codigo(self):

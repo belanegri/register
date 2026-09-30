@@ -8,6 +8,7 @@ from clientes.models import Cliente
 from caixa.models import MovimentoCaixa
 from caixa.services import caixa_aberto, exigir, dinheiro
 from core.auditoria import registrar
+from core.documentos import empresa_atual
 from .models import Venda, ItemVenda, Pagamento, FormaPagamento, Devolucao, NotaPromissoria, MovimentoPromissoria
 
 
@@ -104,7 +105,7 @@ def finalizar(usuario, chave, carrinho, pagamentos, desconto=0, cliente_id=None,
             restante -= usado
     if any(p[1] <= 0 for p in recebimentos):
         raise ValidationError("Remova pagamentos integralmente excedentes e ajuste os valores.")
-    venda = Venda.objects.create(chave=chave, vendedor=usuario, caixa=caixa, cliente=cliente,
+    venda = Venda.objects.create(empresa_emissao=empresa_atual(), chave=chave, vendedor=usuario, caixa=caixa, cliente=cliente,
         cliente_nome=cliente.nome if cliente else "Consumidor não identificado", subtotal=subtotal, desconto=desconto, total=total)
     # Rateio em centavos pelo método dos maiores restos; soma exata do desconto.
     quotas = [desconto * bruto / subtotal for _, _, bruto in linhas]

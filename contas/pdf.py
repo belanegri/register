@@ -1,3 +1,4 @@
+from core.documentos import identidade_relatorio
 from io import BytesIO
 from decimal import Decimal
 from xml.sax.saxutils import escape
@@ -18,16 +19,17 @@ def data(valor):
 
 
 def gerar_pdf(contas, individual=False, filtros=None):
+    empresa = identidade_relatorio()
     contas = list(contas)
     out = BytesIO()
     doc = SimpleDocTemplate(out,pagesize=A4 if individual else landscape(A4),rightMargin=32,leftMargin=32,topMargin=42,bottomMargin=40,
-        title="PontoCar - Contas a pagar",author="PontoCar Comércio de Peças")
+        title="REGISTER - Contas a pagar",author=empresa)
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name="Cell",fontName="Helvetica",fontSize=8,leading=11,spaceAfter=2,wordWrap="LTR"))
     styles.add(ParagraphStyle(name="HeaderCell",parent=styles["Cell"],textColor=colors.white,fontName="Helvetica-Bold"))
     def p(text,style="Cell"):
         return Paragraph(escape(str(text or "—")).replace("\n","<br/>"),styles[style])
-    elementos = [p("PontoCar Comércio de Peças","Title"),p("Conta a pagar" if individual else "Relatório de contas a pagar","Heading2"),
+    elementos = [p(empresa,"Title"),p("Conta a pagar" if individual else "Relatório de contas a pagar","Heading2"),
         p("Emitido em " + timezone.localtime().strftime("%d/%m/%Y %H:%M")),Spacer(1,12)]
     if individual:
         c = contas[0]
@@ -73,7 +75,7 @@ def gerar_pdf(contas, individual=False, filtros=None):
         canvas.saveState()
         canvas.setFont("Helvetica",8)
         canvas.setFillColor(colors.HexColor("#66736b"))
-        canvas.drawString(32,22,"PontoCar | Contas a pagar")
+        canvas.drawString(32,22,"REGISTER | Contas a pagar")
         canvas.drawRightString(document.pagesize[0]-32,22,f"Página {document.page}")
         canvas.restoreState()
     doc.build(elementos,onFirstPage=rodape,onLaterPages=rodape)

@@ -107,3 +107,6 @@ if env.bool("TRUST_PROXY_HEADERS", default=False):
 if os.environ.get("RAILWAY_ENVIRONMENT_ID") and (DEBUG or STORAGE_MODE != "r2"):
     raise ImproperlyConfigured("Railway requer DEBUG=False e STORAGE_MODE=r2.")
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
+
+# False em instalações novas; preserva identificação dos documentos legados.
+LEGACY_PONTOCAR_DOCUMENTS = env.bool("LEGACY_PONTOCAR_DOCUMENTS", default=True)
