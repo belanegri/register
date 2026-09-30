@@ -1,11 +1,47 @@
 <div class="item-documento">
-  {% for hidden in item.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
+  {% for hidden in item.hidden_fields %}
+    {{ hidden }}
+    {{ hidden.errors }}
+  {% endfor %}
+
   {{ item.non_field_errors }}
-  <div class="row g-3 align-items-end">
-    {% include 'components/form_field.html' with field=item.peca col='col-lg-4 col-md-6' %}
-    {% include 'components/form_field.html' with field=item.servico col='col-lg-3 col-md-6' %}
-    {% include 'components/form_field.html' with field=item.quantidade col='col-lg-2 col-5' %}
-    {% include 'components/form_field.html' with field=item.preco col='col-lg-3 col-7' %}
+
+  <div class="item-documento-grid">
+    <div class="item-field item-field-peca">
+      <label>Produto / Peça</label>
+      {{ item.peca }}
+      {{ item.peca.errors }}
+    </div>
+
+    <div class="item-field item-field-servico">
+      <label>Serviço</label>
+      {{ item.servico }}
+      {{ item.servico.errors }}
+    </div>
+
+    <div class="item-field item-field-qtd">
+      <label>Qtd.</label>
+      {{ item.quantidade }}
+      {{ item.quantidade.errors }}
+    </div>
+
+    <div class="item-field item-field-preco">
+      <label>Valor unitário</label>
+      {{ item.preco }}
+      {{ item.preco.errors }}
+    </div>
+
+    <div class="item-field item-field-total">
+      <label>Total</label>
+      <strong class="item-total">R$ 0,00</strong>
+    </div>
+
+    <div class="item-field item-field-remover">
+      <label>&nbsp;</label>
+      <label class="item-remover">
+        {{ item.DELETE }}
+        <span>Remover</span>
+      </label>
+    </div>
   </div>
-  <div class="item-documento-footer"><label class="item-remover">{{ item.DELETE }} Remover item</label><span>Total do item <strong class="item-total">R$ 0,00</strong></span></div>
 </div>

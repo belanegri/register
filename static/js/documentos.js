@@ -45,3 +45,28 @@
   document.getElementById('id_desconto').addEventListener('input',atualizar);
   atualizar();
 })();
+
+(() => {
+  const condicao = document.getElementById('id_condicao_pagamento');
+  const parcelamento = document.getElementById('parcelamento-campos');
+  const parcelas = document.getElementById('id_parcelas');
+  const vencimento = document.getElementById('id_primeiro_vencimento');
+
+  if (!condicao || !parcelamento) return;
+
+  function atualizarParcelamento() {
+    const parcelado = condicao.value === 'parcelado';
+
+    parcelamento.style.display = parcelado ? 'grid' : 'none';
+
+    if (!parcelado) {
+      if (parcelas) parcelas.value = '1';
+      if (vencimento) vencimento.value = '';
+    } else if (parcelas && Number(parcelas.value) < 2) {
+      parcelas.value = '2';
+    }
+  }
+
+  condicao.addEventListener('change', atualizarParcelamento);
+  atualizarParcelamento();
+})();

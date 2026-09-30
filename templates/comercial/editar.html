@@ -1,22 +1,449 @@
-{% extends 'base.html' %}{% load static %}
-{% block title %}{% if doc.pk %}Editar {{ doc.codigo }}{% else %}Novo {{ doc.get_tipo_display }}{% endif %}{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if doc.pk %}
+    {{ doc.codigo }}
+  {% elif doc.tipo == 'os' %}
+    Nova Ordem de Serviço
+  {% else %}
+    Novo Orçamento
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-<div class="page-heading"><div><div class="eyebrow">ATENDIMENTO</div><h1>{% if doc.pk %}Editar {{ doc.codigo }}{% else %}{% if doc.tipo == 'os' %}Nova ordem de serviço{% else %}Novo orçamento{% endif %}{% endif %}</h1><p>Organize o atendimento, os itens e os valores em um só lugar.</p></div><a class="btn btn-outline-secondary" href="{% url 'comercial:documentos' doc.tipo %}">Voltar à lista</a></div>
-<form method="post" class="commercial-form">{% csrf_token %}{{ form.non_field_errors }}
-{% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
-<section class="surface mb-4"><div class="section-heading"><div><h2>Dados do atendimento</h2><p>Cliente, situação e prazos do documento.</p></div></div><div class="p-4 row g-3">
-{% include 'components/form_field.html' with field=form.cliente %}{% include 'components/form_field.html' with field=form.status %}
-{% if form.validade %}{% include 'components/form_field.html' with field=form.validade %}{% endif %}
-{% if form.responsavel %}{% include 'components/form_field.html' with field=form.responsavel %}{% endif %}
-{% if form.previsao %}{% include 'components/form_field.html' with field=form.previsao %}{% include 'components/form_field.html' with field=form.conclusao %}{% endif %}
-</div></section>
-<section class="surface mb-4"><div class="section-heading"><div><h2>Veículo</h2><p>Identificação do veículo atendido.</p></div></div><div class="p-4 row g-3">
-{% include 'components/form_field.html' with field=form.veiculo %}{% include 'components/form_field.html' with field=form.placa col='col-md-3 col-6' %}{% include 'components/form_field.html' with field=form.ano col='col-md-3 col-6' %}
-{% include 'components/form_field.html' with field=form.km %}{% if form.combustivel %}{% include 'components/form_field.html' with field=form.combustivel %}{% endif %}
-</div></section>
-{% if form.relato %}<section class="surface mb-4"><div class="section-heading"><div><h2>Detalhes do serviço</h2><p>Registre a solicitação e a avaliação técnica.</p></div></div><div class="p-4 row g-3">{% include 'components/form_field.html' with field=form.relato %}{% include 'components/form_field.html' with field=form.solicitado %}{% include 'components/form_field.html' with field=form.diagnostico col='col-12' %}</div></section>{% endif %}
-<section class="surface mb-4"><div class="section-heading"><div><h2>Peças e serviços</h2><p>Escolha uma peça ou um serviço por linha e confira o preço.</p></div><button type="button" id="adicionar-item" class="btn btn-sm btn-outline-primary">+ Adicionar item</button></div><div class="p-4">{{ itens.management_form }}{{ itens.non_form_errors }}<div id="itens">{% for item in itens %}{% include 'comercial/item_form.html' %}{% endfor %}</div><template id="novo-item">{% include 'comercial/item_form.html' with item=itens.empty_form %}</template></div></section>
-<section class="surface mb-4"><div class="section-heading"><div><h2>Condições e valores</h2><p>Revise o resumo antes de salvar.</p></div></div><div class="p-4"><div class="row g-3">{% include 'components/form_field.html' with field=form.observacoes %}{% include 'components/form_field.html' with field=form.condicoes %}</div><div class="documento-resumo mt-4"><div><span>Peças</span><strong id="subtotal-pecas">R$ 0,00</strong></div><div><span>Serviços</span><strong id="subtotal-servicos">R$ 0,00</strong></div><div>{{ form.desconto.label_tag }}{{ form.desconto }}{{ form.desconto.errors }}</div><div class="documento-total"><span>Total</span><strong id="total-documento" aria-live="polite">R$ 0,00</strong></div></div></div></section>
-<div class="form-actions"><button class="btn btn-primary">{% if doc.pk %}Salvar alterações{% else %}{% if doc.tipo == 'os' %}Salvar ordem de serviço{% else %}Salvar orçamento{% endif %}{% endif %}</button><a class="btn btn-outline-secondary" href="{% url 'comercial:documentos' doc.tipo %}">Cancelar</a></div>
-</form>{{ precos|json_script:'precos-catalogo' }}<script src="{% static 'js/documentos.js' %}" defer></script>
+
+<div class="commercial-page">
+
+  <div class="commercial-header">
+    <div>
+      <div class="eyebrow">
+        {% if doc.tipo == 'os' %}
+          ORDEM DE SERVIÇO
+        {% else %}
+          ORÇAMENTO
+        {% endif %}
+      </div>
+
+      <h1>
+        {% if doc.pk %}
+          {{ doc.codigo }}
+        {% elif doc.tipo == 'os' %}
+          Nova Ordem de Serviço
+        {% else %}
+          Novo Orçamento
+        {% endif %}
+      </h1>
+
+      <p>
+        {% if doc.tipo == 'os' %}
+          Registre o atendimento, produtos e serviços executados.
+        {% else %}
+          Monte uma proposta completa para o cliente.
+        {% endif %}
+      </p>
+    </div>
+
+    <a
+      class="btn btn-outline-secondary"
+      href="{% url 'comercial:documentos' doc.tipo %}"
+    >
+      Voltar
+    </a>
+  </div>
+
+
+  <form method="post" class="commercial-form" id="documento-form">
+
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    {% for hidden in form.hidden_fields %}
+      {{ hidden }}
+      {{ hidden.errors }}
+    {% endfor %}
+
+
+    <div class="commercial-layout">
+
+      <!-- COLUNA PRINCIPAL -->
+      <div class="commercial-main">
+
+
+        <!-- CLIENTE E VEÍCULO -->
+        <section class="surface commercial-card">
+
+          <div class="section-heading">
+            <div>
+              <span class="section-step">01</span>
+              <div>
+                <h2>Cliente e Veículo</h2>
+                <p>Identificação do atendimento.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="commercial-card-body">
+
+            <div class="row g-3">
+
+              {% include 'components/form_field.html' with field=form.cliente col='col-lg-6' %}
+
+              {% include 'components/form_field.html' with field=form.veiculo col='col-lg-6' %}
+
+              {% include 'components/form_field.html' with field=form.placa col='col-lg-3 col-md-6' %}
+
+              {% include 'components/form_field.html' with field=form.ano col='col-lg-3 col-md-6' %}
+
+              {% include 'components/form_field.html' with field=form.km col='col-lg-3 col-md-6' %}
+
+              {% if form.combustivel %}
+                {% include 'components/form_field.html' with field=form.combustivel col='col-lg-3 col-md-6' %}
+              {% endif %}
+
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- DADOS DO DOCUMENTO -->
+        <section class="surface commercial-card">
+
+          <div class="section-heading">
+            <div>
+              <span class="section-step">02</span>
+              <div>
+                <h2>
+                  {% if doc.tipo == 'os' %}
+                    Dados do Atendimento
+                  {% else %}
+                    Dados do Orçamento
+                  {% endif %}
+                </h2>
+
+                <p>Status, prazos e responsável.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="commercial-card-body">
+
+            <div class="row g-3">
+
+              {% include 'components/form_field.html' with field=form.status col='col-lg-4 col-md-6' %}
+
+              {% if form.validade %}
+                {% include 'components/form_field.html' with field=form.validade col='col-lg-4 col-md-6' %}
+              {% endif %}
+
+              {% if form.previsao %}
+                {% include 'components/form_field.html' with field=form.previsao col='col-lg-4 col-md-6' %}
+              {% endif %}
+
+              {% if form.conclusao %}
+                {% include 'components/form_field.html' with field=form.conclusao col='col-lg-4 col-md-6' %}
+              {% endif %}
+
+              {% if form.responsavel %}
+                {% include 'components/form_field.html' with field=form.responsavel col='col-lg-4 col-md-6' %}
+              {% endif %}
+
+            </div>
+
+          </div>
+        </section>
+
+
+        {% if form.relato %}
+
+        <!-- DETALHES DA OS -->
+        <section class="surface commercial-card">
+
+          <div class="section-heading">
+            <div>
+              <span class="section-step">03</span>
+              <div>
+                <h2>Detalhes do Serviço</h2>
+                <p>Solicitação do cliente e avaliação técnica.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="commercial-card-body">
+
+            <div class="row g-3">
+
+              {% include 'components/form_field.html' with field=form.relato col='col-lg-6' %}
+
+              {% include 'components/form_field.html' with field=form.solicitado col='col-lg-6' %}
+
+              {% include 'components/form_field.html' with field=form.diagnostico col='col-12' %}
+
+            </div>
+
+          </div>
+        </section>
+
+        {% endif %}
+
+
+        <!-- ITENS -->
+        <section class="surface commercial-card">
+
+          <div class="section-heading commercial-items-heading">
+
+            <div>
+              <span class="section-step">
+                {% if form.relato %}04{% else %}03{% endif %}
+              </span>
+
+              <div>
+                <h2>Produtos e Serviços</h2>
+                <p>Adicione os itens que farão parte do documento.</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              id="adicionar-item"
+              class="btn btn-primary btn-sm"
+            >
+              + Adicionar item
+            </button>
+
+          </div>
+
+
+          <div class="commercial-card-body">
+
+            {{ itens.management_form }}
+            {{ itens.non_form_errors }}
+
+            <div class="items-table-header">
+              <span>Produto / Peça</span>
+              <span>Serviço</span>
+              <span>Qtd.</span>
+              <span>Valor</span>
+              <span>Total</span>
+              <span></span>
+            </div>
+
+            <div id="itens">
+              {% for item in itens %}
+                {% include 'comercial/item_form.html' %}
+              {% endfor %}
+            </div>
+
+            <template id="novo-item">
+              {% include 'comercial/item_form.html' with item=itens.empty_form %}
+            </template>
+
+          </div>
+        </section>
+
+
+        <!-- OBSERVAÇÕES -->
+        <section class="surface commercial-card">
+
+          <div class="section-heading">
+            <div>
+
+              <span class="section-step">
+                {% if form.relato %}05{% else %}04{% endif %}
+              </span>
+
+              <div>
+                <h2>Observações e Condições</h2>
+                <p>Informações adicionais do documento.</p>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="commercial-card-body">
+
+            <div class="row g-3">
+
+              {% include 'components/form_field.html' with field=form.observacoes col='col-lg-6' %}
+
+              {% include 'components/form_field.html' with field=form.condicoes col='col-lg-6' %}
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+
+      <!-- COLUNA LATERAL -->
+      <aside class="commercial-sidebar">
+
+
+        <!-- RESUMO -->
+        <section class="surface financial-card">
+
+          <div class="financial-title">
+            <span>Resumo Financeiro</span>
+          </div>
+
+
+          <div class="financial-lines">
+
+            <div>
+              <span>Produtos / Peças</span>
+              <strong id="subtotal-pecas">R$ 0,00</strong>
+            </div>
+
+            <div>
+              <span>Serviços</span>
+              <strong id="subtotal-servicos">R$ 0,00</strong>
+            </div>
+
+          </div>
+
+
+          <div class="financial-discount">
+            <label for="id_desconto">
+              Desconto
+            </label>
+
+            {{ form.desconto }}
+
+            {{ form.desconto.errors }}
+          </div>
+
+
+          <div class="financial-total">
+
+            <span>Total</span>
+
+            <strong
+              id="total-documento"
+              aria-live="polite"
+            >
+              R$ 0,00
+            </strong>
+
+          </div>
+
+        </section>
+
+
+        <!-- PAGAMENTO -->
+        <section class="surface payment-card">
+
+          <div class="payment-title">
+            <span>Condição de Pagamento</span>
+          </div>
+
+
+          <div class="payment-fields">
+
+            <div>
+              <label for="{{ form.forma_pagamento.id_for_label }}">
+                {{ form.forma_pagamento.label }}
+              </label>
+
+              {{ form.forma_pagamento }}
+              {{ form.forma_pagamento.errors }}
+            </div>
+
+
+            <div>
+              <label for="{{ form.condicao_pagamento.id_for_label }}">
+                {{ form.condicao_pagamento.label }}
+              </label>
+
+              {{ form.condicao_pagamento }}
+              {{ form.condicao_pagamento.errors }}
+            </div>
+
+
+            <div
+              id="parcelamento-campos"
+              class="parcelamento-fields"
+            >
+
+              <div>
+                <label for="{{ form.parcelas.id_for_label }}">
+                  {{ form.parcelas.label }}
+                </label>
+
+                {{ form.parcelas }}
+                {{ form.parcelas.errors }}
+              </div>
+
+
+              <div>
+                <label for="{{ form.primeiro_vencimento.id_for_label }}">
+                  {{ form.primeiro_vencimento.label }}
+                </label>
+
+                {{ form.primeiro_vencimento }}
+                {{ form.primeiro_vencimento.errors }}
+              </div>
+
+            </div>
+
+          </div>
+
+
+          {% if doc.tipo == 'orcamento' %}
+
+          <div class="payment-info">
+            Esta é apenas a condição proposta ao cliente.
+            Nenhuma cobrança será criada ao salvar o orçamento.
+          </div>
+
+          {% endif %}
+
+        </section>
+
+
+        <!-- AÇÕES -->
+        <section class="surface commercial-actions-card">
+
+          <button
+            type="submit"
+            class="btn btn-primary w-100"
+          >
+            {% if doc.pk %}
+              Salvar alterações
+            {% elif doc.tipo == 'os' %}
+              Salvar Ordem de Serviço
+            {% else %}
+              Salvar Orçamento
+            {% endif %}
+          </button>
+
+
+          <a
+            class="btn btn-outline-secondary w-100"
+            href="{% url 'comercial:documentos' doc.tipo %}"
+          >
+            Cancelar
+          </a>
+
+        </section>
+
+      </aside>
+
+    </div>
+
+  </form>
+
+</div>
+
+
+{{ precos|json_script:'precos-catalogo' }}
+
+<script
+  src="{% static 'js/documentos.js' %}"
+  defer
+></script>
+
 {% endblock %}

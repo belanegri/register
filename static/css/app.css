@@ -9,3 +9,441 @@
 
 /* Commercial forms follow the existing stock surfaces and green palette. */
 .commercial-form{max-width:1160px}.commercial-form .row{margin-top:0}.commercial-form label:not(.item-remover):not(.service-switch){font-weight:600;font-size:13px;margin-bottom:7px}.commercial-form .section-heading{padding:20px 24px}.commercial-form .section-heading h2{font-size:16px}.commercial-form .form-control,.commercial-form .form-select{border-radius:6px}.commercial-form textarea{resize:vertical;min-height:96px}.form-actions{display:flex;gap:12px;padding:0 0 12px}.item-documento{padding:18px;background:#f9fbf8;border:1px solid var(--line);border-radius:8px;margin-bottom:14px}.item-documento:last-child{margin-bottom:0}.item-documento-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;font-size:12px;color:var(--muted)}.item-documento-footer strong{color:var(--ink);margin-left:8px}.item-remover{display:flex;align-items:center;gap:7px;cursor:pointer}.item-documento.is-removed{opacity:.55}.documento-resumo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;align-items:center;padding:20px;background:var(--canvas);border:1px solid var(--line);border-radius:8px}.documento-resumo span,.documento-resumo label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.documento-resumo strong{font-size:20px;font-weight:650}.documento-total{border-left:1px solid #d8dfd7;padding-left:20px}.documento-total strong{color:var(--green);font-size:26px}.service-switch{display:flex;align-items:center;gap:10px;min-height:43px}.sidebar .sidebar-nav{gap:2px;margin-top:16px}.sidebar .sidebar-nav .nav-label{margin:18px 12px 7px;font-size:9px;letter-spacing:1.6px}.sidebar .sidebar-nav .nav-label:first-child{margin-top:0}.sidebar .sidebar-nav .nav-link{padding:8px 12px;gap:11px;font-size:13px}.sidebar .nav-icon{width:18px;height:18px;flex-shrink:0}.sidebar .nav-link .nav-text{font-size:13px;width:auto;text-align:left}.sidebar .offcanvas-body{padding:24px 16px!important}.sidebar-note{margin-top:24px!important;padding-top:16px}.commercial-form .errorlist{font-size:12px;padding-left:18px;margin-top:5px}@media(max-width:767px){.documento-resumo{grid-template-columns:1fr 1fr;gap:16px}.commercial-form .section-heading{padding:18px;flex-wrap:wrap}.commercial-form .p-4{padding:18px!important}.item-documento{padding:14px}.documento-total{padding-left:0;border-left:0}.documento-total strong{font-size:23px}}@media(max-width:380px){.item-documento-footer{align-items:flex-start;flex-direction:column}}
+
+/* =========================================================
+   REGISTER - DOCUMENTOS COMERCIAIS
+   Orçamentos e Ordens de Serviço
+   ========================================================= */
+
+.commercial-page {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.commercial-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.commercial-header h1 {
+    margin: 3px 0 5px;
+    font-size: clamp(1.65rem, 2vw, 2.15rem);
+    font-weight: 750;
+    letter-spacing: -0.035em;
+}
+
+.commercial-header p {
+    margin: 0;
+    opacity: .68;
+}
+
+.commercial-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 22px;
+    align-items: start;
+}
+
+.commercial-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.commercial-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 20px;
+}
+
+.commercial-card,
+.financial-card,
+.payment-card,
+.commercial-actions-card {
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.commercial-card {
+    margin: 0 !important;
+}
+
+.commercial-card .section-heading {
+    min-height: 68px;
+    padding: 15px 20px;
+}
+
+.commercial-card .section-heading > div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.commercial-card .section-heading h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 2px;
+}
+
+.commercial-card .section-heading p {
+    font-size: .8rem;
+    margin: 0;
+    opacity: .62;
+}
+
+.section-step {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .73rem;
+    font-weight: 800;
+    background: rgba(46, 204, 113, .11);
+    color: #20a85a;
+}
+
+.commercial-card-body {
+    padding: 18px 20px 20px;
+}
+
+/* Campos mais compactos */
+
+.commercial-form label {
+    font-size: .78rem;
+    font-weight: 650;
+    margin-bottom: 5px;
+}
+
+.commercial-form .form-control,
+.commercial-form .form-select,
+.commercial-form select,
+.commercial-form input {
+    min-height: 40px;
+}
+
+.commercial-form textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+/* =========================================================
+   ITENS
+   ========================================================= */
+
+.commercial-items-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.items-table-header,
+.item-documento-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(170px, 1.35fr)
+        minmax(150px, 1fr)
+        70px
+        110px
+        105px
+        76px;
+    gap: 10px;
+    align-items: center;
+}
+
+.items-table-header {
+    padding: 0 10px 8px;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .035em;
+    opacity: .55;
+}
+
+.item-documento {
+    padding: 11px 10px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(127, 127, 127, .15);
+    border-radius: 12px;
+    transition: opacity .2s ease, border-color .2s ease;
+}
+
+.item-documento:hover {
+    border-color: rgba(46, 204, 113, .32);
+}
+
+.item-documento.is-removed {
+    opacity: .38;
+}
+
+.item-field label {
+    display: none;
+}
+
+.item-field select,
+.item-field input {
+    width: 100%;
+    min-height: 38px !important;
+}
+
+.item-field-total strong {
+    display: block;
+    font-size: .86rem;
+    white-space: nowrap;
+}
+
+.item-remover {
+    margin: 0 !important;
+    cursor: pointer;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+    font-size: .72rem !important;
+    opacity: .68;
+}
+
+.item-remover input {
+    min-height: auto !important;
+    width: auto;
+}
+
+/* =========================================================
+   RESUMO FINANCEIRO
+   ========================================================= */
+
+.financial-card,
+.payment-card,
+.commercial-actions-card {
+    padding: 20px;
+}
+
+.financial-title,
+.payment-title {
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(127, 127, 127, .16);
+    font-size: .93rem;
+    font-weight: 750;
+}
+
+.financial-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.financial-lines > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: .82rem;
+}
+
+.financial-lines span {
+    opacity: .7;
+}
+
+.financial-lines strong {
+    font-weight: 700;
+}
+
+.financial-discount {
+    margin-top: 17px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(127, 127, 127, .16);
+}
+
+.financial-discount input {
+    width: 100%;
+}
+
+.financial-total {
+    margin-top: 18px;
+    padding-top: 17px;
+    border-top: 1px solid rgba(127, 127, 127, .18);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.financial-total span {
+    font-size: .82rem;
+    font-weight: 650;
+}
+
+.financial-total strong {
+    font-size: 1.45rem;
+    line-height: 1;
+    color: #20a85a;
+    letter-spacing: -.04em;
+}
+
+/* =========================================================
+   PAGAMENTO
+   ========================================================= */
+
+.payment-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.payment-fields > div > select,
+.payment-fields > div > input {
+    width: 100%;
+}
+
+.parcelamento-fields {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 10px;
+}
+
+.payment-info {
+    margin-top: 15px;
+    padding: 11px 12px;
+    border-radius: 10px;
+    background: rgba(46, 204, 113, .08);
+    color: inherit;
+    font-size: .72rem;
+    line-height: 1.45;
+    opacity: .78;
+}
+
+.commercial-actions-card {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 1200px) {
+    .commercial-layout {
+        grid-template-columns: minmax(0, 1fr) 290px;
+    }
+
+    .items-table-header {
+        display: none;
+    }
+
+    .item-documento-grid {
+        grid-template-columns: repeat(12, 1fr);
+    }
+
+    .item-field label {
+        display: block;
+    }
+
+    .item-field-peca {
+        grid-column: span 6;
+    }
+
+    .item-field-servico {
+        grid-column: span 6;
+    }
+
+    .item-field-qtd {
+        grid-column: span 2;
+    }
+
+    .item-field-preco {
+        grid-column: span 4;
+    }
+
+    .item-field-total {
+        grid-column: span 3;
+    }
+
+    .item-field-remover {
+        grid-column: span 3;
+    }
+}
+
+@media (max-width: 900px) {
+    .commercial-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .commercial-sidebar {
+        position: static;
+    }
+
+    .commercial-sidebar .financial-card {
+        order: 1;
+    }
+
+    .commercial-sidebar .payment-card {
+        order: 2;
+    }
+
+    .commercial-sidebar .commercial-actions-card {
+        order: 3;
+    }
+}
+
+@media (max-width: 600px) {
+    .commercial-header {
+        flex-direction: column;
+    }
+
+    .commercial-header .btn {
+        width: 100%;
+    }
+
+    .commercial-card-body,
+    .financial-card,
+    .payment-card,
+    .commercial-actions-card {
+        padding: 15px;
+    }
+
+    .commercial-card .section-heading {
+        padding: 14px 15px;
+    }
+
+    .commercial-items-heading {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .commercial-items-heading {
+        flex-direction: column;
+    }
+
+    .commercial-items-heading .btn {
+        width: 100%;
+    }
+
+    .item-documento-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .item-field-peca,
+    .item-field-servico {
+        grid-column: span 2;
+    }
+
+    .item-field-qtd,
+    .item-field-preco,
+    .item-field-total,
+    .item-field-remover {
+        grid-column: span 1;
+    }
+
+    .parcelamento-fields {
+        grid-template-columns: 1fr;
+    }
+}
