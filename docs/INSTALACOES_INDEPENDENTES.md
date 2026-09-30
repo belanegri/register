@@ -1,3 +1,5 @@
+> Atualização: a Loja 2 foi publicada. Consulte LOJA2_PUBLICACAO.md para o estado atual. O texto abaixo registra a preparação anterior.
+
 # REGISTER — instalações independentes
 
 ## Arquitetura e estado
