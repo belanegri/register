@@ -35,6 +35,7 @@ TEMPLATES = [{
     "OPTIONS": {"context_processors": [
         "django.template.context_processors.request", "django.contrib.auth.context_processors.auth",
         "django.contrib.messages.context_processors.messages",
+        "core.context_processors.identidade_empresa",
     ]},
 }]
 WSGI_APPLICATION = "pontocar.wsgi.application"
@@ -92,7 +93,7 @@ if STORAGE_MODE == "r2":
     opcoes = {
         "access_key": env("R2_ACCESS_KEY_ID"), "secret_key": env("R2_SECRET_ACCESS_KEY"),
         "bucket_name": env("R2_BUCKET_NAME"), "endpoint_url": env("R2_ENDPOINT_URL"),
-        "region_name": "auto", "signature_version": "s3v4", "default_acl": None,
+        "region_name": env("R2_REGION_NAME", default="auto"), "signature_version": "s3v4", "default_acl": None,
         "max_memory_size": 1024 * 1024,
         "querystring_auth": True, "querystring_expire": 3600, "file_overwrite": False,
         "object_parameters": {"CacheControl": "private, max-age=3600"},

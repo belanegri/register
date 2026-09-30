@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% include 'components/site_icons.html' %}
   <meta name="theme-color" content="#152723">
-  <title>{% block title %}Painel{% endblock %} · PontoCar</title>
+  <title>{% block title %}Painel{% endblock %} · REGISTER</title>
   <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
@@ -14,11 +14,12 @@
 <a class="visually-hidden-focusable skip-link" href="#conteudo">Ir para o conteúdo</a>
 {% if user.is_authenticated %}
 <aside class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="menu" aria-labelledby="menu-title">
-  <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu PontoCar</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
+  <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu REGISTER</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
   <div class="offcanvas-body d-flex flex-column">
-    <a class="brand" href="{% url 'dashboard:index' %}">PontoCar<span>COMÉRCIO DE PEÇAS</span></a>
+    <a class="brand" href="{% url 'dashboard:index' %}">REGISTER<span>GESTÃO DO SEU NEGÓCIO</span></a>
     <div class="nav-label">ÁREA DE TRABALHO</div>
     <nav aria-label="Menu principal" class="nav flex-column gap-2">
+      {% if perms.core.change_configuracaoempresa %}<a class="nav-link {% if request.resolver_match.app_name == 'core' %}active{% endif %}" href="{% url 'core:configuracao_empresa' %}"><span aria-hidden="true">⚙</span> Configurações da Empresa</a>{% endif %}
       <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}"><span aria-hidden="true">◫</span> Visão geral</a>
       {% if perms.vendas.usar_pdv %}<a class="nav-link {% if request.resolver_match.url_name == 'pdv' %}active{% endif %}" href="{% url 'vendas:pdv' %}"><span aria-hidden="true">▣</span> Frente de caixa</a>{% endif %}
       {% if perms.vendas.view_venda %}<a class="nav-link" href="{% url 'vendas:lista' %}"><span aria-hidden="true">▤</span> Vendas</a>{% endif %}
@@ -39,13 +40,13 @@
 </aside>
 <div class="workspace">
   <header class="topbar">
-    <div class="d-flex align-items-center gap-3"><button class="btn btn-outline-secondary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu" aria-label="Abrir menu">☰</button><span class="topbar-label">Gestão de estoque</span></div>
+    <div class="d-flex align-items-center gap-3"><button class="btn btn-outline-secondary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu" aria-label="Abrir menu">☰</button><span class="topbar-label">{% if empresa_nome %}Empresa: {{ empresa_nome }}{% else %}Gestão de estoque{% endif %}</span></div>
     <div class="d-flex align-items-center gap-3"><a class="user-name" href="{% url 'accounts:password_change' %}">{{ user.get_short_name|default:user.username }}</a><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Sair</button></form></div>
   </header>
   <main id="conteudo" class="main-content">
     {% include 'components/messages.html' %}
     {% block content %}{% endblock %}
-    <footer class="page-footer">PontoCar Comércio de Peças <span>Organização que move o seu negócio.</span></footer>
+    <footer class="page-footer">REGISTER <span>Organização que move o seu negócio.</span></footer>
   </main>
 </div>
 {% else %}

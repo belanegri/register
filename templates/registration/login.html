@@ -1,8 +1,8 @@
 {% extends 'base.html' %}{% load static %}
 {% block title %}Entrar{% endblock %}
 {% block public_content %}
-<div class="login-layout"><section class="login-brand"><a class="brand" href="/">PontoCar<span>COMÉRCIO DE PEÇAS</span></a><div><div class="eyebrow">ORGANIZAÇÃO EM CADA DETALHE</div><h1>Mais controle.<br>Um novo caminho<br>para o seu estoque.</h1><p>Peças, veículos e localizações.<br>Tudo conectado ao seu dia a dia.</p></div><small>PontoCar Comércio de Peças</small></section>
-<section class="login-form-wrap"><div class="login-form"><div class="eyebrow">BEM-VINDO À PONTOCAR</div><h2>Acesse seu espaço</h2><p class="text-secondary mb-4">Entre com seu usuário e senha para continuar.</p><form method="post">{% csrf_token %}
+<div class="login-layout"><section class="login-brand"><a class="brand" href="/">REGISTER<span>GESTÃO DO SEU NEGÓCIO</span></a><div><div class="eyebrow">ORGANIZAÇÃO EM CADA DETALHE</div><h1>Mais controle.<br>Um novo caminho<br>para o seu estoque.</h1><p>Peças, veículos e localizações.<br>Tudo conectado ao seu dia a dia.</p></div><small>REGISTER</small></section>
+<section class="login-form-wrap"><div class="login-form"><div class="eyebrow">BEM-VINDO AO REGISTER</div><h2>Acesse seu espaço</h2>{% if empresa_nome %}<p>Empresa: {{ empresa_nome }}</p>{% endif %}<p class="text-secondary mb-4">Entre com seu usuário e senha para continuar.</p><form method="post">{% csrf_token %}
 {% if form.errors %}<div class="alert alert-danger" role="alert">Usuário ou senha inválidos. Confira seus dados.</div>{% endif %}
 <div class="mb-3"><label for="id_username" class="form-label">Usuário</label><input class="form-control" id="id_username" name="username" value="{{ form.username.value|default:'' }}" autocomplete="username" maxlength="150" required autofocus></div>
 <div class="mb-4"><label for="id_password" class="form-label">Senha</label><input class="form-control" id="id_password" name="password" type="password" autocomplete="current-password" required></div>

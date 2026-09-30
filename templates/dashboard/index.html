@@ -12,5 +12,5 @@
 </section>
 <section class="surface"><div class="section-heading"><div><h2>Últimas peças cadastradas</h2><p>Os cadastros mais recentes do seu estoque.</p></div><a href="{% url 'estoque:lista' %}">Ver estoque <span aria-hidden="true">→</span></a></div>
 {% if recentes %}{% include 'components/peca_table.html' with pecas=recentes %}{% else %}<div class="empty-state"><div class="empty-symbol" aria-hidden="true">▤</div><h3>Seu estoque começa aqui</h3><p>Cadastre uma categoria, uma localização e sua primeira peça.<br>Os próximos cadastros aparecerão nesta área.</p>{% if user.is_staff and perms.estoque.add_peca %}<a class="btn btn-outline-primary" href="{% url 'admin:estoque_peca_add' %}">Cadastrar primeira peça</a>{% endif %}</div>{% endif %}</section>
-{% else %}<div class="surface p-4"><h2>Bem-vindo à PontoCar</h2><p class="mb-0">Seu acesso está ativo. Solicite ao administrador a atribuição do seu grupo de trabalho.</p></div>{% endif %}
+{% else %}<div class="surface p-4"><h2>Bem-vindo ao REGISTER</h2><p class="mb-0">Seu acesso está ativo. Solicite ao administrador a atribuição do seu grupo de trabalho.</p></div>{% endif %}
 {% endblock %}
