@@ -1,4 +1,5 @@
 {% extends 'impressao/base.html' %}
+{% block classe_corpo %}recibo-venda{% endblock %}
 {% block title %}Recibo {{ venda.codigo }} · 58 mm{% endblock %}
 {% block voltar %}<a href="{% url 'vendas:detalhe' venda.pk %}">Voltar à venda</a>{% endblock %}
 {% block papel %}<header class="centro"><h1>{{ venda.empresa_nome_documento }}</h1>{% if venda.empresa_documento.documento %}<div>{{ venda.empresa_documento.documento }}</div>{% endif %}{% if venda.empresa_documento.endereco %}<div>{{ venda.empresa_documento.endereco }} {{ venda.empresa_documento.numero }} · {{ venda.empresa_documento.cidade }} {{ venda.empresa_documento.estado }}</div>{% endif %}{% if venda.empresa_documento.telefone %}<div>{{ venda.empresa_documento.telefone }}</div>{% endif %}<h2>COMPROVANTE DE VENDA</h2><strong>NÃO FISCAL</strong></header>
