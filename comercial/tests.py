@@ -108,6 +108,66 @@ class ComercialTests(TestCase):
             },
         }
 
+    def payload_os(self):
+        return {'cliente': self.cliente.pk, 'status': 'aberta', 'desconto': '0',
+                'condicao_pagamento': 'avista', 'parcelas': '1',
+                'itens-TOTAL_FORMS': '1', 'itens-INITIAL_FORMS': '0',
+                'itens-0-peca': self.peca.pk, 'itens-0-quantidade': '2', 'itens-0-preco': '100'}
+
+    def test_nova_os_vende_sem_receber_e_nao_duplica(self):
+        from .services import registrar_venda_os
+        r = self.client.post(reverse('comercial:novo', args=['os']), self.payload_os())
+        self.assertEqual(r.status_code, 302)
+        doc = Documento.objects.get(tipo='os')
+        self.assertEqual(doc.venda.total, 200)
+        self.assertEqual(doc.venda.conta_receber.saldo, 200)
+        self.assertEqual(registrar_venda_os(self.user, doc.pk).pk, doc.venda_id)
+        self.assertEqual(Venda.objects.count(), 1)
+        self.peca.refresh_from_db()
+        self.assertEqual(self.peca.quantidade, 8)
+        self.assertFalse(MovimentoCaixa.objects.exists())
+        self.assertNotContains(self.client.get(reverse('comercial:detalhe', args=[doc.pk])), 'Converter em venda')
+        # Dados financeiros adulterados no POST não alteram a venda nem o estoque.
+        payload = self.payload_os()
+        payload.update(status='andamento', desconto='99', responsavel='Técnico')
+        self.assertEqual(self.client.post(reverse('comercial:editar', args=[doc.pk]), payload).status_code, 302)
+        doc.refresh_from_db()
+        self.assertEqual(doc.status, 'andamento')
+        self.assertEqual(doc.total, 200)
+        self.assertEqual(doc.venda.total, 200)
+        payload['status'] = 'cancelada'
+        self.assertEqual(self.client.post(reverse('comercial:editar', args=[doc.pk]), payload).status_code, 302)
+        doc.refresh_from_db()
+        self.assertEqual(doc.venda.status, 'cancelada')
+        self.peca.refresh_from_db()
+        self.assertEqual(self.peca.quantidade, 10)
+
+    def test_os_sem_estoque_ou_caixa_nao_deixa_registros_parciais(self):
+        payload = self.payload_os()
+        payload['itens-0-quantidade'] = '11'
+        response = self.client.post(reverse('comercial:novo', args=['os']), payload)
+        self.assertContains(response, 'saldo insuficiente')
+        self.assertFalse(Documento.objects.exists())
+        self.assertFalse(Venda.objects.exists())
+        self.caixa.fechado_em = timezone.now()
+        self.caixa.save()
+        response = self.client.post(reverse('comercial:novo', args=['os']), self.payload_os())
+        self.assertContains(response, 'Abra seu caixa')
+        self.assertFalse(Documento.objects.exists())
+
+    def test_boleto_parcelado_os(self):
+        forma = FormaPagamento.objects.get(nome='Boleto parcelado')
+        payload = self.payload_os()
+        payload.update(forma_pagamento=forma.pk, condicao_pagamento='parcelado', parcelas='3',
+                       primeiro_vencimento=str(timezone.localdate() + timedelta(days=30)))
+        response = self.client.post(reverse('comercial:novo', args=['os']), payload)
+        self.assertEqual(response.status_code, 302)
+        doc = Documento.objects.get()
+        self.assertEqual(doc.forma_pagamento, forma)
+        self.assertEqual(doc.parcelas, 3)
+        self.assertEqual(doc.venda.conta_receber.vencimento, doc.primeiro_vencimento)
+        self.assertFalse(doc.venda.pagamentos.exists())
+
     def test_venda_mista_servico_sem_estoque_cancelamento(self):
         venda = finalizar(
             self.user,
@@ -319,65 +379,17 @@ class ComercialTests(TestCase):
 
     def test_orcamento_os_venda(self):
         orc = self.documento()
-
-        os = converter(
-            self.user,
-            orc.pk,
-            'os',
-            True,
-        )
-
-        self.assertEqual(
-            os.total,
-            orc.total,
-        )
-
-        self.assertEqual(
-            os.origem,
-            orc,
-        )
-
-        self.assertFalse(
-            Venda.objects.exists()
-        )
-
-        self.assertFalse(
-            MovimentoCaixa.objects.exists()
-        )
-
-        with self.assertRaises(ValidationError):
-            converter(
-                self.user,
-                orc.pk,
-                'os',
-                True,
-            )
-
-        venda = converter(
-            self.user,
-            os.pk,
-            'venda',
-            True,
-            pagamentos=[
-                {
-                    'forma': self.forma.pk,
-                    'valor': 140,
-                }
-            ],
-        )
-
-        self.assertEqual(
-            venda.total,
-            140,
-        )
-
-        with self.assertRaises(ValidationError):
-            converter(
-                self.user,
-                os.pk,
-                'venda',
-                True,
-            )
+        os = converter(self.user, orc.pk, 'os', True)
+        self.assertEqual(os.total, orc.total)
+        self.assertEqual(os.origem, orc)
+        self.assertEqual(os.venda.total, 140)
+        self.assertEqual(os.venda.conta_receber.os, os)
+        self.assertEqual(os.situacao, 'Aberta')
+        self.assertFalse(MovimentoCaixa.objects.exists())
+        for doc, destino in [(orc, 'os'), (os, 'venda')]:
+            with self.assertRaises(ValidationError):
+                converter(self.user, doc.pk, destino, True)
+        self.assertEqual(Venda.objects.count(), 1)
 
     def test_os_direta_pendente_parcial_total(self):
         os = self.documento('os')

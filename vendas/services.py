@@ -295,6 +295,9 @@ def corrigir(usuario, venda_id, chave, carrinho, pagamentos, motivo, desconto=0,
     exigir(usuario, "vendas.editar_venda")
     caixa_aberto(usuario)
     original = Venda.objects.select_for_update().get(pk=venda_id)
+    from comercial.models import Documento
+    if Documento.objects.filter(venda=original, tipo='os').exclude(status='convertido').exists():
+        raise ValidationError('Venda de OS: cancele a venda sem recebimentos e crie uma nova ordem para corrigir os valores.')
     existente = Venda.objects.filter(chave=chave, substitui=original).first()
     if existente:
         if existente.vendedor_id != usuario.pk:

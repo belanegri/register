@@ -166,6 +166,10 @@ class DocumentoForm(EstiloForm, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
+        forma = cleaned_data.get('forma_pagamento')
+        if forma and forma.nome == 'Boleto parcelado' and cleaned_data.get('condicao_pagamento') != 'parcelado':
+            self.add_error('condicao_pagamento', 'Para boleto parcelado, selecione Parcelado e informe as parcelas e o primeiro vencimento.')
+
         condicao = cleaned_data.get('condicao_pagamento')
         parcelas = cleaned_data.get('parcelas')
         primeiro_vencimento = cleaned_data.get('primeiro_vencimento')

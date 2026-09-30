@@ -68,5 +68,12 @@
   }
 
   condicao.addEventListener('change', atualizarParcelamento);
+  const forma = document.getElementById('id_forma_pagamento');
+  if (forma) forma.addEventListener('change', () => {
+    if (forma.selectedOptions[0]?.textContent.trim() === 'Boleto parcelado') {
+      condicao.value = 'parcelado';
+      atualizarParcelamento();
+    }
+  });
   atualizarParcelamento();
 })();

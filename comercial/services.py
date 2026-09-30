@@ -10,6 +10,35 @@ from .models import Documento, ItemDocumento, ContaReceber, Recebimento
 
 
 @transaction.atomic
+def registrar_venda_os(usuario, pk):
+    """Registra uma nova OS uma única vez, sem presumir recebimento."""
+    exigir(usuario, 'comercial.add_documento')
+    doc = Documento.objects.select_for_update().get(pk=pk)
+    if doc.tipo != 'os' or doc.status in ['cancelada', 'convertido']:
+        raise ValidationError('A ordem deve estar ativa para registrar a venda.')
+    if doc.venda_id:
+        return doc.venda
+    from vendas.services import finalizar
+    carrinho = {}
+    for item in doc.itens.all():
+        chave = str(item.peca_id) if item.peca_id else f's:{item.servico_id}'
+        if chave in carrinho:
+            raise ValidationError('Unifique os itens repetidos antes de salvar.')
+        carrinho[chave] = {'quantidade': item.quantidade, 'preco': str(item.preco), 'preco_personalizado': True}
+    venda = finalizar(usuario, uuid.uuid4(), carrinho, [], doc.desconto, doc.cliente_id,
+                      pendente=doc.primeiro_vencimento or timezone.localdate())
+    doc.venda = venda
+    doc.save(update_fields=['venda', 'atualizado_em'])
+    conta = venda.conta_receber
+    conta.os = doc
+    conta.origem = 'Ordem de serviço'
+    conta.descricao = f'{doc.codigo} · {venda.codigo}'
+    conta.save(update_fields=['os', 'origem', 'descricao'])
+    registrar(usuario, 'os.venda_registrada', doc.codigo, venda=venda.codigo)
+    return venda
+
+
+@transaction.atomic
 def converter(usuario, pk, destino, confirmado=False, pagamentos=None, vencimento=None, dados_nota=None):
     exigir(usuario, 'comercial.converter_documento')
     if not confirmado:
@@ -23,9 +52,10 @@ def converter(usuario, pk, destino, confirmado=False, pagamentos=None, venciment
     if not itens or doc.total <= 0:
         raise ValidationError('Adicione itens e confira o total antes da conversão.')
     if destino == 'os' and doc.tipo == 'orcamento':
-        campos = ['cliente_id','veiculo','placa','ano','km','combustivel','observacoes','desconto','condicoes']
+        campos = ['cliente_id','veiculo','placa','ano','km','combustivel','observacoes','desconto','condicoes', 'forma_pagamento_id', 'condicao_pagamento', 'parcelas', 'primeiro_vencimento']
         novo = Documento.objects.create(tipo='os',status='aberta',origem=doc,criado_por=usuario,**{c:getattr(doc,c) for c in campos})
         ItemDocumento.objects.bulk_create([ItemDocumento(documento=novo,peca_id=i.peca_id,servico_id=i.servico_id,descricao=i.descricao,quantidade=i.quantidade,preco=i.preco) for i in itens])
+        novo.venda = registrar_venda_os(usuario, novo.pk)
     elif destino == 'venda':
         from vendas.services import finalizar
         carrinho = {}

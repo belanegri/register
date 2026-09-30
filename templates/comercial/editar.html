@@ -207,7 +207,7 @@
 
             <button
               type="button"
-              id="adicionar-item"
+              id="adicionar-item" {% if financeiro_fechado %}disabled{% endif %}
               class="btn btn-primary btn-sm"
             >
               + Adicionar item
@@ -404,6 +404,8 @@
         </section>
 
 
+        {% if doc.tipo == 'os' %}<p class="payment-info">Ao criar a OS, a venda e a conta a receber são registradas e as peças saem do estoque. É necessário caixa aberto. O pagamento só entra no caixa quando recebido.</p>{% endif %}
+        {% if financeiro_fechado %}<p class="payment-info">Venda já registrada: cliente, itens e valores estão protegidos. Você pode atualizar o andamento e os dados técnicos. Para corrigir valores, cancele a venda sem recebimentos e crie uma nova OS.</p>{% endif %}
         <!-- AÇÕES -->
         <section class="surface commercial-actions-card">
 

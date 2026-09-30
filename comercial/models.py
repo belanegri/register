@@ -296,7 +296,10 @@ class Documento(TimestampedModel):
             return 'Vencido'
 
         if self.tipo == 'os' and self.venda_id:
-            return 'Convertida em venda'
+            if self.venda.status == 'cancelada':
+                return 'Cancelada'
+            if self.status == 'convertido':
+                return 'Convertida em venda'
 
         return self.get_status_display()
 

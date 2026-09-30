@@ -12,7 +12,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Servico, Documento, ContaReceber
 from .forms import ServicoForm, DocumentoForm, ItensFormSet, ContaForm
-from .services import converter, receber
+from .services import converter, receber, registrar_venda_os
 from vendas.forms import CheckoutForm, PagamentosFormSet, ReceberNotaForm
 from vendas.views import dados_promissoria
 
@@ -59,15 +59,41 @@ def documento_editar(request,tipo=None,pk=None):
         messages.error(request,'Documento convertido não pode ser editado.')
         return redirect('comercial:detalhe',pk=doc.pk)
     form = DocumentoForm(request.POST if request.method == "POST" else None,instance=doc)
-    itens = ItensFormSet(request.POST if request.method == "POST" else None,instance=doc,prefix='itens')
+    financeiro_fechado = bool(doc.venda_id)
+    if financeiro_fechado:
+        for campo in ['cliente', 'desconto', 'forma_pagamento', 'condicao_pagamento', 'parcelas', 'primeiro_vencimento']:
+            form.fields[campo].disabled = True
+        if doc.venda.status == 'cancelada':
+            form.fields['status'].disabled = True
+    itens = ItensFormSet(request.POST if request.method == "POST" and not financeiro_fechado else None,instance=doc,prefix='itens')
+    if financeiro_fechado:
+        for item in itens:
+            for campo in item.fields.values():
+                campo.disabled = True
     if request.method == 'POST':
         valido = form.is_valid()
-        if valido and itens.is_valid():
-            form.save()
-            itens.save()
-            return redirect('comercial:detalhe',pk=doc.pk)
+        if valido and (financeiro_fechado or itens.is_valid()):
+            try:
+                with transaction.atomic():
+                    novo = doc.pk is None
+                    if novo and doc.tipo == 'os' and doc.status == 'cancelada':
+                        raise ValidationError('Crie a ordem com uma situação ativa.')
+                    form.save()
+                    if not financeiro_fechado:
+                        itens.save()
+                    if novo and doc.tipo == 'os':
+                        registrar_venda_os(request.user, doc.pk)
+                    elif financeiro_fechado and doc.status == 'cancelada':
+                        from vendas.services import cancelar
+                        cancelar(request.user, doc.venda_id, f'Cancelamento pela OS {doc.codigo}')
+                return redirect('comercial:detalhe',pk=doc.pk)
+            except ValidationError as exc:
+                form.add_error(None, exc)
+                if not pk:
+                    doc.pk = None
+                    doc._state.adding = True
     from estoque.models import Peca
-    return render(request,'comercial/editar.html',{'form':form,'itens':itens,'doc':doc,'precos':{'peca':{str(p.pk):str(p.preco_venda) for p in Peca.objects.all()},'servico':{str(s.pk):str(s.valor_padrao) for s in Servico.objects.all()}}})
+    return render(request,'comercial/editar.html',{'form':form,'itens':itens,'doc':doc,'financeiro_fechado':financeiro_fechado,'precos':{'peca':{str(p.pk):str(p.preco_venda) for p in Peca.objects.all()},'servico':{str(s.pk):str(s.valor_padrao) for s in Servico.objects.all()}}})
 
 
 @login_required
