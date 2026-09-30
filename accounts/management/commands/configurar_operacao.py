@@ -11,11 +11,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         call_command("configurar_grupos")
         basicas = {
+            "comercial": ["view_servico", "view_documento", "add_documento", "change_documento", "converter_documento"],
             "clientes": ["view_cliente", "add_cliente", "change_cliente"],
             "vendas": ["usar_pdv", "view_venda", "view_formapagamento", "receber_promissoria"],
             "caixa": ["operar_caixa", "view_sessaocaixa"],
         }
-        gestao = {"contas": ["view_contapagar", "add_contapagar", "change_contapagar"], "vendas": ["editar_venda", "cancelar_venda", "devolver_venda", "dar_desconto", "ver_relatorios", "ver_todas_vendas", "add_formapagamento", "change_formapagamento"],
+        gestao = {"comercial": ["add_servico", "change_servico", "view_contareceber", "add_contareceber", "change_contareceber", "receber_conta"], "contas": ["view_contapagar", "add_contapagar", "change_contapagar"], "vendas": ["editar_venda", "cancelar_venda", "devolver_venda", "dar_desconto", "ver_relatorios", "ver_todas_vendas", "add_formapagamento", "change_formapagamento"],
                   "caixa": ["ver_todos_caixas", "view_movimentocaixa"], "core": ["view_evento"]}
         for nome in ["Administrador", "Gerente", "Caixa", "Vendedor"]:
             grupo = Group.objects.get(name=nome)

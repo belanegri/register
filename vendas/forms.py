@@ -8,6 +8,15 @@ from estoque.models import Peca
 
 
 class CheckoutForm(EstiloForm, forms.Form):
+    a_prazo = forms.BooleanField(label="Venda a prazo (gerar conta a receber)", required=False)
+    vencimento_conta = forms.DateField(label="Vencimento da conta", required=False, widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
+
+    def clean(self):
+        data = super().clean()
+        if data.get("a_prazo") and (not data.get("cliente") or not data.get("vencimento_conta")):
+            raise forms.ValidationError("Informe cliente e vencimento para venda a prazo.")
+        return data
+
     chave = forms.UUIDField(widget=forms.HiddenInput)
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(ativo=True), required=False, empty_label="Consumidor não identificado")
     desconto = forms.DecimalField(label="Desconto total (R$)", min_value=0, max_digits=12, decimal_places=2, initial=0, localize=True)
@@ -61,7 +70,16 @@ class CorrecaoForm(CheckoutForm):
 
 
 class ItemCorrecaoForm(EstiloForm, forms.Form):
-    peca = forms.ModelChoiceField(queryset=Peca.objects.all(), label="Peça")
+    peca = forms.ModelChoiceField(queryset=Peca.objects.all(), label="Peça", required=False)
+    from comercial.models import Servico
+    servico = forms.ModelChoiceField(queryset=Servico.objects.all(), required=False)
+
+    def clean(self):
+        data = super().clean()
+        if bool(data.get("peca")) == bool(data.get("servico")):
+            raise forms.ValidationError("Selecione uma peça OU um serviço.")
+        return data
+
     quantidade = forms.IntegerField(min_value=1, max_value=1000000)
     preco = forms.DecimalField(label="Preço unitário (R$)", max_digits=12, decimal_places=2, min_value=0, localize=True)
 

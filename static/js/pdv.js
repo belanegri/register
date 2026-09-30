@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function atualizar() {
     let subtotal = centavos(form.dataset.subtotal);
     if (form.dataset.edicao) subtotal = [...form.querySelectorAll(".item-correcao")].reduce((s, linha) => {
-      if (linha.querySelector("[name$='-DELETE']").checked || !linha.querySelector("[name$='-peca']").value) return s;
+      if (linha.querySelector("[name$='-DELETE']").checked || (!linha.querySelector("[name$='-peca']").value && !linha.querySelector("[name$='-servico']")?.value)) return s;
       return s + Number(linha.querySelector("[name$='-quantidade']").value) * centavos(linha.querySelector("[name$='-preco']").value);
     }, 0);
     const total = subtotal - centavos(form.querySelector("[name=desconto]").value);
@@ -40,7 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (campos) campos.hidden = !promissoria && !campos.querySelector(".errorlist");
     document.getElementById("total-previa").textContent = Number.isFinite(total) ? formatar(total) : "Confira os valores";
     const aviso = document.getElementById("pagamento-previa");
-    if (!Number.isFinite(total + cobertura) || total < 0) aviso.textContent = "Confira os valores informados.";
+    if (form.querySelector("[name=a_prazo]")?.checked) aviso.textContent = `A receber: ${formatar(total)}. Nenhum pagamento imediato será registrado.`;
+    else if (!Number.isFinite(total + cobertura) || total < 0) aviso.textContent = "Confira os valores informados.";
     else if (cobertura < total) aviso.textContent = `Falta informar: ${formatar(total - cobertura)}`;
     else if (cobertura > total && cobertura - total >= dinheiro) aviso.textContent = "Valor excedente: ajuste os pagamentos. Troco somente em dinheiro; PIX, cartão e promissória não geram troco.";
     else aviso.textContent = `TROCO: ${formatar(cobertura - total)}`;

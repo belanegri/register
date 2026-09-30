@@ -7,6 +7,7 @@ admin.site.site_header = "REGISTER"
 admin.site.site_title = "REGISTER"
 admin.site.index_title = "Cadastros e administração"
 urlpatterns = [
+    path("comercial/", include("comercial.urls")),
     path("configuracoes/", include("core.urls")),
     path("admin/", admin.site.urls),
     path("conta/", include("accounts.urls")),

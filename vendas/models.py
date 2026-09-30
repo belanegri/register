@@ -68,7 +68,8 @@ class Venda(models.Model):
 
 class ItemVenda(models.Model):
     venda = models.ForeignKey(Venda, on_delete=models.PROTECT, related_name="itens")
-    peca = models.ForeignKey("estoque.Peca", on_delete=models.PROTECT)
+    peca = models.ForeignKey("estoque.Peca", null=True, blank=True, on_delete=models.PROTECT)
+    servico = models.ForeignKey("comercial.Servico", null=True, blank=True, on_delete=models.PROTECT)
     descricao = models.CharField(max_length=240)
     quantidade = models.PositiveIntegerField()
     preco_unitario = models.DecimalField(max_digits=12, decimal_places=2)
@@ -78,7 +79,9 @@ class ItemVenda(models.Model):
 
     class Meta:
         constraints = [models.CheckConstraint(condition=Q(quantidade__gt=0), name="item_quantidade_positiva"),
-            models.UniqueConstraint(fields=["venda", "peca"], name="item_peca_unica_por_venda")]
+            models.UniqueConstraint(fields=["venda", "peca"], name="item_peca_unica_por_venda"),
+            models.UniqueConstraint(fields=["venda", "servico"], name="item_servico_unico_por_venda"),
+            models.CheckConstraint(condition=Q(peca__isnull=False, servico__isnull=True) | Q(peca__isnull=True, servico__isnull=False), name="item_venda_tipo")]
 
     @property
     def quantidade_devolvida(self):

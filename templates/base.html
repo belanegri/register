@@ -23,6 +23,9 @@
       <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}"><span aria-hidden="true">◫</span> Visão geral</a>
       {% if perms.vendas.usar_pdv %}<a class="nav-link {% if request.resolver_match.url_name == 'pdv' %}active{% endif %}" href="{% url 'vendas:pdv' %}"><span aria-hidden="true">▣</span> Frente de caixa</a>{% endif %}
       {% if perms.vendas.view_venda %}<a class="nav-link" href="{% url 'vendas:lista' %}"><span aria-hidden="true">▤</span> Vendas</a>{% endif %}
+      {% if perms.comercial.view_servico %}<a class="nav-link" href="{% url 'comercial:servicos' %}">Serviços / Mão de obra</a>{% endif %}
+      {% if perms.comercial.view_documento %}<a class="nav-link" href="{% url 'comercial:documentos' 'orcamento' %}">Orçamentos</a><a class="nav-link" href="{% url 'comercial:documentos' 'os' %}">Ordens de serviço</a>{% endif %}
+      {% if perms.comercial.view_contareceber %}<a class="nav-link" href="{% url 'comercial:contas' %}">Contas a receber</a>{% endif %}
       {% if perms.caixa.operar_caixa %}<a class="nav-link" href="{% url 'caixa:painel' %}"><span aria-hidden="true">$</span> Meu caixa</a>{% endif %}
       {% if perms.contas.view_contapagar %}<a class="nav-link" href="{% url 'contas:lista' %}"><span aria-hidden="true">▧</span> Contas a pagar</a>{% endif %}
       {% if perms.clientes.view_cliente %}<a class="nav-link" href="{% url 'clientes:lista' %}"><span aria-hidden="true">♙</span> Clientes</a>{% endif %}

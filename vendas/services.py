@@ -4,6 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import date
 from estoque.models import Peca
+from comercial.models import Servico
 from clientes.models import Cliente
 from caixa.models import MovimentoCaixa
 from caixa.services import caixa_aberto, exigir, dinheiro
@@ -23,7 +24,7 @@ def quantidade_inteira(valor):
 
 
 @transaction.atomic
-def finalizar(usuario, chave, carrinho, pagamentos, desconto=0, cliente_id=None, dados_nota=None, precos_correcao=None):
+def finalizar(usuario, chave, carrinho, pagamentos, desconto=0, cliente_id=None, dados_nota=None, precos_correcao=None, pendente=None):
     exigir(usuario, "vendas.usar_pdv")
     if precos_correcao is not None:
         exigir(usuario, "vendas.editar_venda")
@@ -45,17 +46,24 @@ def finalizar(usuario, chave, carrinho, pagamentos, desconto=0, cliente_id=None,
         cliente = Cliente.objects.filter(pk=cliente_id, ativo=True).first()
         if not cliente:
             raise ValidationError("Cliente não encontrado ou inativo.")
-    pecas = list(Peca.objects.select_for_update().filter(pk__in=carrinho.keys()).order_by("pk"))
+    ids_pecas = [k for k in carrinho if not str(k).startswith("s:")]
+    ids_servicos = [str(k)[2:] for k in carrinho if str(k).startswith("s:")]
+    pecas = list(Peca.objects.select_for_update().filter(pk__in=ids_pecas).order_by("pk"))
+    pecas += list(Servico.objects.select_for_update().filter(pk__in=ids_servicos).order_by("pk"))
     if len(pecas) != len(carrinho):
         raise ValidationError("Uma peça não está mais disponível. Revise o carrinho.")
     linhas = []
     subtotal = Decimal("0.00")
     for peca in pecas:
-        dados = carrinho[str(peca.pk)]
+        servico = isinstance(peca, Servico)
+        item_chave = f"s:{peca.pk}" if servico else str(peca.pk)
+        dados = carrinho[item_chave]
         qtd = quantidade_inteira(dados["quantidade"])
-        if peca.status != Peca.Status.DISPONIVEL or peca.quantidade < qtd:
+        if servico and not peca.ativo:
+            raise ValidationError("Serviço inativo.")
+        if not servico and (peca.status != Peca.Status.DISPONIVEL or peca.quantidade < qtd):
             raise ValidationError(f"{peca.codigo}: saldo insuficiente ou peça indisponível.")
-        preco = dinheiro(precos_correcao[str(peca.pk)]) if precos_correcao is not None else peca.preco_venda
+        preco = dinheiro(precos_correcao[item_chave]) if precos_correcao is not None else peca.preco_venda
         if precos_correcao is None and dados.get("preco_personalizado"):
             preco = dinheiro(dados["preco"])
             if preco <= 0:
@@ -71,7 +79,10 @@ def finalizar(usuario, chave, carrinho, pagamentos, desconto=0, cliente_id=None,
     if total <= 0 or subtotal > Decimal("9999999999.99") or total > Decimal("9999999999.99"):
         raise ValidationError("O total deve ser positivo e estar dentro do limite permitido.")
     recebimentos = []
-    if not pagamentos or len(pagamentos) > 8:
+    if pendente is not None:
+        if not cliente or not isinstance(pendente, date) or pendente < timezone.localdate() or pagamentos:
+            raise ValidationError("Venda pendente exige cliente, vencimento a partir de hoje e nenhum pagamento imediato.")
+    if pendente is None and (not pagamentos or len(pagamentos) > 8):
         raise ValidationError("Informe de 1 a 8 pagamentos.")
     for dados in pagamentos:
         forma = FormaPagamento.objects.filter(pk=dados["forma"], ativa=True).first()
@@ -90,9 +101,9 @@ def finalizar(usuario, chave, carrinho, pagamentos, desconto=0, cliente_id=None,
             if not str(dados_nota.get(campo, "")).strip():
                 raise ValidationError("Preencha beneficiário, local de emissão e local de pagamento da promissória.")
     recebido = sum(p[1] for p in recebimentos)
-    if recebido < total:
+    if pendente is None and recebido < total:
         raise ValidationError("Os pagamentos não cobrem o total da venda.")
-    troco = recebido - total
+    troco = recebido - total if pendente is None else Decimal("0")
     if troco:
         em_dinheiro = [p for p in recebimentos if p[0].dinheiro]
         if not em_dinheiro or troco >= sum(p[1] for p in em_dinheiro):
@@ -114,13 +125,18 @@ def finalizar(usuario, chave, carrinho, pagamentos, desconto=0, cliente_id=None,
     for i in sorted(range(len(linhas)), key=lambda i: quotas[i] - rateios[i], reverse=True)[:centavos]:
         rateios[i] += Decimal(".01")
     for (peca, qtd, bruto), rateio in zip(linhas, rateios):
-        ItemVenda.objects.create(venda=venda, peca=peca, descricao=f"{peca.codigo} · {peca.nome}",
-            quantidade=qtd, preco_unitario=bruto/qtd, custo_unitario=peca.custo,
+        servico = isinstance(peca, Servico)
+        ItemVenda.objects.create(venda=venda, peca=None if servico else peca, servico=peca if servico else None, descricao=f"{peca.codigo} · {peca.nome}",
+            quantidade=qtd, preco_unitario=bruto/qtd, custo_unitario=0 if servico else peca.custo,
             desconto=rateio, total=bruto-rateio)
-        peca.quantidade -= qtd
-        if peca.quantidade == 0:
-            peca.status = Peca.Status.VENDIDA
-        peca.save(update_fields=["quantidade", "status", "atualizado_em"])
+        if not servico:
+            peca.quantidade -= qtd
+            if peca.quantidade == 0:
+                peca.status = Peca.Status.VENDIDA
+            peca.save(update_fields=["quantidade", "status", "atualizado_em"])
+    if pendente is not None:
+        from comercial.models import ContaReceber
+        ContaReceber.objects.create(cliente=cliente, venda=venda, descricao=venda.codigo, origem="Venda a prazo", valor_original=total, vencimento=pendente)
     for forma, valor, recebido_linha, troco_linha in recebimentos:
         pagamento = Pagamento.objects.create(venda=venda, forma=forma, forma_nome=forma.nome, dinheiro=forma.dinheiro,
             promissoria=forma.promissoria, valor=valor, recebido=0 if forma.promissoria else recebido_linha, troco=troco_linha)
@@ -148,6 +164,13 @@ def cancelar(usuario, venda_id, motivo):
         return venda
     if venda.status != "concluida" or not motivo.strip():
         raise ValidationError("Informe o motivo. Vendas com devolução não podem ser canceladas; devolva os itens restantes.")
+    from comercial.models import ContaReceber
+    conta = ContaReceber.objects.select_for_update().filter(venda=venda).first()
+    if conta and conta.valor_recebido:
+        raise ValidationError("Venda possui recebimentos de cobrança. Não é possível cancelar sem conciliação financeira.")
+    if conta:
+        conta.cancelada = True
+        conta.save(update_fields=["cancelada"])
     pagamentos = list(venda.pagamentos.all())
     notas = list(NotaPromissoria.objects.select_for_update().filter(pagamento__venda=venda).order_by("pk"))
     recebidos_notas = list(MovimentoPromissoria.objects.filter(nota__in=notas, tipo="recebido"))
@@ -157,6 +180,8 @@ def cancelar(usuario, venda_id, motivo):
     itens = list(venda.itens.order_by("peca_id"))
     pecas = {p.pk: p for p in Peca.objects.select_for_update().filter(pk__in=[i.peca_id for i in itens]).order_by("pk")}
     for item in itens:
+        if not item.peca_id:
+            continue
         peca = pecas[item.peca_id]
         peca.quantidade += item.quantidade
         if peca.status == Peca.Status.VENDIDA:
@@ -194,6 +219,9 @@ def devolver(usuario, venda_id, item_id, quantidade, forma_id, motivo, chave):
         return existente
     if venda.status not in ["concluida", "parcial"] or not motivo.strip():
         raise ValidationError("Informe o motivo para uma venda com itens a devolver.")
+    from comercial.models import ContaReceber
+    if ContaReceber.objects.filter(venda=venda).exists():
+        raise ValidationError("Venda a prazo: cancele a venda sem recebimentos para corrigir seus itens; cobranças recebidas exigem conciliação.")
     item = venda.itens.filter(pk=item_id).first()
     if not item:
         raise ValidationError("Item inválido.")
@@ -219,11 +247,12 @@ def devolver(usuario, venda_id, item_id, quantidade, forma_id, motivo, chave):
             restante -= abater
     if forma.dinheiro and restante > caixa.saldo_esperado:
         raise ValidationError("Dinheiro insuficiente no caixa para esta devolução.")
-    peca = Peca.objects.select_for_update().get(pk=item.peca_id)
-    peca.quantidade += qtd
-    if peca.status == Peca.Status.VENDIDA:
-        peca.status = Peca.Status.DISPONIVEL
-    peca.save(update_fields=["quantidade", "status", "atualizado_em"])
+    if item.peca_id:
+        peca = Peca.objects.select_for_update().get(pk=item.peca_id)
+        peca.quantidade += qtd
+        if peca.status == Peca.Status.VENDIDA:
+            peca.status = Peca.Status.DISPONIVEL
+        peca.save(update_fields=["quantidade", "status", "atualizado_em"])
     devolucao = Devolucao.objects.create(chave=chave, item=item, operador=usuario, quantidade=qtd,
         valor=valor, abatimento_promissoria=valor-restante, motivo=motivo.strip(), forma=forma, forma_nome=forma.nome, dinheiro=forma.dinheiro, caixa=caixa)
     for nota, abater in abatimentos:
@@ -275,7 +304,7 @@ def corrigir(usuario, venda_id, chave, carrinho, pagamentos, motivo, desconto=0,
         raise ValidationError("Somente vendas concluídas sem devoluções podem ser editadas. Informe o motivo.")
     if Venda.objects.filter(chave=chave).exists():
         raise ValidationError("Identificador já utilizado. Reabra a edição da venda.")
-    ids = set(original.itens.values_list("peca_id", flat=True)) | {int(pk) for pk in carrinho}
+    ids = {pk for pk in original.itens.values_list("peca_id", flat=True) if pk} | {int(pk) for pk in carrinho if not str(pk).startswith("s:")}
     list(Peca.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
     cancelar(usuario, original.pk, f"Edição: {motivo}")
     nova = finalizar(usuario, chave, carrinho, pagamentos, desconto, cliente_id, dados_nota,

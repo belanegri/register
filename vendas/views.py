@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from estoque.models import Peca
+from comercial.models import Servico
 from caixa.models import SessaoCaixa, MovimentoCaixa
 from core.models import Evento
 from .models import Venda, Devolucao, Pagamento, NotaPromissoria
@@ -43,7 +44,8 @@ def recibo(request, pk):
 
 def linhas_carrinho(request):
     carrinho = request.session.get("carrinho", {})
-    pecas = {str(p.pk): p for p in Peca.objects.filter(pk__in=carrinho.keys()).select_related("localizacao")}
+    pecas = {str(p.pk): p for p in Peca.objects.filter(pk__in=[k for k in carrinho if not k.startswith("s:")]).select_related("localizacao")}
+    pecas.update({f"s:{p.pk}": p for p in Servico.objects.filter(pk__in=[k[2:] for k in carrinho if k.startswith("s:")])})
     linhas = []
     for pk, dados in carrinho.items():
         peca = pecas.get(pk)
@@ -69,6 +71,7 @@ def pdv(request):
     request.session["checkout_chave"] = chave
     return render(request, "vendas/pdv.html", {"q": q, "pecas": pecas[:40], "linhas": linhas,
         "subtotal": sum(l["total"] for l in linhas), "form": CheckoutForm(initial={"chave": chave}),
+        "servicos": Servico.objects.filter(ativo=True, nome__icontains=q)[:40],
         "pagamentos": PagamentosFormSet(prefix="pag"),
         "caixa": SessaoCaixa.objects.filter(operador=request.user, fechado_em__isnull=True).first()})
 
@@ -101,15 +104,16 @@ def carrinho(request):
             dados[pk]["preco"] = str(preco)
             dados[pk]["preco_personalizado"] = True
         elif acao in ["adicionar", "quantidade"]:
-            peca = get_object_or_404(Peca, pk=pk)
+            servico = str(pk).startswith("s:")
+            peca = get_object_or_404(Servico, pk=pk[2:], ativo=True) if servico else get_object_or_404(Peca, pk=pk)
             quantidade = services.quantidade_inteira(request.POST.get("quantidade", "1"))
             if acao == "adicionar":
                 quantidade += dados.get(pk, {}).get("quantidade", 0)
-            if peca.quantidade == 0:
+            if not servico and peca.quantidade == 0:
                 raise ValidationError("Peça sem estoque.")
-            if peca.status != "disponivel":
+            if not servico and peca.status != "disponivel":
                 raise ValidationError(f"Peça indisponível: {peca.get_status_display()}.")
-            if quantidade > peca.quantidade:
+            if not servico and quantidade > peca.quantidade:
                 raise ValidationError(f"Saldo insuficiente: existem {peca.quantidade} unidades; confira a quantidade já adicionada ao carrinho.")
             if len(dados) >= 100 and pk not in dados:
                 raise ValidationError("O carrinho suporta até 100 peças diferentes.")
@@ -129,7 +133,7 @@ def carrinho(request):
 def finalizar(request):
     form = CheckoutForm(request.POST)
     pagamentos = PagamentosFormSet(request.POST, prefix="pag")
-    if form.is_valid() and pagamentos.is_valid():
+    if form.is_valid() and (form.cleaned_data.get("a_prazo") or pagamentos.is_valid()):
         chave = form.cleaned_data["chave"]
         existente = Venda.objects.filter(chave=chave, vendedor=request.user).first()
         if existente:
@@ -139,7 +143,8 @@ def finalizar(request):
         else:
             try:
                 venda = services.finalizar(request.user, chave, request.session.get("carrinho", {}),
-                    [{"forma": f.cleaned_data["forma"].pk, "valor": f.cleaned_data["valor"]} for f in pagamentos if f.cleaned_data],
+                    [] if form.cleaned_data["a_prazo"] else [{"forma": f.cleaned_data["forma"].pk, "valor": f.cleaned_data["valor"]} for f in pagamentos if f.cleaned_data],
+                    pendente=form.cleaned_data["vencimento_conta"] if form.cleaned_data["a_prazo"] else None,
                     desconto=form.cleaned_data["desconto"],
                     cliente_id=form.cleaned_data["cliente"].pk if form.cleaned_data["cliente"] else None,
                     dados_nota=dados_promissoria(form))
@@ -218,14 +223,14 @@ def editar(request, pk):
             inicial[campo] = getattr(nota, campo)
     form = CorrecaoForm(request.POST if request.method == "POST" else None, initial=inicial)
     itens = ItensCorrecaoFormSet(request.POST if request.method == "POST" else None, prefix="itens",
-        initial=[{"peca": i.peca_id, "quantidade": i.quantidade, "preco": i.preco_unitario} for i in venda.itens.all()])
+        initial=[{"peca": i.peca_id, "servico": i.servico_id, "quantidade": i.quantidade, "preco": i.preco_unitario} for i in venda.itens.all()])
     pagamentos = PagamentosFormSet(request.POST if request.method == "POST" else None, prefix="pag",
         initial=[{"forma": p.forma_id, "valor": p.valor} for p in venda.pagamentos.all()])
     if request.method == "POST" and all([form.is_valid(), itens.is_valid(), pagamentos.is_valid()]):
         carrinho = {}
         for linha in itens.cleaned_data:
             if linha and not linha.get("DELETE"):
-                chave = str(linha["peca"].pk)
+                chave = str(linha["peca"].pk) if linha.get("peca") else f"s:{linha["servico"].pk}"
                 if chave in carrinho:
                     form.add_error(None, "Não repita a mesma peça; ajuste a quantidade na linha existente.")
                 carrinho[chave] = {"quantidade": linha["quantidade"], "preco": str(linha["preco"])}
