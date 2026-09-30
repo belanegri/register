@@ -55,12 +55,12 @@ def gerar_pdf(documento,termico=False):
             ' / '.join(filter(None,[empresa.telefone,('WhatsApp: '+empresa.whatsapp) if empresa.whatsapp else ''])),empresa.email]:
             if texto: dados.append(texto)
     w,h=(58*mm,220*mm) if termico else A4
-    margem=3*mm if termico else 16*mm
+    margem=3*mm if termico else 13*mm
     largura=w-2*margem
-    normal=ParagraphStyle('body',fontName='Helvetica',fontSize=7 if termico else 9,leading=9 if termico else 13,spaceAfter=4)
-    small=ParagraphStyle('small',parent=normal,fontSize=6 if termico else 8,leading=8 if termico else 11)
+    normal=ParagraphStyle('body',fontName='Helvetica',fontSize=7 if termico else 9,leading=9 if termico else 11,spaceAfter=3 if termico else 2)
+    small=ParagraphStyle('small',parent=normal,fontSize=6 if termico else 8,leading=8 if termico else 10)
     titulo=ParagraphStyle('title',parent=normal,fontName='Helvetica-Bold',fontSize=10 if termico else 17,leading=13 if termico else 20,textColor=GREEN)
-    section=ParagraphStyle('section',parent=normal,fontName='Helvetica-Bold',textColor=GREEN,spaceBefore=10,spaceAfter=7)
+    section=ParagraphStyle('section',parent=normal,fontName='Helvetica-Bold',textColor=GREEN,spaceBefore=8 if termico else 5,spaceAfter=5 if termico else 3)
     def p(text,style=normal): return Paragraph(escape(str(text or '')).replace('\n','<br/>'),style)
     logo=None
     if empresa and empresa.logo:
@@ -74,6 +74,10 @@ def gerar_pdf(documento,termico=False):
         except (OSError,ValueError):
             logo=None
     # Header is measured and repeated on every page, including continued tables.
+    if not termico and empresa:
+        documentos = ' • '.join(filter(None, [('CNPJ/CPF: '+empresa.documento) if empresa.documento else '', ('IE: '+empresa.inscricao_estadual) if empresa.inscricao_estadual else '']))
+        dados = [empresa.razao_social if empresa.razao_social != nome else '', documentos, ', '.join(filter(None,[empresa.endereco,empresa.numero,empresa.complemento])), ' - '.join(filter(None,[empresa.bairro,empresa.cidade,empresa.estado,empresa.cep])), ' / '.join(filter(None,[empresa.telefone,empresa.whatsapp,empresa.email]))]
+        dados = [d for d in dados if d]
     identidade=[p(nome,section)] if nome else []
     identidade += [p(t,small) for t in dados]
     identificacao=[p('ORÇAMENTO' if documento.tipo=='orcamento' else 'ORDEM DE SERVIÇO',titulo),p(documento.codigo,normal),p(documento.situacao,small)]
@@ -81,7 +85,7 @@ def gerar_pdf(documento,termico=False):
         header=Table([[logo or '',identificacao]],colWidths=[19*mm,largura-19*mm])
         dados_header=[p(nome,small)] + [p(t,small) for t in dados]
     else:
-        header=Table([[logo or '',identidade,identificacao]],colWidths=[28*mm,largura-88*mm,60*mm])
+        header=Table([[logo,identidade,identificacao]],colWidths=[28*mm,largura-88*mm,60*mm]) if logo else Table([[identidade,identificacao]],colWidths=[largura-60*mm,60*mm])
         dados_header=[]
     header.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),6)]))
     _,hh=header.wrap(largura,h)
@@ -95,14 +99,24 @@ def gerar_pdf(documento,termico=False):
         canvas.restoreState()
     fluxo=list(dados_header)
     cliente=documento.cliente
-    fluxo += [p('DADOS DO CLIENTE',section),p(cliente.nome)]
-    for label,valor in [('CPF/CNPJ',cliente.documento),('Telefone',cliente.telefone),('E-mail',cliente.email),('Endereço',cliente.endereco)]:
-        if valor: fluxo.append(p(f'{label}: {valor}'))
-    fluxo.append(p('DADOS DO VEÍCULO',section))
-    for label,valor in [('Marca / Modelo',documento.veiculo),('Placa',documento.placa),('Ano',documento.ano),('KM',documento.km),('Combustível',documento.combustivel)]:
-        if valor is not None and str(valor): fluxo.append(p(f'{label}: {valor}'))
+    if termico:
+        fluxo += [p('DADOS DO CLIENTE',section),p(cliente.nome)]
+        for label,valor in [('CPF/CNPJ',cliente.documento),('Telefone',cliente.telefone),('E-mail',cliente.email),('Endereço',cliente.endereco)]:
+            if valor: fluxo.append(p(f'{label}: {valor}'))
+        fluxo.append(p('DADOS DO VEÍCULO',section))
+        for label,valor in [('Marca / Modelo',documento.veiculo),('Placa',documento.placa),('Ano',documento.ano),('KM',documento.km),('Combustível',documento.combustivel)]:
+            if valor is not None and str(valor): fluxo.append(p(f'{label}: {valor}'))
+    else:
+        cliente_linhas = [cliente.nome, ' • '.join(filter(None,[('CPF/CNPJ: '+cliente.documento) if cliente.documento else '',cliente.telefone])), cliente.email, cliente.endereco]
+        veiculo_linhas = [documento.veiculo, ' • '.join(filter(None,[('Placa: '+documento.placa) if documento.placa else '',('Ano: '+documento.ano) if documento.ano else ''])), ' • '.join(filter(None,[('KM: '+str(documento.km)) if documento.km is not None else '',('Combustível: '+documento.combustivel) if documento.combustivel else '']))]
+        infos=Table([[[p('CLIENTE',section)]+[p(t) for t in cliente_linhas if t], [p('VEÍCULO',section)]+[p(t) for t in veiculo_linhas if t]]],colWidths=[largura*.55,largura*.45])
+        infos.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('BACKGROUND',(0,0),(-1,-1),PALE),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4)]))
+        fluxo += [infos,Spacer(1,3*mm)]
     itens=list(documento.itens.all())
-    for tipo,label,subtotal in [('peca','PEÇAS / PRODUTOS',documento.subtotal_pecas),('servico','SERVIÇOS / MÃO DE OBRA',documento.subtotal_servicos)]:
+    for tipo,label,subtotal in [('peca','PEÇAS / PRODUTOS',documento.subtotal_pecas),('servico','SERVIÇOS',documento.subtotal_servicos)]:
+        selecionados=[i for i in itens if getattr(i,tipo+'_id')]
+        if not selecionados and not termico:
+            continue
         fluxo.append(p(label,section))
         linhas=[[p(t,small) for t in (['QTD / DESCRIÇÃO','TOTAL'] if termico else ['QTD','DESCRIÇÃO','UNITÁRIO (R$)','TOTAL (R$)'])]]
         for i in itens:
@@ -111,19 +125,30 @@ def gerar_pdf(documento,termico=False):
         if len(linhas)==1: linhas.append([p('Sem itens')]+['']*(len(linhas[0])-1))
         widths=[largura*.72,largura*.28] if termico else [largura*.08,largura*.56,largura*.18,largura*.18]
         tabela=Table(linhas,colWidths=widths,repeatRows=1,hAlign='LEFT',splitByRow=1)
-        tabela.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),PALE),('VALIGN',(0,0),(-1,-1),'TOP'),('LINEBELOW',(0,0),(-1,0),.6,GREEN),('LINEBELOW',(0,1),(-1,-1),.25,colors.HexColor('#dbe3df')),('LEFTPADDING',(0,0),(-1,-1),3),('RIGHTPADDING',(0,0),(-1,-1),3),('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5)]))
+        tabela.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),PALE),('VALIGN',(0,0),(-1,-1),'TOP'),('LINEBELOW',(0,0),(-1,0),.6,GREEN),('LINEBELOW',(0,1),(-1,-1),.25,colors.HexColor('#dbe3df')),('LEFTPADDING',(0,0),(-1,-1),3),('RIGHTPADDING',(0,0),(-1,-1),3),('TOPPADDING',(0,0),(-1,-1),5 if termico else 3),('BOTTOMPADDING',(0,0),(-1,-1),5 if termico else 3)]))
         fluxo += [tabela,p(f'Subtotal: R$ {moeda(subtotal)}',section)]
-    resumo=Table([[p(label,small),p('R$ '+moeda(valor),section if label == 'TOTAL' else normal)] for label,valor in [('Produtos / Peças',documento.subtotal_pecas),('Serviços / Mão de obra',documento.subtotal_servicos),('Desconto',documento.desconto),('TOTAL',documento.total)]],colWidths=[largura*.65,largura*.35])
+    resumo=Table([[p(label,small),p('R$ '+moeda(valor),section if label == 'TOTAL' else normal)] for label,valor in [('Produtos / Peças',documento.subtotal_pecas),('Serviços',documento.subtotal_servicos),('Desconto',documento.desconto),('TOTAL',documento.total)]],colWidths=[largura*.65,largura*.35])
     resumo.setStyle(TableStyle([('BACKGROUND',(0,-1),(-1,-1),PALE),('BOX',(0,-1),(-1,-1),1,GREEN),('VALIGN',(0,0),(-1,-1),'TOP'),('TOPPADDING',(0,0),(-1,-1),6)]))
-    fluxo += [Spacer(1,5*mm),KeepTogether([resumo])]
+    if not termico:
+        totais=[('Peças',documento.subtotal_pecas),('Serviços',documento.subtotal_servicos),('Desconto',documento.desconto),('TOTAL',documento.total)]
+        resumo=Table([[[p(label,small),p('R$ '+moeda(valor),section)] for label,valor in totais]],colWidths=[largura/4]*4)
+        resumo.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),PALE),('BOX',(-1,0),(-1,0),.8,GREEN),('VALIGN',(0,0),(-1,-1),'TOP'),('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4)]))
+    fluxo += [Spacer(1,3*mm),KeepTogether([resumo])]
     def data(v): return v.strftime('%d/%m/%Y') if v else ''
     campos=[('Emissão / Abertura',data(documento.criado_em)),('Validade',data(documento.validade))] if documento.tipo=='orcamento' else [('Abertura',data(documento.criado_em)),('Previsão',data(documento.previsao)),('Conclusão',data(documento.conclusao)),('Técnico / Responsável',documento.responsavel),('Relato do cliente',documento.relato),('Diagnóstico',documento.diagnostico),('Serviço solicitado',documento.solicitado)]
     campos += [('Observações',documento.observacoes),('Condições',documento.condicoes)]
+    if not termico:
+        datas = [f'{label}: {valor}' for label,valor in campos if valor and label in ['Emissão / Abertura','Validade','Abertura','Previsão','Conclusão','Técnico / Responsável']]
+        if datas: fluxo += [Spacer(1,3*mm),p(' • '.join(datas),small)]
     for label,valor in campos:
-        if valor: fluxo += [p(label.upper(),section),p(valor)]
+        if not valor: continue
+        if termico:
+            fluxo += [p(label.upper(),section),p(valor)]
+        elif label not in ['Emissão / Abertura','Validade','Abertura','Previsão','Conclusão','Técnico / Responsável']:
+            fluxo.append(Paragraph('<b>'+escape(label)+':</b> '+escape(str(valor)).replace('\n','<br/>'),normal))
     assinaturas=[Spacer(1,14*mm),p('____________________________',small),p('Responsável da empresa',small),Spacer(1,9*mm),p('____________________________',small),p('Cliente',small)]
     if not termico:
-        assinaturas = [Spacer(1,14*mm),Table([[p('____________________________',small),p('____________________________',small)],[p('Responsável da empresa',small),p('Cliente',small)]],colWidths=[largura/2,largura/2])]
+        assinaturas = [Spacer(1,9*mm),Table([[p('____________________________',small),p('____________________________',small)],[p('Responsável da empresa',small),p('Cliente',small)]],colWidths=[largura/2,largura/2])]
     fluxo.append(KeepTogether(assinaturas))
     rodape=' • '.join(filter(None,[nome,empresa.documento if empresa else '',(empresa.whatsapp or empresa.telefone) if empresa else '']))
     buffer=BytesIO()

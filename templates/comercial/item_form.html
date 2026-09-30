@@ -1,0 +1,11 @@
+<div class="item-documento">
+  {% for hidden in item.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
+  {{ item.non_field_errors }}
+  <div class="row g-3 align-items-end">
+    {% include 'components/form_field.html' with field=item.peca col='col-lg-4 col-md-6' %}
+    {% include 'components/form_field.html' with field=item.servico col='col-lg-3 col-md-6' %}
+    {% include 'components/form_field.html' with field=item.quantidade col='col-lg-2 col-5' %}
+    {% include 'components/form_field.html' with field=item.preco col='col-lg-3 col-7' %}
+  </div>
+  <div class="item-documento-footer"><label class="item-remover">{{ item.DELETE }} Remover item</label><span>Total do item <strong class="item-total">R$ 0,00</strong></span></div>
+</div>

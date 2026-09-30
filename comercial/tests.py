@@ -211,6 +211,40 @@ class ComercialTests(TestCase):
         payload['itens-1-preco']='-1'
         self.assertFalse(ItensFormSet(payload,instance=doc,prefix='itens').is_valid())
 
+    def test_pdf_completo_com_oito_itens_cabe_em_uma_folha(self):
+        from unittest.mock import patch
+        from .pdf import Paginas
+        doc=self.documento('os')
+        doc.placa='ABC1D23';doc.ano='2022';doc.km=45000;doc.combustivel='Meio tanque'
+        doc.responsavel='Técnico de teste';doc.previsao=timezone.localdate();doc.conclusao=timezone.localdate()
+        doc.relato='Cliente solicita revisão preventiva e avaliação dos freios.'
+        doc.diagnostico='Desgaste normal dos componentes. Substituição recomendada.'
+        doc.solicitado='Revisão, substituição de filtros e ajuste dos freios.'
+        doc.observacoes='Conferir o veículo na entrega.';doc.condicoes='Pagamento na entrega.';doc.save()
+        self.cliente.endereco='Rua de teste, 100, Centro, São Paulo/SP';self.cliente.email='cliente@example.test';self.cliente.save()
+        ConfiguracaoEmpresa.objects.create(nome_fantasia='Empresa de teste',razao_social='Empresa Comercial de Teste Ltda.',documento='12.345.678/0001-99',inscricao_estadual='123456',endereco='Avenida de teste',numero='1000',bairro='Centro',cidade='São Paulo',estado='SP',cep='01000-000',telefone='(11) 3333-4444',whatsapp='(11) 99999-8888',email='contato@example.test')
+        for n in range(6): ItemDocumento.objects.create(documento=doc,servico=self.servico,descricao=f'Serviço complementar {n+1}',quantidade=1,preco=25)
+        for tipo in ['os','orcamento']:
+            doc.tipo=tipo
+            canvases=[]
+            def criar(*a,**kw):
+                canvas=Paginas(*a,**kw);canvases.append(canvas);return canvas
+            with patch('comercial.pdf.Paginas',side_effect=criar): pdf=gerar_pdf(doc)
+            self.assertEqual(len(canvases[0].estados),1)
+            pasta=Path('.local/pdf-qa');pasta.mkdir(parents=True,exist_ok=True)
+            (pasta/f'{tipo}-compacto.pdf').write_bytes(pdf)
+
+    def test_formularios_e_menu_padronizados(self):
+        pasta=Path('.local/ui-qa');pasta.mkdir(parents=True,exist_ok=True)
+        for tipo in ['orcamento','os']:
+            r=self.client.get(reverse('comercial:novo',args=[tipo]))
+            self.assertContains(r,'Dados do atendimento');self.assertContains(r,'Condições e valores')
+            self.assertContains(r,'nav-icon');self.assertNotContains(r,'Mão de obra')
+            (pasta/f'{tipo}.html').write_text(r.content.decode(),encoding='utf-8')
+        r=self.client.get(reverse('comercial:servico_novo'))
+        self.assertContains(r,'Informações do serviço');self.assertNotContains(r,'Mão de obra')
+        (pasta/'servico.html').write_text(r.content.decode(),encoding='utf-8')
+
     def test_pdf_logo_sem_logo_muitas_paginas_termico(self):
         pasta=Path('.local/pdf-qa');pasta.mkdir(parents=True,exist_ok=True)
         doc=self.documento()

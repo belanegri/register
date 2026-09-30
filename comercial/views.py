@@ -33,7 +33,7 @@ def servico_editar(request,pk=None):
     if request.method == 'POST' and form.is_valid():
         form.save()
         return redirect('comercial:servicos')
-    return render(request,'core/form.html',{'form':form,'titulo':'Serviço / Mão de obra'})
+    return render(request,'comercial/servico_form.html',{'form':form})
 
 
 @login_required

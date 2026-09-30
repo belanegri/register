@@ -9,6 +9,7 @@ class ServicoForm(EstiloForm, forms.ModelForm):
     class Meta:
         model = Servico
         fields = ['nome','categoria','descricao','valor_padrao','ativo','observacoes']
+        labels = {'valor_padrao':'Valor padrão (R$)'}
 
 
 class DocumentoForm(EstiloForm, forms.ModelForm):
@@ -31,6 +32,7 @@ class ItemForm(EstiloForm, forms.ModelForm):
     class Meta:
         model = ItemDocumento
         fields = ['peca','servico','quantidade','preco']
+        labels = {'peca':'Peça', 'servico':'Serviço', 'quantidade':'Quantidade', 'preco':'Valor unitário (R$)'}
 
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
@@ -66,7 +68,7 @@ class ItensBase(BaseInlineFormSet):
             raise forms.ValidationError('O total deve ser positivo e o desconto menor que o subtotal.')
 
 
-ItensFormSet = inlineformset_factory(Documento,ItemDocumento,form=ItemForm,formset=ItensBase,extra=1,can_delete=True,min_num=1,validate_min=True,max_num=100,validate_max=True)
+ItensFormSet = inlineformset_factory(Documento,ItemDocumento,form=ItemForm,formset=ItensBase,extra=0,can_delete=True,min_num=1,validate_min=True,max_num=100,validate_max=True)
 
 
 class ContaForm(EstiloForm,forms.ModelForm):

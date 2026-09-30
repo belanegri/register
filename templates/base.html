@@ -17,27 +17,29 @@
   <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu REGISTER</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
   <div class="offcanvas-body d-flex flex-column">
     <a class="brand" href="{% url 'dashboard:index' %}">REGISTER<span>GESTÃO DO SEU NEGÓCIO</span></a>
-    <div class="nav-label">ÁREA DE TRABALHO</div>
-    <nav aria-label="Menu principal" class="nav flex-column gap-2">
-      {% if perms.core.change_configuracaoempresa %}<a class="nav-link {% if request.resolver_match.app_name == 'core' %}active{% endif %}" href="{% url 'core:configuracao_empresa' %}"><span aria-hidden="true">⚙</span> Configurações da Empresa</a>{% endif %}
-      <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}"><span aria-hidden="true">◫</span> Visão geral</a>
-      {% if perms.vendas.usar_pdv %}<a class="nav-link {% if request.resolver_match.url_name == 'pdv' %}active{% endif %}" href="{% url 'vendas:pdv' %}"><span aria-hidden="true">▣</span> Frente de caixa</a>{% endif %}
-      {% if perms.vendas.view_venda %}<a class="nav-link" href="{% url 'vendas:lista' %}"><span aria-hidden="true">▤</span> Vendas</a>{% endif %}
-      {% if perms.comercial.view_servico %}<a class="nav-link" href="{% url 'comercial:servicos' %}">Serviços / Mão de obra</a>{% endif %}
-      {% if perms.comercial.view_documento %}<a class="nav-link" href="{% url 'comercial:documentos' 'orcamento' %}">Orçamentos</a><a class="nav-link" href="{% url 'comercial:documentos' 'os' %}">Ordens de serviço</a>{% endif %}
-      {% if perms.comercial.view_contareceber %}<a class="nav-link" href="{% url 'comercial:contas' %}">Contas a receber</a>{% endif %}
-      {% if perms.caixa.operar_caixa %}<a class="nav-link" href="{% url 'caixa:painel' %}"><span aria-hidden="true">$</span> Meu caixa</a>{% endif %}
-      {% if perms.contas.view_contapagar %}<a class="nav-link" href="{% url 'contas:lista' %}"><span aria-hidden="true">▧</span> Contas a pagar</a>{% endif %}
-      {% if perms.clientes.view_cliente %}<a class="nav-link" href="{% url 'clientes:lista' %}"><span aria-hidden="true">♙</span> Clientes</a>{% endif %}
-      {% if perms.vendas.ver_relatorios %}<a class="nav-link" href="{% url 'vendas:relatorios' %}"><span aria-hidden="true">▥</span> Relatórios</a>{% endif %}
-      {% if perms.estoque.view_peca %}<a class="nav-link {% if request.resolver_match.app_name == 'estoque' %}active{% endif %}" href="{% url 'estoque:lista' %}"><span aria-hidden="true">▤</span> Estoque de peças</a>{% endif %}
-      {% if user.is_staff %}
-      {% if perms.veiculos.view_veiculo %}<a class="nav-link" href="{% url 'admin:veiculos_veiculo_changelist' %}"><span aria-hidden="true">▱</span> Veículos de origem</a>{% endif %}
-      {% if perms.estoque.view_categoria %}<a class="nav-link" href="{% url 'admin:estoque_categoria_changelist' %}"><span aria-hidden="true">⊞</span> Categorias</a>{% endif %}
-      {% if perms.estoque.view_localizacao %}<a class="nav-link" href="{% url 'admin:estoque_localizacao_changelist' %}"><span aria-hidden="true">⌖</span> Localizações</a>{% endif %}
-      <a class="nav-link" href="{% url 'admin:index' %}"><span aria-hidden="true">⚙</span> Administração</a>
-      {% endif %}
-    </nav>
+    <nav aria-label="Menu principal" class="nav flex-column sidebar-nav">
+<div class="nav-label">ATENDIMENTO</div>
+<a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}">{% include 'components/nav_icon.html' with name='home' %}<span class="nav-text">Visão geral</span></a>
+{% if perms.vendas.usar_pdv %}<a class="nav-link {% if request.resolver_match.url_name == 'pdv' %}active{% endif %}" href="{% url 'vendas:pdv' %}">{% include 'components/nav_icon.html' with name='cart' %}<span class="nav-text">Frente de caixa</span></a>{% endif %}
+{% if perms.comercial.view_documento %}<a class="nav-link {% if tipo == 'orcamento' or doc.tipo == 'orcamento' %}active{% endif %}" href="{% url 'comercial:documentos' 'orcamento' %}">{% include 'components/nav_icon.html' with name='quote' %}<span class="nav-text">Orçamentos</span></a>{% endif %}
+{% if perms.comercial.view_documento %}<a class="nav-link {% if tipo == 'os' or doc.tipo == 'os' %}active{% endif %}" href="{% url 'comercial:documentos' 'os' %}">{% include 'components/nav_icon.html' with name='os' %}<span class="nav-text">Ordens de serviço</span></a>{% endif %}
+{% if perms.vendas.view_venda %}<a class="nav-link {% if request.resolver_match.app_name == 'vendas' and request.resolver_match.url_name != 'pdv' and request.resolver_match.url_name != 'relatorios' %}active{% endif %}" href="{% url 'vendas:lista' %}">{% include 'components/nav_icon.html' with name='sale' %}<span class="nav-text">Vendas</span></a>{% endif %}
+<div class="nav-label">CADASTROS</div>
+{% if perms.estoque.view_peca %}<a class="nav-link {% if request.resolver_match.app_name == 'estoque' %}active{% endif %}" href="{% url 'estoque:lista' %}">{% include 'components/nav_icon.html' with name='box' %}<span class="nav-text">Peças</span></a>{% endif %}
+{% if perms.comercial.view_servico %}<a class="nav-link {% if request.resolver_match.url_name == 'servicos' or request.resolver_match.url_name == 'servico_novo' or request.resolver_match.url_name == 'servico_editar' %}active{% endif %}" href="{% url 'comercial:servicos' %}">{% include 'components/nav_icon.html' with name='service' %}<span class="nav-text">Serviços</span></a>{% endif %}
+{% if perms.clientes.view_cliente %}<a class="nav-link {% if request.resolver_match.app_name == 'clientes' %}active{% endif %}" href="{% url 'clientes:lista' %}">{% include 'components/nav_icon.html' with name='users' %}<span class="nav-text">Clientes</span></a>{% endif %}
+{% if user.is_staff and perms.veiculos.view_veiculo %}<a class="nav-link" href="{% url 'admin:veiculos_veiculo_changelist' %}">{% include 'components/nav_icon.html' with name='car' %}<span class="nav-text">Veículos de origem</span></a>{% endif %}
+{% if user.is_staff and perms.estoque.view_categoria %}<a class="nav-link" href="{% url 'admin:estoque_categoria_changelist' %}">{% include 'components/nav_icon.html' with name='grid' %}<span class="nav-text">Categorias</span></a>{% endif %}
+{% if user.is_staff and perms.estoque.view_localizacao %}<a class="nav-link" href="{% url 'admin:estoque_localizacao_changelist' %}">{% include 'components/nav_icon.html' with name='pin' %}<span class="nav-text">Localizações</span></a>{% endif %}
+<div class="nav-label">FINANCEIRO</div>
+{% if perms.caixa.operar_caixa %}<a class="nav-link {% if request.resolver_match.app_name == 'caixa' %}active{% endif %}" href="{% url 'caixa:painel' %}">{% include 'components/nav_icon.html' with name='wallet' %}<span class="nav-text">Meu caixa</span></a>{% endif %}
+{% if perms.comercial.view_contareceber %}<a class="nav-link {% if request.resolver_match.url_name == 'contas' or request.resolver_match.url_name == 'conta' or request.resolver_match.url_name == 'conta_nova' %}active{% endif %}" href="{% url 'comercial:contas' %}">{% include 'components/nav_icon.html' with name='income' %}<span class="nav-text">Contas a receber</span></a>{% endif %}
+{% if perms.contas.view_contapagar %}<a class="nav-link {% if request.resolver_match.app_name == 'contas' %}active{% endif %}" href="{% url 'contas:lista' %}">{% include 'components/nav_icon.html' with name='expense' %}<span class="nav-text">Contas a pagar</span></a>{% endif %}
+{% if perms.vendas.ver_relatorios %}<a class="nav-link {% if request.resolver_match.url_name == 'relatorios' %}active{% endif %}" href="{% url 'vendas:relatorios' %}">{% include 'components/nav_icon.html' with name='chart' %}<span class="nav-text">Relatórios</span></a>{% endif %}
+{% if perms.core.change_configuracaoempresa or user.is_staff %}<div class="nav-label">SISTEMA</div>{% endif %}
+{% if perms.core.change_configuracaoempresa %}<a class="nav-link {% if request.resolver_match.app_name == 'core' %}active{% endif %}" href="{% url 'core:configuracao_empresa' %}">{% include 'components/nav_icon.html' with name='company' %}<span class="nav-text">Minha empresa</span></a>{% endif %}
+{% if user.is_staff %}<a class="nav-link" href="{% url 'admin:index' %}">{% include 'components/nav_icon.html' with name='settings' %}<span class="nav-text">Administração</span></a>{% endif %}
+</nav>
     <div class="sidebar-note mt-auto"><span class="status-dot"></span> Seu estoque, organizado.<small>Da origem da peça ao balcão.</small></div>
   </div>
 </aside>
