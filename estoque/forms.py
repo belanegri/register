@@ -1,4 +1,4 @@
-import json
+﻿import json
 
 from django import forms
 from veiculos.marcas import MARCAS, ALIASES, opcoes_marca
@@ -8,9 +8,6 @@ from core.forms import EstiloForm
 
 
 class PecaAdminForm(forms.ModelForm):
-    NOVA_MARCA = "__nova_marca__"
-    NOVO_MODELO = "__novo_modelo__"
-
     versao_estoque = forms.CharField(
         required=False,
         widget=forms.HiddenInput
@@ -22,28 +19,10 @@ class PecaAdminForm(forms.ModelForm):
     )
 
     aplicacao = forms.CharField(
-        label="Modelo / aplicação",
+        label="Modelo / aplicaÃ§Ã£o",
         required=False,
         max_length=200,
         widget=forms.Select
-    )
-
-    nova_marca = forms.CharField(
-        label="Nova marca",
-        required=False,
-        max_length=80,
-        widget=forms.TextInput(
-            attrs={"placeholder": "Digite a nova marca"}
-        )
-    )
-
-    novo_modelo = forms.CharField(
-        label="Novo modelo",
-        required=False,
-        max_length=120,
-        widget=forms.TextInput(
-            attrs={"placeholder": "Digite o novo modelo"}
-        )
     )
 
     class Meta:
@@ -63,9 +42,7 @@ class PecaAdminForm(forms.ModelForm):
 
         catalogo = {marca: [] for marca in MARCAS}
 
-        for marca, modelo in ModeloVeiculo.objects.values_list(
-            "marca", "nome"
-        ):
+        for marca, modelo in ModeloVeiculo.objects.values_list("marca", "nome"):
             marca = ALIASES.get(marca, marca)
             catalogo.setdefault(marca, [])
 
@@ -73,31 +50,23 @@ class PecaAdminForm(forms.ModelForm):
                 catalogo[marca].append(modelo)
 
         if self.instance.pk and self.instance.marca:
-            catalogo.setdefault(self.instance.marca, [])
+            modelos = catalogo.setdefault(self.instance.marca, [])
 
             if (
                 self.instance.aplicacao
-                and self.instance.aplicacao
-                not in catalogo[self.instance.marca]
+                and self.instance.aplicacao not in modelos
             ):
-                catalogo[self.instance.marca].append(
-                    self.instance.aplicacao
-                )
+                modelos.append(self.instance.aplicacao)
 
         for modelos in catalogo.values():
             modelos.sort(key=str.casefold)
 
         self.catalogo = catalogo
 
-        opcoes = list(
-            opcoes_marca(self.instance.marca, catalogo)
+        self.fields["marca"].choices = opcoes_marca(
+            self.instance.marca,
+            catalogo
         )
-
-        opcoes.append(
-            (self.NOVA_MARCA, "+ Nova marca")
-        )
-
-        self.fields["marca"].choices = opcoes
 
         self.fields["marca"].widget.attrs.update({
             "data-modelos": json.dumps(
@@ -106,10 +75,6 @@ class PecaAdminForm(forms.ModelForm):
             ),
             "data-modelo-campo": self["aplicacao"].auto_id,
             "data-modelo-maxlength": "200",
-            "data-nova-marca": self.NOVA_MARCA,
-            "data-novo-modelo": self.NOVO_MODELO,
-            "data-nova-marca-campo": self["nova_marca"].auto_id,
-            "data-novo-modelo-campo": self["novo_modelo"].auto_id,
         })
 
         self.fields["aplicacao"].widget.choices = [
@@ -118,18 +83,13 @@ class PecaAdminForm(forms.ModelForm):
             (
                 marca,
                 [(modelo, modelo) for modelo in modelos]
-                + [(self.NOVO_MODELO, "+ Novo modelo")]
             )
             for marca, modelos in catalogo.items()
         ]
 
         self.fields["aplicacao"].help_text = (
-            "Escolha um modelo existente ou selecione "
-            "'+ Novo modelo'."
+            "Escolha o modelo correspondente Ã  marca."
         )
-
-        self.fields["nova_marca"].widget.attrs["hidden"] = True
-        self.fields["novo_modelo"].widget.attrs["hidden"] = True
 
     def clean(self):
         data = super().clean()
@@ -144,85 +104,50 @@ class PecaAdminForm(forms.ModelForm):
                 != atual.atualizado_em.isoformat()
             ):
                 raise forms.ValidationError(
-                    "Esta peça foi alterada por outra operação. "
-                    "Recarregue a página antes de salvar."
+                    "Esta peÃ§a foi alterada por outra operaÃ§Ã£o. "
+                    "Recarregue a pÃ¡gina antes de salvar."
                 )
 
         marca = data.get("marca")
         modelo = data.get("aplicacao")
-        nova_marca = (data.get("nova_marca") or "").strip()
-        novo_modelo = (data.get("novo_modelo") or "").strip()
 
-        if marca == self.NOVA_MARCA:
-            if not nova_marca:
-                self.add_error(
-                    "nova_marca",
-                    "Informe o nome da nova marca."
-                )
-            else:
-                marca = nova_marca
-
-        if modelo == self.NOVO_MODELO:
-            if not novo_modelo:
-                self.add_error(
-                    "novo_modelo",
-                    "Informe o nome do novo modelo."
-                )
-            else:
-                modelo = novo_modelo
-
-        if marca and not modelo:
-            self.add_error(
-                "aplicacao",
-                "Selecione ou informe o modelo."
-            )
-
-        if modelo and not marca:
+        if modelo and not marca and not (
+            self.instance.pk
+            and not self.instance.marca
+            and modelo == self.instance.aplicacao
+        ):
             self.add_error(
                 "marca",
-                "Selecione ou informe a marca."
+                "Selecione a marca para informar o modelo."
             )
 
-        data["marca"] = marca
-        data["aplicacao"] = modelo
+        elif (
+            marca
+            and modelo
+            and self.catalogo.get(marca)
+            and modelo not in self.catalogo[marca]
+        ):
+            self.add_error(
+                "aplicacao",
+                "Este modelo nÃ£o pertence Ã  marca selecionada."
+            )
 
         return data
 
-    def save(self, commit=True):
-        peca = super().save(commit=False)
-
-        marca = (self.cleaned_data.get("marca") or "").strip()
-        modelo = (self.cleaned_data.get("aplicacao") or "").strip()
-
-        peca.marca = marca
-        peca.aplicacao = modelo
-
-        if marca and modelo:
-            ModeloVeiculo.objects.get_or_create(
-                marca=marca,
-                nome=modelo
-            )
-
-        if commit:
-            peca.save()
-            self.save_m2m()
-
-        return peca
-
 class PecaEdicaoForm(EstiloForm, PecaAdminForm):
     motivo = forms.CharField(label="Motivo do ajuste de quantidade", max_length=240, required=False,
-        help_text="Preencha quando mudar o saldo: entrada de peças, contagem, correção etc.")
+        help_text="Preencha quando mudar o saldo: entrada de peÃ§as, contagem, correÃ§Ã£o etc.")
 
     class Meta(PecaAdminForm.Meta):
         fields = ["quantidade", "status", "motivo", "nome", "marca", "aplicacao", "categoria",
             "veiculo_origem", "localizacao", "custo", "preco_venda", "ano_inicial", "ano_final",
             "motor", "posicao", "condicao", "observacoes", "versao_estoque"]
         labels = {"quantidade": "Quantidade total em estoque"}
-        help_texts = {"quantidade": "Informe o total que você tem agora, não apenas a quantidade que está entrando.",
-            "status": "Para saldo zero, use Baixada / indisponível. Ao repor uma peça vendida, selecione Disponível."}
+        help_texts = {"quantidade": "Informe o total que vocÃª tem agora, nÃ£o apenas a quantidade que estÃ¡ entrando.",
+            "status": "Para saldo zero, use Baixada / indisponÃ­vel. Ao repor uma peÃ§a vendida, selecione DisponÃ­vel."}
 
     def clean(self):
         data = super().clean()
         if "quantidade" in self.changed_data and not data.get("motivo", "").strip():
-            self.add_error("motivo", "Informe o motivo da alteração da quantidade.")
+            self.add_error("motivo", "Informe o motivo da alteraÃ§Ã£o da quantidade.")
         return data

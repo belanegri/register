@@ -4,145 +4,105 @@ document.addEventListener("DOMContentLoaded", () => {
     marca?.dataset.modeloCampo || "id_aplicacao"
   );
 
-  const novaMarca = document.getElementById(
-    marca?.dataset.novaMarcaCampo || "id_nova_marca"
-  );
-
-  const novoModelo = document.getElementById(
-    marca?.dataset.novoModeloCampo || "id_novo_modelo"
-  );
-
   if (!marca || !modelo || !marca.dataset.modelos) return;
 
   const catalogo = JSON.parse(marca.dataset.modelos);
-  const valorNovaMarca = marca.dataset.novaMarca || "__nova_marca__";
-  const valorNovoModelo = marca.dataset.novoModelo || "__novo_modelo__";
 
-  function grupoDoCampo(campo) {
-    if (!campo) return null;
+  function criarBotao(campo, tipo) {
+    if (document.getElementById(`add-${tipo}`)) return;
 
-    return (
-      campo.closest(".mb-3") ||
-      campo.closest(".form-group") ||
-      campo.parentElement
-    );
+    const botao = document.createElement("a");
+    botao.id = `add-${tipo}`;
+    botao.href = "#";
+    botao.className = "related-widget-wrapper-link add-related";
+    botao.title =
+      tipo === "marca"
+        ? "Adicionar nova marca"
+        : "Adicionar novo modelo";
+
+    botao.innerHTML = '<span style="font-size:22px;font-weight:bold;">+</span>';
+
+    campo.insertAdjacentElement("afterend", botao);
+
+    botao.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      const marcaAtual = marca.value;
+
+      let url = "/admin/veiculos/modeloveiculo/add/?_popup=1";
+
+      if (tipo === "modelo" && marcaAtual) {
+        url += `&marca=${encodeURIComponent(marcaAtual)}`;
+      }
+
+      window.open(
+        url,
+        tipo === "marca"
+          ? "cadastro_nova_marca"
+          : "cadastro_novo_modelo",
+        "width=800,height=600,resizable=yes,scrollbars=yes"
+      );
+    });
   }
 
-  const grupoNovaMarca = grupoDoCampo(novaMarca);
-  const grupoNovoModelo = grupoDoCampo(novoModelo);
-
-  function mostrar(campo, grupo, exibir) {
-    if (!campo) return;
-
-    if (grupo) {
-      grupo.style.display = exibir ? "" : "none";
-    }
-
-    campo.hidden = !exibir;
-
-    if (!exibir) {
-      campo.value = "";
-    }
-  }
-
-  function atualizarModelo(preservar = false) {
+  function atualizar(preservar = false) {
     const anterior = preservar ? modelo.value : "";
-    const marcaSelecionada = marca.value;
+    const nomes = catalogo[marca.value] || [];
+    const livre = marca.value && nomes.length === 0;
 
-    mostrar(
-      novaMarca,
-      grupoNovaMarca,
-      marcaSelecionada === valorNovaMarca
+    const novo = document.createElement(livre ? "input" : "select");
+
+    novo.id = modelo.id;
+    novo.name = modelo.name;
+    novo.required = modelo.required;
+    novo.className = modelo.className;
+
+    novo.setAttribute(
+      "aria-describedby",
+      `${modelo.id}_helptext`
     );
 
-    if (!marcaSelecionada) {
-      mostrar(novoModelo, grupoNovoModelo, false);
+    if (livre) {
+      novo.type = "text";
+      novo.maxLength = Number(
+        marca.dataset.modeloMaxlength || 120
+      );
+      novo.placeholder = "Informe o modelo";
+      novo.value = anterior;
+    }
 
-      if (modelo.tagName.toLowerCase() !== "select") {
-        const novoSelect = document.createElement("select");
-        novoSelect.id = modelo.id;
-        novoSelect.name = modelo.name;
-        novoSelect.className = modelo.className;
-        modelo.replaceWith(novoSelect);
-        modelo = novoSelect;
-      }
+    modelo.replaceWith(novo);
+    modelo = novo;
 
+    if (!livre) {
       modelo.replaceChildren(
-        new Option("Selecione primeiro a marca", "")
+        new Option(
+          marca.value
+            ? "Selecione o modelo"
+            : "Selecione primeiro a marca",
+          ""
+        )
       );
 
-      return;
-    }
-
-    if (marcaSelecionada === valorNovaMarca) {
-      mostrar(novoModelo, grupoNovoModelo, true);
-
-      if (modelo.tagName.toLowerCase() !== "select") {
-        const novoSelect = document.createElement("select");
-        novoSelect.id = modelo.id;
-        novoSelect.name = modelo.name;
-        novoSelect.className = modelo.className;
-        modelo.replaceWith(novoSelect);
-        modelo = novoSelect;
+      for (const nome of nomes) {
+        modelo.add(
+          new Option(
+            nome,
+            nome,
+            false,
+            nome === anterior
+          )
+        );
       }
-
-      modelo.replaceChildren(
-        new Option("+ Novo modelo", valorNovoModelo, true, true)
-      );
-
-      return;
     }
-
-    const modelos = catalogo[marcaSelecionada] || [];
-
-    if (modelo.tagName.toLowerCase() !== "select") {
-      const novoSelect = document.createElement("select");
-      novoSelect.id = modelo.id;
-      novoSelect.name = modelo.name;
-      novoSelect.className = modelo.className;
-      modelo.replaceWith(novoSelect);
-      modelo = novoSelect;
-    }
-
-    modelo.replaceChildren(
-      new Option("Selecione o modelo", "")
-    );
-
-    for (const nome of modelos) {
-      modelo.add(
-        new Option(nome, nome, false, nome === anterior)
-      );
-    }
-
-    modelo.add(
-      new Option(
-        "+ Novo modelo",
-        valorNovoModelo,
-        false,
-        anterior === valorNovoModelo
-      )
-    );
-
-    mostrar(
-      novoModelo,
-      grupoNovoModelo,
-      modelo.value === valorNovoModelo
-    );
   }
+
+  criarBotao(marca, "marca");
+  criarBotao(modelo, "modelo");
 
   marca.addEventListener("change", () => {
-    atualizarModelo(false);
+    atualizar(false);
   });
 
-  document.addEventListener("change", (event) => {
-    if (event.target === modelo) {
-      mostrar(
-        novoModelo,
-        grupoNovoModelo,
-        modelo.value === valorNovoModelo
-      );
-    }
-  });
-
-  atualizarModelo(true);
+  atualizar(true);
 });

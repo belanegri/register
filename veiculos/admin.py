@@ -10,6 +10,14 @@ class ModeloVeiculoAdmin(admin.ModelAdmin):
     search_fields = ["marca", "nome"]
     readonly_fields = ["criado_em", "atualizado_em"]
 
+    def get_changeform_initial_data(self, request):
+        initial = super().get_changeform_initial_data(request)
+
+        marca = request.GET.get("marca")
+        if marca:
+            initial["marca"] = marca
+
+        return initial
 
 @admin.register(Veiculo)
 class VeiculoAdmin(admin.ModelAdmin):
