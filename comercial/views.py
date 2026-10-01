@@ -1,4 +1,4 @@
-import uuid
+﻿import uuid
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -45,7 +45,7 @@ def documentos(request,tipo):
     if status: qs = qs.filter(status=status)
     q = request.GET.get('q','')[:160]
     if q: qs = qs.filter(cliente__nome__icontains=q)
-    return render(request,'comercial/lista.html',{'pagina':Paginator(qs,30).get_page(request.GET.get('page')),'tipo':tipo,'titulo':'Orçamentos' if tipo=='orcamento' else 'Ordens de serviço','q':q,'status':status,'estados':Documento.STATUS})
+    return render(request,'comercial/lista.html',{'pagina':Paginator(qs,30).get_page(request.GET.get('page')),'tipo':tipo,'titulo':'OrÃ§amentos' if tipo=='orcamento' else 'Ordens de serviÃ§o','q':q,'status':status,'estados':Documento.STATUS})
 
 
 @login_required
@@ -56,7 +56,7 @@ def documento_editar(request,tipo=None,pk=None):
     doc = get_object_or_404(Documento.objects.select_for_update(),pk=pk) if pk else Documento(tipo=tipo,criado_por=request.user,status='rascunho' if tipo=='orcamento' else 'aberta')
     if doc.tipo not in ['orcamento','os']: raise Http404
     if doc.status == 'convertido':
-        messages.error(request,'Documento convertido não pode ser editado.')
+        messages.error(request,'Documento convertido nÃ£o pode ser editado.')
         return redirect('comercial:detalhe',pk=doc.pk)
     form = DocumentoForm(request.POST if request.method == "POST" else None,instance=doc)
     financeiro_fechado = bool(doc.venda_id)
@@ -77,7 +77,7 @@ def documento_editar(request,tipo=None,pk=None):
                 with transaction.atomic():
                     novo = doc.pk is None
                     if novo and doc.tipo == 'os' and doc.status == 'cancelada':
-                        raise ValidationError('Crie a ordem com uma situação ativa.')
+                        raise ValidationError('Crie a ordem com uma situaÃ§Ã£o ativa.')
                     form.save()
                     if not financeiro_fechado:
                         itens.save()
@@ -96,6 +96,34 @@ def documento_editar(request,tipo=None,pk=None):
     return render(request,'comercial/editar.html',{'form':form,'itens':itens,'doc':doc,'financeiro_fechado':financeiro_fechado,'precos':{'peca':{str(p.pk):str(p.preco_venda) for p in Peca.objects.all()},'servico':{str(s.pk):str(s.valor_padrao) for s in Servico.objects.all()}}})
 
 
+
+@login_required
+@permission_required('comercial.delete_documento', raise_exception=True)
+@transaction.atomic
+def orcamento_excluir(request, pk):
+    doc = get_object_or_404(Documento.objects.select_for_update(), pk=pk)
+
+    if doc.tipo != 'orcamento':
+        raise Http404
+
+    convertido = (
+        doc.status == 'convertido'
+        or doc.venda_id
+        or Documento.objects.filter(origem=doc).exists()
+    )
+
+    if convertido:
+        messages.error(request, 'Orçamento convertido não pode ser excluído.')
+        return redirect('comercial:detalhe', pk=doc.pk)
+
+    if request.method != 'POST':
+        return redirect('comercial:detalhe', pk=doc.pk)
+
+    codigo = doc.codigo
+    doc.delete()
+    messages.success(request, f'Orçamento {codigo} excluído com sucesso.')
+    return redirect('comercial:documentos', tipo='orcamento')
+
 @login_required
 @permission_required('comercial.view_documento',raise_exception=True)
 def detalhe(request,pk):
@@ -113,7 +141,7 @@ def conversao(request,pk,destino):
     if request.method == 'POST':
         try:
             if request.POST.get('confirmar') != 'sim':
-                raise ValidationError('Marque a confirmação para converter.')
+                raise ValidationError('Marque a confirmaÃ§Ã£o para converter.')
             if destino == 'os':
                 novo = converter(request.user,pk,destino,True)
                 return redirect('comercial:detalhe',pk=novo.pk)
@@ -153,7 +181,7 @@ def contas(request):
     for key,lookup in [('inicio','vencimento__gte'),('fim','vencimento__lte')]:
         try:
             if request.GET.get(key): qs=qs.filter(**{lookup:date.fromisoformat(request.GET[key])})
-        except ValueError: messages.error(request,'Data inválida no filtro.')
+        except ValueError: messages.error(request,'Data invÃ¡lida no filtro.')
     return render(request,'comercial/contas.html',{'pagina':Paginator(qs.order_by('vencimento','pk').prefetch_related('recebimentos'),30).get_page(request.GET.get('page')),'status':status,'recebidos':qs.aggregate(s=Sum('recebido'))['s'] or 0})
 
 
@@ -188,8 +216,9 @@ def conta_cancelar(request,pk):
     if request.method!='POST': return HttpResponse(status=405)
     conta=get_object_or_404(ContaReceber.objects.select_for_update(),pk=pk)
     if conta.venda_id or conta.valor_recebido:
-        messages.error(request,'Conta vinculada à venda ou com recebimentos: preserve o histórico. Para venda sem recebimentos, use o cancelamento da venda.')
+        messages.error(request,'Conta vinculada Ã  venda ou com recebimentos: preserve o histÃ³rico. Para venda sem recebimentos, use o cancelamento da venda.')
     elif request.POST.get('confirmar')=='sim':
         conta.cancelada=True
         conta.save(update_fields=['cancelada'])
     return redirect('comercial:conta',pk=pk)
+
