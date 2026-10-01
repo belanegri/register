@@ -13,6 +13,7 @@ from caixa.services import exigir, dinheiro, caixa_aberto, movimentar
 from core.auditoria import registrar
 from vendas.models import FormaPagamento
 from .models import ContaPagar, PagamentoConta, AnexoConta
+from .boleto import processar_boleto, BoletoInvalido
 
 
 def avancar_data(data, numero, frequencia):
@@ -53,13 +54,39 @@ def criar_contas(usuario, dados):
         if existentes.first().criado_por_id != usuario.pk:
             raise PermissionDenied
         return list(existentes), False
+    dados = dados.copy()
+    codigo = dados.get('codigo_boleto') or dados.get('linha_digitavel') or dados.get('codigo_barras')
+    dados['codigo_barras'] = dados['linha_digitavel'] = ''
+    if codigo:
+        try:
+            boleto = processar_boleto(codigo, dados.get('ciclo_boleto') or 'atual')
+        except BoletoInvalido as exc:
+            raise ValidationError(str(exc)) from exc
+        if dados['modo'] == 'parcelada':
+            raise ValidationError('Informe o boleto de cada parcela na edição, após gerar as parcelas.')
+        for campo in ['codigo_barras', 'linha_digitavel']:
+            dados[campo] = boleto[campo]
     modo = dados['modo']
     quantidade = dados.get('quantidade_lancamentos') if modo != 'unica' else 1
     if not quantidade or not 1 <= quantidade <= 120:
         raise ValidationError('Informe até 120 lançamentos.')
     frequencia = dados.get('frequencia') if modo == 'recorrente' else 'mensal'
-    campos = ['descricao', 'fornecedor', 'tipo_conta', 'categoria', 'subcategoria', 'centro_custo',
-              'numero_documento', 'competencia', 'emissao', 'forma_prevista', 'pix_copia_cola', 'observacoes']
+    campos = [
+    'descricao',
+    'fornecedor',
+    'tipo_conta',
+    'categoria',
+    'subcategoria',
+    'centro_custo',
+    'numero_documento',
+    'competencia',
+    'emissao',
+    'forma_prevista',
+    'pix_copia_cola',
+    'linha_digitavel',
+    'codigo_barras',
+    'observacoes',
+]
     valores = {nome: dinheiro(dados.get(nome) or 0) for nome in ['valor_original', 'desconto', 'juros', 'multa', 'acrescimos']}
     if valores['valor_original'] <= 0 or any(v < 0 for v in valores.values()):
         raise ValidationError('Confira os valores do lançamento.')
@@ -71,6 +98,8 @@ def criar_contas(usuario, dados):
             vencimento=avancar_data(dados['vencimento'], i, frequencia),
             data_programada=avancar_data(dados.get('data_programada'), i, frequencia),
             **{c: dados.get(c) for c in campos}, **{nome: itens[i] for nome, itens in partes.items()})
+        if i:
+            conta.codigo_barras = conta.linha_digitavel = ''
         conta.valor = conta.valor_original - conta.desconto + conta.juros + conta.multa + conta.acrescimos
         if conta.valor <= 0 or conta.valor_original <= 0:
             raise ValidationError('Os ajustes geram uma parcela sem valor. Reduza a quantidade de parcelas ou revise os valores.')

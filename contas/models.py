@@ -35,6 +35,17 @@ class ContaPagar(TimestampedModel):
     total_parcelas = models.PositiveSmallIntegerField(default=1, editable=False)
     vencimento = models.DateField()
     pix_copia_cola = models.TextField("PIX Copia e Cola", blank=True, max_length=4096, help_text="Cole o código de pagamento fornecido pelo recebedor.")
+    linha_digitavel = models.CharField(
+        "linha digitável",
+        max_length=60,
+        blank=True,
+    )
+
+    codigo_barras = models.CharField(
+        "código de barras",
+        max_length=60,
+        blank=True,
+    )
     observacoes = models.TextField("observações", blank=True)
     status = models.CharField(max_length=12, default="pendente", choices=[("pendente","Aguardando"),("parcial","Parcialmente paga"),("paga","Paga"),("cancelada","Cancelada")])
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)

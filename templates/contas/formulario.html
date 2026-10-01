@@ -1,46 +1,461 @@
-{% extends 'base.html' %}{% load static l10n %}
+{% extends 'base.html' %}
+{% load static l10n %}
+
 {% block title %}{{ titulo }}{% endblock %}
+
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/conta-formulario.css' %}">
+
 <div class="conta-editor">
-  <div class="page-heading"><div><div class="eyebrow">FINANCEIRO / CONTAS A PAGAR</div><h1>{{ titulo }}</h1><p>Organize a despesa agora. Registre o pagamento quando ele acontecer.</p></div><a class="btn btn-outline-secondary" href="{% url 'contas:lista' %}">Voltar às contas</a></div>
-  <form method="post" enctype="multipart/form-data" id="conta-form" data-editando="{% if conta %}1{% else %}0{% endif %}" data-pago="{{ conta.valor_pago|default:0|unlocalize }}">
-    {% csrf_token %}{{ form.chave }}
-    {% if form.errors %}<div class="alert alert-danger" role="alert"><strong>Confira os campos destacados antes de salvar.</strong>{{ form.non_field_errors }}{% for field in form.hidden_fields %}{{ field.errors }}{% endfor %}</div>{% endif %}
-    {% if conta.total_parcelas > 1 %}<div class="alert alert-info">{{ conta.get_modo_display }} · lançamento {{ conta.parcela }} de {{ conta.total_parcelas }}. Esta edição altera somente esta conta; os demais lançamentos são preservados.</div>{% endif %}
-    {% if conta.valor_pago %}<div class="alert alert-info">Esta conta já tem pagamentos. Os valores estão protegidos; você pode atualizar os dados de identificação, as datas e os documentos. Registre juros ou descontos adicionais junto ao próximo pagamento.</div>{% endif %}
-    <div class="conta-layout">
-      <div class="conta-secoes">
-        {% for secao in secoes %}
-        <section class="surface conta-card" id="secao-{{ secao.id }}" aria-labelledby="titulo-{{ secao.id }}">
-          <header class="conta-card-header"><span class="conta-card-icon" aria-hidden="true">{% include 'components/nav_icon.html' with name=secao.icone %}</span><div><h2 id="titulo-{{ secao.id }}">{{ secao.titulo }}</h2><p>{{ secao.ajuda }}</p></div></header>
-          <div class="conta-campos">
-            {% for field in secao.campos %}
-            <div class="conta-campo {% if field.name == 'descricao' or field.name == 'observacoes' or field.name == 'pix_copia_cola' or field.name == 'documentos' or field.name == 'link_acesso' %}conta-campo-largo{% endif %}" data-campo="{{ field.name }}">
-              <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="campo-obrigatorio" aria-label="obrigatório">*</span>{% endif %}</label>
-              {{ field }}{{ field.errors }}{% if field.help_text %}<small class="conta-ajuda">{{ field.help_text }}</small>{% endif %}
-            </div>
-            {% endfor %}
-          </div>
-          {% if secao.id == 'recorrencia' %}<div id="serie-info" class="conta-nota" hidden></div><div id="serie-previa" class="conta-previa" hidden><h3>Prévia dos lançamentos</h3><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Lançamento</th><th>Vencimento</th><th class="text-end">Valor</th></tr></thead><tbody id="serie-linhas"></tbody></table></div><small id="serie-limite"></small></div>{% endif %}
-          {% if secao.id == 'documentos' %}<p class="conta-nota">Em contas parceladas ou recorrentes, estes documentos ficam no primeiro lançamento. Cada conta também pode receber seus próprios anexos depois.</p>{% if conta %}<ul class="conta-documentos">{% for anexo in conta.anexos.all %}<li><div><small>{{ anexo.get_tipo_display }}</small>{% if anexo.arquivo %}<a href="{% url 'contas:baixar_anexo' anexo.pk %}">{{ anexo.nome_arquivo }}</a>{% endif %}{% if anexo.link %}<a href="{{ anexo.link }}" target="_blank" rel="noopener noreferrer">Abrir link</a>{% endif %}</div><a href="{% url 'contas:editar_anexo' anexo.pk %}">Editar</a><a href="{% url 'contas:excluir_anexo' anexo.pk %}">Excluir</a></li>{% empty %}<li>Nenhum documento anexado.</li>{% endfor %}</ul>{% endif %}{% endif %}
-        </section>
+
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">FINANCEIRO / CONTAS A PAGAR</div>
+      <h1>{{ titulo }}</h1>
+      <p>
+        Organize a despesa agora. Registre o pagamento quando ele acontecer.
+      </p>
+    </div>
+
+    <a
+      class="btn btn-outline-secondary"
+      href="{% url 'contas:lista' %}"
+    >
+      Voltar às contas
+    </a>
+  </div>
+
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    id="conta-form"
+    data-boleto-url="{% url 'contas:ler_boleto' %}"
+    data-editando="{% if conta %}1{% else %}0{% endif %}"
+    data-pago="{{ conta.valor_pago|default:0|unlocalize }}"
+  >
+
+    {% csrf_token %}
+    {{ form.chave }}
+
+    {% if form.errors %}
+      <div class="alert alert-danger" role="alert">
+        <strong>
+          Confira os campos destacados antes de salvar.
+        </strong>
+
+        {{ form.non_field_errors }}
+
+        {% for field in form.hidden_fields %}
+          {{ field.errors }}
         {% endfor %}
       </div>
-      <aside class="conta-resumo" aria-label="Resumo da conta">
+    {% endif %}
+
+    {% if conta.total_parcelas > 1 %}
+      <div class="alert alert-info">
+        {{ conta.get_modo_display }} ·
+        lançamento {{ conta.parcela }} de {{ conta.total_parcelas }}.
+
+        Esta edição altera somente esta conta;
+        os demais lançamentos são preservados.
+      </div>
+    {% endif %}
+
+    {% if conta.valor_pago %}
+      <div class="alert alert-info">
+        Esta conta já tem pagamentos.
+        Os valores estão protegidos; você pode atualizar os dados
+        de identificação, as datas e os documentos.
+
+        Registre juros ou descontos adicionais junto ao próximo pagamento.
+      </div>
+    {% endif %}
+
+    <div class="conta-layout">
+
+      <div class="conta-secoes">
+
+        {% for secao in secoes %}
+
+          <section
+            class="surface conta-card"
+            id="secao-{{ secao.id }}"
+            aria-labelledby="titulo-{{ secao.id }}"
+          >
+
+            <header class="conta-card-header">
+
+              <span
+                class="conta-card-icon"
+                aria-hidden="true"
+              >
+                {% include 'components/nav_icon.html' with name=secao.icone %}
+              </span>
+
+              <div>
+                <h2 id="titulo-{{ secao.id }}">
+                  {{ secao.titulo }}
+                </h2>
+
+                <p>
+                  {{ secao.ajuda }}
+                </p>
+              </div>
+
+            </header>
+
+            <div class="conta-campos">
+
+              {% for field in secao.campos %}
+
+                <div
+                  class="conta-campo
+                  {% if field.name == 'descricao' or field.name == 'observacoes' or field.name == 'pix_copia_cola' or field.name == 'codigo_boleto' or field.name == 'documentos' or field.name == 'link_acesso' %}
+                    conta-campo-largo
+                  {% endif %}"
+                  data-campo="{{ field.name }}"
+                >
+
+                  <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+
+                    {% if field.field.required %}
+                      <span
+                        class="campo-obrigatorio"
+                        aria-label="obrigatório"
+                      >
+                        *
+                      </span>
+                    {% endif %}
+                  </label>
+
+                  {{ field }}
+
+                  {{ field.errors }}
+
+                  {% if field.name == 'codigo_boleto' %}
+
+                    <div class="mt-2">
+
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        id="processar-boleto"
+                      >
+                        Processar código
+                      </button>
+
+                      <small
+                        id="boleto-status"
+                        class="conta-ajuda ms-2"
+                        aria-live="polite"
+                      ></small>
+
+                    </div>
+
+                  {% endif %}
+
+                  {% if field.help_text %}
+                    <small class="conta-ajuda">
+                      {{ field.help_text }}
+                    </small>
+                  {% endif %}
+
+                </div>
+
+              {% endfor %}
+
+            </div>
+
+            {% if secao.id == 'recorrencia' %}
+
+              <div
+                id="serie-info"
+                class="conta-nota"
+                hidden
+              ></div>
+
+              <div
+                id="serie-previa"
+                class="conta-previa"
+                hidden
+              >
+
+                <h3>Prévia dos lançamentos</h3>
+
+                <div class="table-responsive">
+
+                  <table class="table table-sm">
+
+                    <thead>
+                      <tr>
+                        <th>Lançamento</th>
+                        <th>Vencimento</th>
+                        <th class="text-end">Valor</th>
+                      </tr>
+                    </thead>
+
+                    <tbody id="serie-linhas"></tbody>
+
+                  </table>
+
+                </div>
+
+                <small id="serie-limite"></small>
+
+              </div>
+
+            {% endif %}
+
+            {% if secao.id == 'documentos' %}
+
+              <p class="conta-nota">
+                Em contas parceladas ou recorrentes,
+                estes documentos ficam no primeiro lançamento.
+
+                Cada conta também pode receber seus próprios
+                anexos depois.
+              </p>
+
+              {% if conta %}
+
+                <ul class="conta-documentos">
+
+                  {% for anexo in conta.anexos.all %}
+
+                    <li>
+
+                      <div>
+
+                        <small>
+                          {{ anexo.get_tipo_display }}
+                        </small>
+
+                        {% if anexo.arquivo %}
+                          <a
+                            href="{% url 'contas:baixar_anexo' anexo.pk %}"
+                          >
+                            {{ anexo.nome_arquivo }}
+                          </a>
+                        {% endif %}
+
+                        {% if anexo.link %}
+                          <a
+                            href="{{ anexo.link }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Abrir link
+                          </a>
+                        {% endif %}
+
+                      </div>
+
+                      <a
+                        href="{% url 'contas:editar_anexo' anexo.pk %}"
+                      >
+                        Editar
+                      </a>
+
+                      <a
+                        href="{% url 'contas:excluir_anexo' anexo.pk %}"
+                      >
+                        Excluir
+                      </a>
+
+                    </li>
+
+                  {% empty %}
+
+                    <li>
+                      Nenhum documento anexado.
+                    </li>
+
+                  {% endfor %}
+
+                </ul>
+
+              {% endif %}
+
+            {% endif %}
+
+          </section>
+
+        {% endfor %}
+
+      </div>
+
+      <aside
+        class="conta-resumo"
+        aria-label="Resumo da conta"
+      >
+
         <div class="surface conta-resumo-card">
-          <div class="eyebrow">RESUMO FINANCEIRO</div><h2 id="resumo-titulo">Valor total</h2><output id="conta-total" class="conta-total" aria-live="polite">R$ 0,00</output>
-          <p id="resumo-legenda">Original − desconto + juros + multa + acréscimos.</p>
-          <dl><div><dt>Valor original</dt><dd id="resumo-original">R$ 0,00</dd></div><div><dt>Desconto</dt><dd id="resumo-desconto">R$ 0,00</dd></div><div><dt>Acréscimos totais</dt><dd id="resumo-acrescimos">R$ 0,00</dd></div>{% if conta %}<div><dt>Já pago</dt><dd>R$ {{ conta.valor_pago|floatformat:2 }}</dd></div><div><dt>Saldo em aberto</dt><dd id="resumo-saldo">R$ {{ conta.saldo|floatformat:2 }}</dd></div>{% endif %}</dl>
-          <div class="conta-resumo-status"><span class="status-dot"></span>{% if conta %}{{ conta.situacao }}{% else %}Pagamento ainda não registrado{% endif %}</div>
-          <p class="conta-ajuda">Salvar cadastra a obrigação. Nenhum valor é retirado do caixa nesta etapa.</p>
-          <div class="conta-acoes"><button class="btn btn-primary" name="acao" value="salvar" type="submit">Salvar</button>{% if perms.contas.add_contapagar %}<button class="btn btn-outline-primary" name="acao" value="outra" type="submit">Salvar e criar outra</button>{% endif %}<a class="btn btn-outline-secondary" href="{% if conta %}{% url 'contas:detalhe' conta.pk %}{% else %}{% url 'contas:lista' %}{% endif %}">Cancelar</a></div>
-          {% if conta and perms.contas.delete_contapagar and not conta.valor_pago %}<a class="conta-excluir" href="{% url 'contas:excluir' conta.pk %}">Excluir esta conta</a>{% else %}<button class="conta-excluir" disabled type="button">Excluir{% if not conta %} (disponível após salvar){% else %} (histórico protegido){% endif %}</button>{% endif %}
+
+          <div class="eyebrow">
+            RESUMO FINANCEIRO
+          </div>
+
+          <h2 id="resumo-titulo">
+            Valor total
+          </h2>
+
+          <output
+            id="conta-total"
+            class="conta-total"
+            aria-live="polite"
+          >
+            R$ 0,00
+          </output>
+
+          <p id="resumo-legenda">
+            Original − desconto + juros + multa + acréscimos.
+          </p>
+
+          <dl>
+
+            <div>
+              <dt>Valor original</dt>
+              <dd id="resumo-original">
+                R$ 0,00
+              </dd>
+            </div>
+
+            <div>
+              <dt>Desconto</dt>
+              <dd id="resumo-desconto">
+                R$ 0,00
+              </dd>
+            </div>
+
+            <div>
+              <dt>Acréscimos totais</dt>
+              <dd id="resumo-acrescimos">
+                R$ 0,00
+              </dd>
+            </div>
+
+            {% if conta %}
+
+              <div>
+                <dt>Já pago</dt>
+                <dd>
+                  R$ {{ conta.valor_pago|floatformat:2 }}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Saldo em aberto</dt>
+                <dd id="resumo-saldo">
+                  R$ {{ conta.saldo|floatformat:2 }}
+                </dd>
+              </div>
+
+            {% endif %}
+
+          </dl>
+
+          <div class="conta-resumo-status">
+
+            <span class="status-dot"></span>
+
+            {% if conta %}
+              {{ conta.situacao }}
+            {% else %}
+              Pagamento ainda não registrado
+            {% endif %}
+
+          </div>
+
+          <p class="conta-ajuda">
+            Salvar cadastra a obrigação.
+            Nenhum valor é retirado do caixa nesta etapa.
+          </p>
+
+          <div class="conta-acoes">
+
+            <button
+              class="btn btn-primary"
+              name="acao"
+              value="salvar"
+              type="submit"
+            >
+              Salvar
+            </button>
+
+            {% if perms.contas.add_contapagar %}
+
+              <button
+                class="btn btn-outline-primary"
+                name="acao"
+                value="outra"
+                type="submit"
+              >
+                Salvar e criar outra
+              </button>
+
+            {% endif %}
+
+            <a
+              class="btn btn-outline-secondary"
+              href="
+              {% if conta %}
+                {% url 'contas:detalhe' conta.pk %}
+              {% else %}
+                {% url 'contas:lista' %}
+              {% endif %}
+              "
+            >
+              Cancelar
+            </a>
+
+          </div>
+
+          {% if conta and perms.contas.delete_contapagar and not conta.valor_pago %}
+
+            <a
+              class="conta-excluir"
+              href="{% url 'contas:excluir' conta.pk %}"
+            >
+              Excluir esta conta
+            </a>
+
+          {% else %}
+
+            <button
+              class="conta-excluir"
+              disabled
+              type="button"
+            >
+              Excluir
+
+              {% if not conta %}
+                (disponível após salvar)
+              {% else %}
+                (histórico protegido)
+              {% endif %}
+
+            </button>
+
+          {% endif %}
+
         </div>
-        <p class="conta-ajuda mt-3">Campos com * são obrigatórios.</p>
+
+        <p class="conta-ajuda mt-3">
+          Campos com * são obrigatórios.
+        </p>
+
       </aside>
+
     </div>
+
   </form>
+
 </div>
-<script src="{% static 'js/conta-formulario.js' %}" defer></script>
+
+<script
+  src="{% static 'js/conta-formulario.js' %}"
+  defer
+></script>
+
 {% endblock %}

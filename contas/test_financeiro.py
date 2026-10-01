@@ -234,7 +234,7 @@ class MigracaoFinanceiroTests(TransactionTestCase):
     def test_contas_antigas_preservam_valores_pagamento_e_anexos(self):
         from django.db.migrations.executor import MigrationExecutor
         antiga = [('contas', '0004_contapagar_pix_copia_cola')]
-        nova = [('contas', '0005_cadastro_financeiro')]
+        nova = [('contas', '0006_contapagar_codigo_barras_contapagar_linha_digitavel')]
         executor = MigrationExecutor(connection)
         executor.migrate(antiga)
         try:

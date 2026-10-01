@@ -10,30 +10,114 @@ from core.auditoria import registrar
 from caixa.services import caixa_aberto, movimentar
 from .models import ContaPagar, AnexoConta
 from .forms import ContaForm, PagamentoForm, CancelamentoForm, AnexoForm, FiltroContaForm, EditarAnexoForm
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
 from .services import criar_contas, registrar_pagamento, adicionar_anexo
 
 
 def contexto_formulario(form, conta=None):
     secoes = [
-        ('identificacao', 'Identificação', 'expense', 'Dados para localizar e organizar esta despesa.',
-         ['descricao', 'fornecedor', 'categoria', 'subcategoria', 'tipo_conta', 'centro_custo', 'numero_documento', 'competencia']),
-        ('valores', 'Valores', 'wallet', 'O total é calculado pelos valores informados. Nenhum pagamento é registrado aqui.',
-         ['valor_original', 'desconto', 'juros', 'multa', 'acrescimos']),
-        ('datas', 'Datas', 'quote', 'Vencimento e programação são independentes da data em que o pagamento será realizado.',
-         ['emissao', 'vencimento', 'data_programada']),
-        ('pagamento', 'Pagamento', 'income', 'Defina a forma prevista. A baixa será feita em Registrar pagamento.',
-         ['forma_prevista', 'pix_copia_cola']),
-        ('recorrencia', 'Recorrência / Parcelamento', 'grid', 'Parcelamento divide o valor total. Recorrência repete o valor em cada lançamento.',
-         ['modo', 'frequencia', 'quantidade_lancamentos']),
-        ('documentos', 'Documentos', 'quote', 'Anexe boletos, faturas, notas fiscais ou contratos. Comprovantes são anexados ao registrar o pagamento.',
-         ['documentos', 'link_acesso']),
-        ('observacoes', 'Observações', 'quote', 'Informações complementares para o controle interno.', ['observacoes']),
+        (
+            'identificacao',
+            'Identificação',
+            'expense',
+            'Dados para localizar e organizar esta despesa.',
+            [
+                'descricao',
+                'fornecedor',
+                'categoria',
+                'subcategoria',
+                'tipo_conta',
+                'centro_custo',
+                'numero_documento',
+                'competencia',
+            ],
+        ),
+        (
+            'valores',
+            'Valores',
+            'wallet',
+            'O total é calculado pelos valores informados. Nenhum pagamento é registrado aqui.',
+            [
+                'valor_original',
+                'desconto',
+                'juros',
+                'multa',
+                'acrescimos',
+            ],
+        ),
+        (
+            'datas',
+            'Datas',
+            'quote',
+            'Vencimento e programação são independentes da data em que o pagamento será realizado.',
+            [
+                'emissao',
+                'vencimento',
+                'data_programada',
+            ],
+        ),
+        (
+            'pagamento',
+            'Pagamento',
+            'income',
+            'Passe o leitor ou cole a linha digitável do boleto. O sistema pode identificar automaticamente valor e vencimento.',
+            [
+                'codigo_boleto', 'ciclo_boleto',
+                'forma_prevista',
+                'pix_copia_cola',
+            ],
+        ),
+        (
+            'recorrencia',
+            'Recorrência / Parcelamento',
+            'grid',
+            'Parcelamento divide o valor total. Recorrência repete o valor em cada lançamento.',
+            [
+                'modo',
+                'frequencia',
+                'quantidade_lancamentos',
+            ],
+        ),
+        (
+            'documentos',
+            'Documentos',
+            'quote',
+            'Anexe boletos, faturas, notas fiscais ou contratos. Comprovantes são anexados ao registrar o pagamento.',
+            [
+                'documentos',
+                'link_acesso',
+            ],
+        ),
+        (
+            'observacoes',
+            'Observações',
+            'quote',
+            'Informações complementares para o controle interno.',
+            [
+                'observacoes',
+            ],
+        ),
     ]
-    return {'form': form, 'conta': conta, 'titulo': f'Editar {conta.codigo}' if conta else 'Nova conta a pagar',
-            'secoes': [{'id': ident, 'titulo': titulo, 'icone': icone, 'ajuda': ajuda,
-                        'campos': [form[campo] for campo in campos]} for ident, titulo, icone, ajuda, campos in secoes]}
+
+    return {
+        'form': form,
+        'conta': conta,
+        'titulo': f'Editar {conta.codigo}' if conta else 'Nova conta a pagar',
+        'secoes': [
+            {
+                'id': ident,
+                'titulo': titulo,
+                'icone': icone,
+                'ajuda': ajuda,
+                'campos': [
+                    form[campo]
+                    for campo in campos
+                ],
+            }
+            for ident, titulo, icone, ajuda, campos in secoes
+        ],
+    }
 
 def filtrar_contas(params):
     dados = params.copy()
@@ -111,12 +195,12 @@ def editar(request,pk):
     if not conta.em_aberto:
         messages.error(request,"Somente contas em aberto podem ser editadas.")
         return redirect("contas:detalhe",pk=pk)
-    antes = {f: str(getattr(conta,f)) for f in ContaForm.Meta.fields}
+    antes = {f: str(getattr(conta,f)) for f in [*ContaForm.Meta.fields, 'codigo_barras', 'linha_digitavel']}
     form = ContaForm(request.POST if request.method == "POST" else None, request.FILES if request.method == "POST" else None,instance=conta)
     if request.method == "POST" and form.is_valid():
         form.save()
         salvar_anexo(request,conta,form)
-        registrar(request.user,"conta.editada",conta.codigo,antes=antes,depois={f:str(getattr(conta,f)) for f in ContaForm.Meta.fields})
+        registrar(request.user,"conta.editada",conta.codigo,antes=antes,depois={f:str(getattr(conta,f)) for f in [*ContaForm.Meta.fields, 'codigo_barras', 'linha_digitavel']})
         if request.POST.get('acao') == 'outra':
             return redirect('contas:nova')
         return redirect("contas:detalhe",pk=pk)
@@ -292,3 +376,19 @@ def excluir_anexo(request, pk):
         messages.success(request,"Anexo excluído.")
         return redirect("contas:detalhe",pk=conta_id)
     return render(request,"contas/excluir_anexo.html",{"anexo":anexo})
+
+
+@login_required
+@require_POST
+def ler_boleto(request):
+    from .boleto import processar_boleto, BoletoInvalido
+    if not (request.user.has_perm('contas.add_contapagar') or request.user.has_perm('contas.change_contapagar')):
+        return JsonResponse({'erro': 'Sem permissão para cadastrar ou editar contas.'}, status=403)
+    try:
+        dados = processar_boleto(request.POST.get('codigo_boleto'), request.POST.get('ciclo_boleto') or 'atual')
+    except BoletoInvalido as exc:
+        resposta = JsonResponse({'erro': str(exc)}, status=400)
+    else:
+        resposta = JsonResponse(dados)
+    resposta['Cache-Control'] = 'no-store'
+    return resposta
