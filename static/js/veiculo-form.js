@@ -97,6 +97,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function ordenarMarcas() {
+    const selecionada = marca.value;
+
+    const opcoes = Array.from(marca.options).filter(
+      (opcao) => opcao.value !== ""
+    );
+
+    opcoes.sort((a, b) =>
+      a.text.localeCompare(b.text, "pt-BR", {
+        sensitivity: "base"
+      })
+    );
+
+    marca.replaceChildren(
+      new Option("Selecione a marca", "")
+    );
+
+    for (const opcao of opcoes) {
+      marca.add(opcao);
+    }
+
+    marca.value = selecionada;
+  }
+
+  const observarMarcas = new MutationObserver(() => {
+  observarMarcas.disconnect();
+
+  ordenarMarcas();
+
+  observarMarcas.observe(marca, {
+    childList: true
+  });
+});
+
+observarMarcas.observe(marca, {
+  childList: true
+});
+
+  ordenarMarcas();
+
   criarBotao(marca, "marca");
   criarBotao(modelo, "modelo");
 
