@@ -61,6 +61,7 @@ class Peca(TimestampedModel):
         BAIXADA = "baixada", "Baixada / indisponível"
 
     class Condicao(models.TextChoices):
+        NOVA = "nova", "Novo"
         USADA = "usada", "Usada"
         TESTADA = "testada", "Usada e testada"
         RECONDICIONADA = "recondicionada", "Recondicionada"
@@ -150,3 +151,4 @@ class FotoPeca(TimestampedModel):
 
     def __str__(self):
         return self.legenda or f"Foto de {self.peca.codigo}"
+
