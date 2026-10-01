@@ -5,6 +5,7 @@ from vendas.models import FormaPagamento
 from .models import ContaPagar
 from decimal import Decimal
 from .boleto import processar_boleto, BoletoInvalido
+from .pix import processar_pix, PixInvalido
 import uuid
 
 
@@ -303,6 +304,12 @@ class ContaForm(EstiloForm, CamposAnexo, forms.ModelForm):
     def clean(self):
         dados = super().clean()
         dados['codigo_barras'] = dados['linha_digitavel'] = ''
+        pix = dados.get('pix_copia_cola', '')
+        if pix.startswith('000201') and pix != self.instance.pix_copia_cola:
+            try:
+                dados['pix_copia_cola'] = processar_pix(pix)['pix_copia_cola']
+            except PixInvalido as exc:
+                self.add_error('pix_copia_cola', str(exc))
         if dados.get('codigo_boleto'):
             try:
                 boleto = processar_boleto(dados['codigo_boleto'], dados.get('ciclo_boleto') or 'atual')

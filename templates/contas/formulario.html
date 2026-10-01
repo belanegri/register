@@ -5,6 +5,7 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/conta-formulario.css' %}">
+<link rel="stylesheet" href="{% static 'css/conta-captura.css' %}">
 
 <div class="conta-editor">
 
@@ -29,6 +30,8 @@
     method="post"
     enctype="multipart/form-data"
     id="conta-form"
+    data-captura-url="{% url 'contas:capturar_cobranca' %}"
+    data-captura-assets="{% static 'vendor/captura-v1/' %}"
     data-boleto-url="{% url 'contas:ler_boleto' %}"
     data-editando="{% if conta %}1{% else %}0{% endif %}"
     data-pago="{{ conta.valor_pago|default:0|unlocalize }}"
@@ -75,6 +78,7 @@
 
       <div class="conta-secoes">
 
+        {% include 'contas/captura.html' %}
         {% for secao in secoes %}
 
           <section
@@ -458,4 +462,5 @@
   defer
 ></script>
 
+<script src="{% static 'js/conta-captura.js' %}" defer></script>
 {% endblock %}

@@ -1,0 +1,15 @@
+.captura-card header p{color:var(--muted,#64748b)}
+.captura-card label{display:block;font-weight:600;margin:12px 0 6px}
+.captura-acoes{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.captura-card #captura-status{margin:12px 0;font-weight:600;overflow-wrap:anywhere}
+.captura-card #captura-status.erro{color:#a32020}
+.captura-avisos{padding-left:20px;color:#795513;font-size:.9rem}
+.captura-check{display:flex!important;align-items:flex-start;gap:10px;font-weight:400!important}
+.captura-check input{margin-top:5px;flex-shrink:0}
+.captura-linha{padding:12px 0;border-bottom:1px solid #e2e8f0;overflow-wrap:anywhere}
+.captura-linha small{display:block;color:#64748b}
+.captura-card dl{font-size:.9rem;margin:12px 0;overflow-wrap:anywhere}
+.captura-card dt{font-weight:600;margin-top:8px}
+.captura-card dd{margin:2px 0 8px}
+.captura-card details{margin:16px 0}
+.captura-card [hidden]{display:none!important}

@@ -392,3 +392,36 @@ def ler_boleto(request):
         resposta = JsonResponse(dados)
     resposta['Cache-Control'] = 'no-store'
     return resposta
+
+
+@login_required
+@require_POST
+def capturar_cobranca(request):
+    import json
+    from .captura import capturar_codigo, capturar_texto, CapturaInvalida
+    from vendas.models import FormaPagamento
+    if not (request.user.has_perm('contas.add_contapagar') or request.user.has_perm('contas.change_contapagar')):
+        return JsonResponse({'erro': 'Sem permissão para cadastrar ou editar contas.'}, status=403)
+    try:
+        if len(request.body) > 120000:
+            raise CapturaInvalida('Documento muito extenso. Leia até 3 páginas por vez.')
+        dados = json.loads(request.body)
+        if not isinstance(dados, dict):
+            raise CapturaInvalida('Dados de captura inválidos.')
+        tipo = dados.get('tipo', 'auto')
+        if tipo not in ['auto', 'boleto', 'pix', 'documento']:
+            raise CapturaInvalida('Tipo de captura inválido.')
+        if tipo == 'documento':
+            resultado = capturar_texto(dados.get('texto', ''), dados.get('codigos', []), dados.get('ciclo', 'atual'))
+        else:
+            resultado = {'opcoes': [capturar_codigo(dados.get('codigo', ''), tipo, dados.get('ciclo', 'atual'))], 'avisos': []}
+        for opcao in resultado['opcoes']:
+            forma = FormaPagamento.objects.filter(ativa=True, promissoria=False, nome__iexact=opcao.get('forma', '')).first()
+            if forma:
+                opcao['campos']['forma_prevista'] = {'valor': str(forma.pk), 'origem': 'Tipo da cobrança', 'texto': forma.nome}
+        resposta = JsonResponse(resultado)
+    except (CapturaInvalida, ValueError, TypeError) as exc:
+        mensagem = str(exc) if isinstance(exc, CapturaInvalida) else 'Conteúdo inválido para leitura. Tente novamente.'
+        resposta = JsonResponse({'erro': mensagem}, status=400)
+    resposta['Cache-Control'] = 'no-store'
+    return resposta

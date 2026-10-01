@@ -353,49 +353,7 @@
   }
 
 
-  // ==================================================
-  // LEITOR DE BOLETO
-  // ==================================================
-
-  const codigoBoleto = el('codigo_boleto');
-  const botaoBoleto = document.getElementById('processar-boleto');
-  const statusBoleto = document.getElementById('boleto-status');
-  let leitura = 0;
-  let timerBoleto;
-  async function processarBoleto() {
-    const numero = ++leitura;
-    const codigo = codigoBoleto.value;
-    statusBoleto.textContent = 'Validando boleto…';
-    try {
-      const resposta = await fetch(form.dataset.boletoUrl, {
-        method: 'POST', credentials: 'same-origin',
-        headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value},
-        body: new URLSearchParams({codigo_boleto: codigo, ciclo_boleto: el('ciclo_boleto').value || 'atual'})
-      });
-      const dados = await resposta.json();
-      if (numero !== leitura || codigo !== codigoBoleto.value) return;
-      if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível validar o boleto.');
-      if (dados.valor !== null && !el('valor_original').disabled) el('valor_original').value = dados.valor;
-      if (dados.vencimento !== null) el('vencimento').value = dados.vencimento;
-      statusBoleto.textContent = 'Código válido. Confira valor e vencimento no documento.';
-      atualizar();
-    } catch (erro) {
-      if (numero === leitura) statusBoleto.textContent = erro.message || 'Falha na leitura. Tente novamente.';
-    }
-  }
-  if (codigoBoleto && botaoBoleto) {
-    botaoBoleto.addEventListener('click', () => { clearTimeout(timerBoleto); processarBoleto(); });
-    codigoBoleto.addEventListener('keydown', event => {
-      if (event.key === 'Enter') {
-        event.preventDefault(); clearTimeout(timerBoleto); processarBoleto();
-      }
-    });
-    codigoBoleto.addEventListener('input', () => {
-      ++leitura; clearTimeout(timerBoleto); statusBoleto.textContent = '';
-      if ([44, 47].includes(codigoBoleto.value.replace(/[.\s-]/g, '').length)) timerBoleto = setTimeout(processarBoleto, 350);
-    });
-    el('ciclo_boleto').addEventListener('change', () => { if (codigoBoleto.value.trim()) processarBoleto(); });
-  }
+  form.addEventListener('conta:atualizar', atualizar);
 
   form.addEventListener(
     'input',
