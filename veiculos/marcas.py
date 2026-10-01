@@ -14,10 +14,20 @@ ALIASES = {"JAC": "JAC Motors", "Mini": "MINI", "SsangYong": "SsangYong / KGM"}
 
 def opcoes_marca(valor_atual="", adicionais=()):
     nomes = list(MARCAS)
+
     for nome in adicionais:
         nome = ALIASES.get(nome, nome)
         if nome and nome not in nomes:
             nomes.append(nome)
+
     if valor_atual and valor_atual not in nomes:
         nomes.append(valor_atual)
-    return [("", "Selecione a marca")] + [(nome, nome) for nome in nomes]
+
+    nomes = sorted(
+        set(nomes),
+        key=lambda nome: nome.casefold()
+    )
+
+    return [("", "Selecione a marca")] + [
+        (nome, nome) for nome in nomes
+    ]
