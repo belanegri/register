@@ -294,11 +294,33 @@ def gerar_pdf(documento, termico=False):
     identidade = [p(nome, empresa_nome)]
     identidade += [p(item, small) for item in dados]
 
-    identificacao = [
-        p(tipo_nome, titulo),
-        p(documento.codigo, codigo_style),
-        p(documento.situacao, small),
-    ]
+        # Identificação do documento
+    if termico:
+        identificacao = [
+            p(tipo_nome, titulo),
+            p(documento.codigo, codigo_style),
+            p(f"Status: {documento.situacao}", small),
+        ]
+    else:
+        status_style = ParagraphStyle(
+            "status",
+            parent=small,
+            fontName="Helvetica-Bold",
+            fontSize=7.5,
+            leading=9,
+            textColor=GREEN_DARK,
+            alignment=2,
+            spaceBefore=3,
+        )
+
+        identificacao = [
+            p(tipo_nome, titulo),
+            p(documento.codigo, codigo_style),
+            p(
+                f"STATUS: {str(documento.situacao).upper()}",
+                status_style,
+            ),
+        ]
 
     if termico:
         header = Table(
@@ -635,48 +657,52 @@ def gerar_pdf(documento, termico=False):
             ]
         )
 
-        tabela = Table(
-            linhas,
-            colWidths=widths,
-            repeatRows=1,
-            hAlign="LEFT",
-            splitByRow=1,
-        )
-
-        tabela.setStyle(
+            tabela.setStyle(
             TableStyle(
                 [
-                    ("BACKGROUND", (0, 0), (-1, 0), GREEN),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
-                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    # Cabeçalho claro e mais legível
+                    ("BACKGROUND", (0, 0), (-1, 0), PALE),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), GREEN_DARK),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+
+                    # Linhas alternadas suaves
                     (
                         "ROWBACKGROUNDS",
                         (0, 1),
                         (-1, -1),
                         [WHITE, LIGHT],
                     ),
+
+                    # Separadores
+                    ("LINEBELOW", (0, 0), (-1, 0), 0.8, GREEN),
                     (
                         "LINEBELOW",
                         (0, 1),
                         (-1, -1),
-                        0.25,
+                        0.35,
                         BORDER,
                     ),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+
+                    # Espaçamento
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
                     (
                         "TOPPADDING",
                         (0, 0),
                         (-1, -1),
-                        5 if termico else 6,
+                        6 if termico else 7,
                     ),
                     (
                         "BOTTOMPADDING",
                         (0, 0),
                         (-1, -1),
-                        5 if termico else 6,
+                        6 if termico else 7,
                     ),
-                    ("ALIGN", (-2, 1), (-1, -1), "RIGHT"),
+
+                    # Valores numéricos
+                    ("ALIGN", (-2, 0), (-1, -1), "RIGHT"),
                 ]
             )
         )
@@ -713,8 +739,9 @@ def gerar_pdf(documento, termico=False):
                 TableStyle(
                     [
                         ("ALIGN", (-2, 0), (-1, -1), "RIGHT"),
-                        ("TOPPADDING", (0, 0), (-1, -1), 4),
-                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                        ("LINEABOVE", (-2, 0), (-1, 0), 0.4, BORDER),
+                        ("TOPPADDING", (0, 0), (-1, -1), 5),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
                     ]
                 )
             )
@@ -769,6 +796,11 @@ def gerar_pdf(documento, termico=False):
         ]
 
     else:
+        # O resumo ocupa somente a lateral direita da página.
+        # As larguras internas são calculadas sobre essa área,
+        # evitando que a tabela ultrapasse a margem.
+        largura_resumo = largura * 0.48
+
         resumo_dados = [
             [
                 p("Produtos / Peças", normal),
@@ -810,8 +842,8 @@ def gerar_pdf(documento, termico=False):
         resumo = Table(
             resumo_dados,
             colWidths=[
-                largura * 0.65,
-                largura * 0.35,
+                largura_resumo * 0.56,
+                largura_resumo * 0.44,
             ],
             hAlign="RIGHT",
         )
@@ -820,20 +852,28 @@ def gerar_pdf(documento, termico=False):
             TableStyle(
                 [
                     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+
                     (
                         "LINEBELOW",
                         (0, 0),
                         (-1, -2),
-                        0.3,
+                        0.35,
                         BORDER,
                     ),
+
+                    ("ALIGN", (1, 0), (1, -1), "RIGHT"),
+
+                    ("LEFTPADDING", (0, 0), (-1, -1), 7),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                    ("TOPPADDING", (0, 0), (-1, -2), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -2), 5),
+
+                    # Linha TOTAL
                     ("BACKGROUND", (0, -1), (-1, -1), PALE),
                     ("BOX", (0, -1), (-1, -1), 0.8, GREEN),
-                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-                    ("TOPPADDING", (0, 0), (-1, -1), 6),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                    ("LINEABOVE", (0, -1), (-1, -1), 1.0, GREEN),
+                    ("TOPPADDING", (0, -1), (-1, -1), 8),
+                    ("BOTTOMPADDING", (0, -1), (-1, -1), 8),
                 ]
             )
         )
@@ -841,8 +881,8 @@ def gerar_pdf(documento, termico=False):
         bloco_resumo = Table(
             [["", resumo]],
             colWidths=[
-                largura * 0.46,
-                largura * 0.54,
+                largura - largura_resumo,
+                largura_resumo,
             ],
         )
 
@@ -850,6 +890,7 @@ def gerar_pdf(documento, termico=False):
             TableStyle(
                 [
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("ALIGN", (1, 0), (1, 0), "RIGHT"),
                     ("LEFTPADDING", (0, 0), (-1, -1), 0),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 0),
                     ("TOPPADDING", (0, 0), (-1, -1), 0),
@@ -861,7 +902,7 @@ def gerar_pdf(documento, termico=False):
         fluxo += [
             Spacer(1, 3 * mm),
             KeepTogether([bloco_resumo]),
-            Spacer(1, 4 * mm),
+            Spacer(1, 3 * mm),
         ]
 
     # ================================================================
@@ -983,40 +1024,51 @@ def gerar_pdf(documento, termico=False):
             p("Cliente", small),
         ]
 
-    else:
+        else:
+        assinatura_style = ParagraphStyle(
+            "assinatura",
+            parent=small,
+            fontSize=7.5,
+            leading=10,
+            alignment=1,
+            textColor=MUTED,
+        )
+
         assinatura_empresa = [
-            p("________________________________________", small),
-            p("Responsável da empresa", small),
+            p("____________________________________", assinatura_style),
+            p("Responsável da empresa", assinatura_style),
         ]
 
         assinatura_cliente = [
-            p("________________________________________", small),
-            p("Cliente", small),
+            p("____________________________________", assinatura_style),
+            p("Cliente", assinatura_style),
         ]
+
+        tabela_assinaturas = Table(
+            [[assinatura_empresa, assinatura_cliente]],
+            colWidths=[
+                largura * 0.50,
+                largura * 0.50,
+            ],
+        )
+
+        tabela_assinaturas.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]
+            )
+        )
 
         assinaturas = [
-            Spacer(1, 12 * mm),
-            Table(
-                [[assinatura_empresa, assinatura_cliente]],
-                colWidths=[
-                    largura / 2,
-                    largura / 2,
-                ],
-                style=TableStyle(
-                    [
-                        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-                        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-                    ]
-                ),
-            ),
+            Spacer(1, 7 * mm),
+            tabela_assinaturas,
         ]
-
-    fluxo.append(
-        KeepTogether(assinaturas)
-    )
-
     # ================================================================
     # RODAPÉ
     # ================================================================
