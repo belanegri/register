@@ -40,7 +40,11 @@ def servico_editar(request,pk=None):
 @permission_required('comercial.view_documento',raise_exception=True)
 def documentos(request,tipo):
     if tipo not in ['orcamento','os']: raise Http404
-    qs = Documento.objects.filter(tipo=tipo).select_related('cliente')
+    qs = (
+    Documento.objects
+    .filter(tipo=tipo)
+    .select_related('cliente', 'venda')
+    .prefetch_related('contareceber_set'))
     status = request.GET.get('status','')
     if status: qs = qs.filter(status=status)
     q = request.GET.get('q','')[:160]

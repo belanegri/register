@@ -1,1 +1,221 @@
-{% extends 'base.html' %}{% block content %}<div class="page-heading"><h1>{{ titulo }}</h1><a class="btn btn-primary" href="{% url 'comercial:novo' tipo %}">Novo</a></div><form class="d-flex gap-2 mb-3"><input class="form-control" name="q" value="{{ q }}" placeholder="Cliente"><select class="form-select" name="status"><option value="">Todas as situações</option>{% for k,v in estados %}<option value="{{ k }}" {% if status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select><button class="btn btn-primary">Filtrar</button></form><div class="surface p-3 table-responsive"><table class="table"><tr><th>Número</th><th>Data</th><th>Cliente</th><th>Situação</th><th>Total</th></tr>{% for d in pagina %}<tr><td><a href="{% url 'comercial:detalhe' d.pk %}">{{ d.codigo }}</a></td><td>{{ d.criado_em|date:'d/m/Y' }}</td><td>{{ d.cliente }}</td><td>{{ d.situacao }}</td><td>R$ {{ d.total|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="5">Nenhum documento encontrado.</td></tr>{% endfor %}</table>{% include 'comercial/paginacao.html' %}</div>{% endblock %}
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="page-heading">
+    <h1>{{ titulo }}</h1>
+    <a class="btn btn-primary" href="{% url 'comercial:novo' tipo %}">
+        Novo
+    </a>
+</div>
+
+<form class="d-flex gap-2 mb-3">
+    <input
+        class="form-control"
+        name="q"
+        value="{{ q }}"
+        placeholder="Cliente"
+    >
+
+    <select class="form-select" name="status">
+        <option value="">Todas as situações</option>
+
+        {% for k, v in estados %}
+            <option value="{{ k }}" {% if status == k %}selected{% endif %}>
+                {{ v }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button class="btn btn-primary">
+        Filtrar
+    </button>
+</form>
+
+<div class="surface p-3 table-responsive">
+
+    <table class="table align-middle">
+
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Situação</th>
+                <th>Total</th>
+                <th style="width: 60px;"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for d in pagina %}
+
+                <tr>
+
+                    <td>
+                        <a href="{% url 'comercial:detalhe' d.pk %}">
+                            {{ d.codigo }}
+                        </a>
+                    </td>
+
+                    <td>
+                        {{ d.criado_em|date:'d/m/Y' }}
+                    </td>
+
+                    <td>
+                        {{ d.cliente }}
+                    </td>
+
+                    <td>
+                        {{ d.situacao }}
+                    </td>
+
+                    <td>
+                        R$ {{ d.total|floatformat:2 }}
+                    </td>
+
+                    <td class="text-end">
+
+                        <div class="dropdown">
+
+                            <button
+                                class="btn btn-sm btn-light border"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                aria-label="Ações"
+                                style="font-size: 20px; line-height: 1; padding: 4px 10px;"
+                            >
+                                ⋮
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+
+                                <li>
+                                    <a
+                                        class="dropdown-item"
+                                        href="{% url 'comercial:detalhe' d.pk %}"
+                                    >
+                                        Visualizar
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a
+                                        class="dropdown-item"
+                                        href="{% url 'comercial:pdf' d.pk 'a4' %}"
+                                        target="_blank"
+                                    >
+                                        Imprimir
+                                    </a>
+                                </li>
+
+                                {% if d.status != 'convertido' %}
+
+                                    {% if perms.comercial.change_documento %}
+                                        <li>
+                                            <a
+                                                class="dropdown-item"
+                                                href="{% url 'comercial:editar' d.pk %}"
+                                            >
+                                                Editar
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                {% endif %}
+
+
+                                {% if d.tipo == 'os' %}
+
+                                    {% for conta in d.contareceber_set.all %}
+
+                                        {% if not conta.cancelada %}
+
+                                            {% if perms.comercial.receber_conta %}
+                                                <li>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="{% url 'comercial:conta' conta.pk %}"
+                                                    >
+                                                        Receber pagamento
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+
+                                        {% endif %}
+
+                                    {% endfor %}
+
+
+                                    {% if d.venda_id %}
+                                        <li>
+                                            <a
+                                                class="dropdown-item"
+                                                href="{% url 'vendas:detalhe' d.venda_id %}"
+                                            >
+                                                Ver venda
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                {% endif %}
+
+
+                                {% if d.tipo == 'orcamento' and d.status != 'convertido' and not d.venda_id %}
+
+                                    {% if perms.comercial.delete_documento %}
+
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+
+                                        <li>
+                                            <form
+                                                method="post"
+                                                action="{% url 'comercial:excluir' d.pk %}"
+                                                onsubmit="return confirm('Tem certeza que deseja excluir este orçamento?');"
+                                            >
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="dropdown-item text-danger"
+                                                >
+                                                    Excluir
+                                                </button>
+                                            </form>
+                                        </li>
+
+                                    {% endif %}
+
+                                {% endif %}
+
+                            </ul>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="6" class="text-center">
+                        Nenhum documento encontrado.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% include 'comercial/paginacao.html' %}
+
+</div>
+
+{% endblock %}
