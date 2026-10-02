@@ -657,7 +657,16 @@ def gerar_pdf(documento, termico=False):
             ]
         )
 
-            tabela.setStyle(
+        tabela = Table(
+            linhas,
+            colWidths=widths,
+            repeatRows=1,
+            hAlign="LEFT",
+            splitByRow=1,
+        )
+
+       
+        tabela.setStyle(
             TableStyle(
                 [
                     # Cabeçalho claro e mais legível
@@ -1024,7 +1033,7 @@ def gerar_pdf(documento, termico=False):
             p("Cliente", small),
         ]
 
-        else:
+    else:
         assinatura_style = ParagraphStyle(
             "assinatura",
             parent=small,
