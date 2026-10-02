@@ -1,157 +1,1061 @@
-"""Commercial documents, generated directly as PDF; no browser print headers."""
+"""Documentos comerciais profissionais em PDF."""
+
 from io import BytesIO
 from xml.sax.saxutils import escape
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, Image
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    KeepTogether,
+    Image,
+)
 from reportlab.pdfgen.canvas import Canvas
+
 from core.models import ConfiguracaoEmpresa
 
-GREEN = colors.HexColor('#215c49')
-PALE = colors.HexColor('#eef4f1')
+
+GREEN = colors.HexColor("#215c49")
+GREEN_DARK = colors.HexColor("#174637")
+PALE = colors.HexColor("#eef4f1")
+LIGHT = colors.HexColor("#f7f9f8")
+BORDER = colors.HexColor("#d9e3de")
+TEXT = colors.HexColor("#27332e")
+MUTED = colors.HexColor("#69766f")
+WHITE = colors.white
 
 
 def moeda(valor):
-    return f'{valor:,.2f}'.replace(',', '@').replace('.', ',').replace('@', '.')
+    return f"{valor:,.2f}".replace(",", "@").replace(".", ",").replace("@", ".")
+
+
+def data(v):
+    return v.strftime("%d/%m/%Y") if v else ""
 
 
 class Paginas(Canvas):
-    def __init__(self,*args,rodape='',**kwargs):
-        super().__init__(*args,**kwargs)
-        self.estados=[]
-        self.rodape=rodape
+    def __init__(self, *args, rodape="", **kwargs):
+        super().__init__(*args, **kwargs)
+        self.estados = []
+        self.rodape = rodape
+
     def showPage(self):
         self.estados.append(dict(self.__dict__))
         self._startPage()
+
     def save(self):
-        total=len(self.estados)
+        total = len(self.estados)
+
         for state in self.estados:
             self.__dict__.update(state)
-            self.setFont('Helvetica',7)
-            self.setFillColor(colors.HexColor('#56665f'))
-            w,h=self._pagesize
-            texto=self.rodape
-            from reportlab.lib.utils import simpleSplit
-            linhas = simpleSplit(texto, 'Helvetica', 7, w-6*mm)
-            for i, linha in enumerate(linhas[-2:]):
-                self.drawCentredString(w/2,(12-i*3)*mm,linha)
-            self.drawCentredString(w/2,5*mm,f'Página {self._pageNumber} de {total}')
+
+            self.setStrokeColor(BORDER)
+            self.setLineWidth(0.4)
+
+            w, h = self._pagesize
+            self.line(13 * mm, 13 * mm, w - 13 * mm, 13 * mm)
+
+            self.setFont("Helvetica", 7)
+            self.setFillColor(MUTED)
+
+            texto = self.rodape
+
+            if len(texto) > 120:
+                texto = texto[:117] + "..."
+
+            self.drawString(
+                13 * mm,
+                8 * mm,
+                texto,
+            )
+
+            self.drawRightString(
+                w - 13 * mm,
+                8 * mm,
+                f"Página {self._pageNumber} de {total}",
+            )
+
             Canvas.showPage(self)
+
         Canvas.save(self)
 
 
-def gerar_pdf(documento,termico=False):
-    empresa=ConfiguracaoEmpresa.objects.first()
-    nome=(empresa.nome_fantasia or empresa.razao_social) if empresa else ''
-    dados=[]
+def gerar_pdf(documento, termico=False):
+    empresa = ConfiguracaoEmpresa.objects.first()
+
+    nome = ""
     if empresa:
-        for texto in [empresa.razao_social if empresa.razao_social != nome else '',
-            ('CNPJ/CPF: '+empresa.documento) if empresa.documento else '',
-            ('IE: '+empresa.inscricao_estadual) if empresa.inscricao_estadual else '',
-            ', '.join(filter(None,[empresa.endereco,empresa.numero,empresa.complemento])),
-            ' - '.join(filter(None,[empresa.bairro,empresa.cidade,empresa.estado,empresa.cep])),
-            ' / '.join(filter(None,[empresa.telefone,('WhatsApp: '+empresa.whatsapp) if empresa.whatsapp else ''])),empresa.email]:
-            if texto: dados.append(texto)
-    w,h=(58*mm,220*mm) if termico else A4
-    margem=3*mm if termico else 13*mm
-    largura=w-2*margem
-    normal=ParagraphStyle('body',fontName='Helvetica',fontSize=7 if termico else 9,leading=9 if termico else 11,spaceAfter=3 if termico else 2)
-    small=ParagraphStyle('small',parent=normal,fontSize=6 if termico else 8,leading=8 if termico else 10)
-    titulo=ParagraphStyle('title',parent=normal,fontName='Helvetica-Bold',fontSize=10 if termico else 17,leading=13 if termico else 20,textColor=GREEN)
-    section=ParagraphStyle('section',parent=normal,fontName='Helvetica-Bold',textColor=GREEN,spaceBefore=8 if termico else 5,spaceAfter=5 if termico else 3)
-    def p(text,style=normal): return Paragraph(escape(str(text or '')).replace('\n','<br/>'),style)
-    logo=None
+        nome = empresa.nome_fantasia or empresa.razao_social or ""
+
+    if not nome:
+        nome = "REGISTER"
+
+    # ================================================================
+    # TAMANHO / MARGENS
+    # ================================================================
+
+    w, h = (58 * mm, 220 * mm) if termico else A4
+    margem = 3 * mm if termico else 13 * mm
+    largura = w - (2 * margem)
+
+    # ================================================================
+    # ESTILOS
+    # ================================================================
+
+    normal = ParagraphStyle(
+        "body",
+        fontName="Helvetica",
+        fontSize=7 if termico else 9,
+        leading=9 if termico else 12,
+        textColor=TEXT,
+        spaceAfter=2,
+    )
+
+    small = ParagraphStyle(
+        "small",
+        parent=normal,
+        fontSize=6 if termico else 7.5,
+        leading=8 if termico else 9.5,
+        textColor=MUTED,
+    )
+
+    empresa_nome = ParagraphStyle(
+        "empresa",
+        parent=normal,
+        fontName="Helvetica-Bold",
+        fontSize=8 if termico else 11,
+        leading=10 if termico else 13,
+        textColor=GREEN_DARK,
+    )
+
+    titulo = ParagraphStyle(
+        "title",
+        parent=normal,
+        fontName="Helvetica-Bold",
+        fontSize=10 if termico else 18,
+        leading=13 if termico else 21,
+        textColor=GREEN,
+        alignment=2 if not termico else 0,
+    )
+
+    codigo_style = ParagraphStyle(
+        "codigo",
+        parent=normal,
+        fontName="Helvetica-Bold",
+        fontSize=7 if termico else 10,
+        leading=9 if termico else 12,
+        alignment=2 if not termico else 0,
+        textColor=TEXT,
+    )
+
+    section = ParagraphStyle(
+        "section",
+        parent=normal,
+        fontName="Helvetica-Bold",
+        fontSize=7 if termico else 8,
+        leading=9 if termico else 10,
+        textColor=GREEN_DARK,
+        spaceBefore=7 if termico else 5,
+        spaceAfter=4,
+    )
+
+    total_style = ParagraphStyle(
+        "total",
+        parent=normal,
+        fontName="Helvetica-Bold",
+        fontSize=9 if termico else 15,
+        leading=11 if termico else 18,
+        textColor=GREEN_DARK,
+        alignment=2,
+    )
+
+    def p(text, style=normal):
+        return Paragraph(
+            escape(str(text or "")).replace("\n", "<br/>"),
+            style,
+        )
+
+    # ================================================================
+    # LOGO
+    # ================================================================
+
+    logo = None
+
     if empresa and empresa.logo:
         try:
-            with empresa.logo.open('rb') as f: raw=f.read(5*1024*1024+1)
-            if len(raw)<=5*1024*1024:
-                logo=Image(BytesIO(raw))
-                ratio=min((18 if termico else 25)*mm/logo.imageWidth,20*mm/logo.imageHeight)
-                logo.drawWidth=logo.imageWidth*ratio
-                logo.drawHeight=logo.imageHeight*ratio
-        except (OSError,ValueError):
-            logo=None
-    # Header is measured and repeated on every page, including continued tables.
-    if not termico and empresa:
-        documentos = ' • '.join(filter(None, [('CNPJ/CPF: '+empresa.documento) if empresa.documento else '', ('IE: '+empresa.inscricao_estadual) if empresa.inscricao_estadual else '']))
-        dados = [empresa.razao_social if empresa.razao_social != nome else '', documentos, ', '.join(filter(None,[empresa.endereco,empresa.numero,empresa.complemento])), ' - '.join(filter(None,[empresa.bairro,empresa.cidade,empresa.estado,empresa.cep])), ' / '.join(filter(None,[empresa.telefone,empresa.whatsapp,empresa.email]))]
-        dados = [d for d in dados if d]
-    identidade=[p(nome,section)] if nome else []
-    identidade += [p(t,small) for t in dados]
-    identificacao=[p('ORÇAMENTO' if documento.tipo=='orcamento' else 'ORDEM DE SERVIÇO',titulo),p(documento.codigo,normal),p(documento.situacao,small)]
+            with empresa.logo.open("rb") as f:
+                raw = f.read(5 * 1024 * 1024 + 1)
+
+            if len(raw) <= 5 * 1024 * 1024:
+                logo = Image(BytesIO(raw))
+
+                max_w = 18 * mm if termico else 28 * mm
+                max_h = 18 * mm if termico else 22 * mm
+
+                ratio = min(
+                    max_w / logo.imageWidth,
+                    max_h / logo.imageHeight,
+                )
+
+                logo.drawWidth = logo.imageWidth * ratio
+                logo.drawHeight = logo.imageHeight * ratio
+
+        except (OSError, ValueError):
+            logo = None
+
+    # ================================================================
+    # DADOS DA EMPRESA
+    # ================================================================
+
+    dados = []
+
+    if empresa:
+        if empresa.razao_social and empresa.razao_social != nome:
+            dados.append(empresa.razao_social)
+
+        documentos = " • ".join(
+            filter(
+                None,
+                [
+                    f"CNPJ/CPF: {empresa.documento}"
+                    if empresa.documento
+                    else "",
+                    f"IE: {empresa.inscricao_estadual}"
+                    if empresa.inscricao_estadual
+                    else "",
+                ],
+            )
+        )
+
+        if documentos:
+            dados.append(documentos)
+
+        endereco = ", ".join(
+            filter(
+                None,
+                [
+                    empresa.endereco,
+                    empresa.numero,
+                    empresa.complemento,
+                ],
+            )
+        )
+
+        if endereco:
+            dados.append(endereco)
+
+        local = " - ".join(
+            filter(
+                None,
+                [
+                    empresa.bairro,
+                    empresa.cidade,
+                    empresa.estado,
+                    empresa.cep,
+                ],
+            )
+        )
+
+        if local:
+            dados.append(local)
+
+        contato = " • ".join(
+            filter(
+                None,
+                [
+                    empresa.telefone,
+                    f"WhatsApp: {empresa.whatsapp}"
+                    if empresa.whatsapp
+                    else "",
+                    empresa.email,
+                ],
+            )
+        )
+
+        if contato:
+            dados.append(contato)
+
+    # ================================================================
+    # CABEÇALHO
+    # ================================================================
+
+    tipo_nome = (
+        "ORÇAMENTO"
+        if documento.tipo == "orcamento"
+        else "ORDEM DE SERVIÇO"
+    )
+
+    identidade = [p(nome, empresa_nome)]
+    identidade += [p(item, small) for item in dados]
+
+    identificacao = [
+        p(tipo_nome, titulo),
+        p(documento.codigo, codigo_style),
+        p(documento.situacao, small),
+    ]
+
     if termico:
-        header=Table([[logo or '',identificacao]],colWidths=[19*mm,largura-19*mm])
-        dados_header=[p(nome,small)] + [p(t,small) for t in dados]
+        header = Table(
+            [[logo or "", identificacao]],
+            colWidths=[19 * mm, largura - 19 * mm],
+        )
+
+        dados_header = [p(nome, empresa_nome)]
+        dados_header += [p(item, small) for item in dados]
+
     else:
-        header=Table([[logo,identidade,identificacao]],colWidths=[28*mm,largura-88*mm,60*mm]) if logo else Table([[identidade,identificacao]],colWidths=[largura-60*mm,60*mm])
-        dados_header=[]
-    header.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),6)]))
-    _,hh=header.wrap(largura,h)
-    def cabecalho(canvas,doc):
+        if logo:
+            header = Table(
+                [[logo, identidade, identificacao]],
+                colWidths=[
+                    31 * mm,
+                    largura - 94 * mm,
+                    63 * mm,
+                ],
+            )
+        else:
+            header = Table(
+                [[identidade, identificacao]],
+                colWidths=[
+                    largura - 63 * mm,
+                    63 * mm,
+                ],
+            )
+
+        dados_header = []
+
+    header.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
+
+    _, hh = header.wrap(largura, h)
+
+    def cabecalho(canvas, doc):
         canvas.saveState()
-        canvas.setTitle(f'{documento.get_tipo_display()} {documento.codigo}')
-        canvas.setAuthor(nome or 'REGISTER')
-        header.drawOn(canvas,margem,h-8*mm-hh)
+
+        canvas.setTitle(
+            f"{documento.get_tipo_display()} {documento.codigo}"
+        )
+        canvas.setAuthor(nome)
+
+        header.drawOn(
+            canvas,
+            margem,
+            h - 8 * mm - hh,
+        )
+
         canvas.setStrokeColor(GREEN)
-        canvas.line(margem,h-10*mm-hh,w-margem,h-10*mm-hh)
+        canvas.setLineWidth(0.8)
+
+        canvas.line(
+            margem,
+            h - 10 * mm - hh,
+            w - margem,
+            h - 10 * mm - hh,
+        )
+
         canvas.restoreState()
-    fluxo=list(dados_header)
-    cliente=documento.cliente
+
+    fluxo = list(dados_header)
+
+    # ================================================================
+    # CLIENTE E VEÍCULO
+    # ================================================================
+
+    cliente = documento.cliente
+
     if termico:
-        fluxo += [p('DADOS DO CLIENTE',section),p(cliente.nome)]
-        for label,valor in [('CPF/CNPJ',cliente.documento),('Telefone',cliente.telefone),('E-mail',cliente.email),('Endereço',cliente.endereco)]:
-            if valor: fluxo.append(p(f'{label}: {valor}'))
-        fluxo.append(p('DADOS DO VEÍCULO',section))
-        for label,valor in [('Marca / Modelo',documento.veiculo),('Placa',documento.placa),('Ano',documento.ano),('KM',documento.km),('Combustível',documento.combustivel)]:
-            if valor is not None and str(valor): fluxo.append(p(f'{label}: {valor}'))
+        fluxo += [
+            p("DADOS DO CLIENTE", section),
+            p(cliente.nome),
+        ]
+
+        for label, valor in [
+            ("CPF/CNPJ", cliente.documento),
+            ("Telefone", cliente.telefone),
+            ("E-mail", cliente.email),
+            ("Endereço", cliente.endereco),
+        ]:
+            if valor:
+                fluxo.append(p(f"{label}: {valor}"))
+
+        fluxo.append(p("DADOS DO VEÍCULO", section))
+
+        for label, valor in [
+            ("Marca / Modelo", documento.veiculo),
+            ("Placa", documento.placa),
+            ("Ano", documento.ano),
+            ("KM", documento.km),
+            ("Combustível", documento.combustivel),
+        ]:
+            if valor is not None and str(valor):
+                fluxo.append(p(f"{label}: {valor}"))
+
     else:
-        cliente_linhas = [cliente.nome, ' • '.join(filter(None,[('CPF/CNPJ: '+cliente.documento) if cliente.documento else '',cliente.telefone])), cliente.email, cliente.endereco]
-        veiculo_linhas = [documento.veiculo, ' • '.join(filter(None,[('Placa: '+documento.placa) if documento.placa else '',('Ano: '+documento.ano) if documento.ano else ''])), ' • '.join(filter(None,[('KM: '+str(documento.km)) if documento.km is not None else '',('Combustível: '+documento.combustivel) if documento.combustivel else '']))]
-        infos=Table([[[p('CLIENTE',section)]+[p(t) for t in cliente_linhas if t], [p('VEÍCULO',section)]+[p(t) for t in veiculo_linhas if t]]],colWidths=[largura*.55,largura*.45])
-        infos.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('BACKGROUND',(0,0),(-1,-1),PALE),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4)]))
-        fluxo += [infos,Spacer(1,3*mm)]
-    itens=list(documento.itens.all())
-    for tipo,label,subtotal in [('peca','PEÇAS / PRODUTOS',documento.subtotal_pecas),('servico','SERVIÇOS',documento.subtotal_servicos)]:
-        selecionados=[i for i in itens if getattr(i,tipo+'_id')]
+        cliente_info = [
+            p("DADOS DO CLIENTE", section),
+            p(cliente.nome, empresa_nome),
+        ]
+
+        if cliente.documento:
+            cliente_info.append(
+                p(f"CPF/CNPJ: {cliente.documento}", small)
+            )
+
+        if cliente.telefone:
+            cliente_info.append(
+                p(f"Telefone: {cliente.telefone}", small)
+            )
+
+        if cliente.email:
+            cliente_info.append(
+                p(f"E-mail: {cliente.email}", small)
+            )
+
+        if cliente.endereco:
+            cliente_info.append(
+                p(f"Endereço: {cliente.endereco}", small)
+            )
+
+        veiculo_info = [
+            p("DADOS DO VEÍCULO", section),
+        ]
+
+        if documento.veiculo:
+            veiculo_info.append(
+                p(documento.veiculo, empresa_nome)
+            )
+
+        veiculo_detalhes = []
+
+        if documento.placa:
+            veiculo_detalhes.append(
+                f"Placa: {documento.placa}"
+            )
+
+        if documento.ano:
+            veiculo_detalhes.append(
+                f"Ano: {documento.ano}"
+            )
+
+        if veiculo_detalhes:
+            veiculo_info.append(
+                p(" • ".join(veiculo_detalhes), small)
+            )
+
+        veiculo_detalhes2 = []
+
+        if documento.km is not None:
+            veiculo_detalhes2.append(
+                f"KM: {documento.km}"
+            )
+
+        if documento.combustivel:
+            veiculo_detalhes2.append(
+                f"Combustível: {documento.combustivel}"
+            )
+
+        if veiculo_detalhes2:
+            veiculo_info.append(
+                p(" • ".join(veiculo_detalhes2), small)
+            )
+
+        infos = Table(
+            [[cliente_info, veiculo_info]],
+            colWidths=[
+                largura * 0.55,
+                largura * 0.45,
+            ],
+        )
+
+        infos.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("BACKGROUND", (0, 0), (-1, -1), LIGHT),
+                    ("BOX", (0, 0), (-1, -1), 0.5, BORDER),
+                    ("LINEAFTER", (0, 0), (0, -1), 0.5, BORDER),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+                ]
+            )
+        )
+
+        fluxo += [
+            infos,
+            Spacer(1, 4 * mm),
+        ]
+
+    # ================================================================
+    # DATAS PRINCIPAIS
+    # ================================================================
+
+    if not termico:
+        if documento.tipo == "orcamento":
+            datas = [
+                ("EMISSÃO", data(documento.criado_em)),
+                ("VALIDADE", data(documento.validade)),
+                ("SITUAÇÃO", documento.situacao),
+            ]
+        else:
+            datas = [
+                ("ABERTURA", data(documento.criado_em)),
+                ("PREVISÃO", data(documento.previsao)),
+                ("CONCLUSÃO", data(documento.conclusao) or "—"),
+            ]
+
+        data_cells = []
+
+        for label, valor in datas:
+            data_cells.append(
+                [
+                    p(label, small),
+                    p(valor or "—", normal),
+                ]
+            )
+
+        datas_table = Table(
+            [data_cells],
+            colWidths=[largura / len(data_cells)] * len(data_cells),
+        )
+
+        datas_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), PALE),
+                    ("BOX", (0, 0), (-1, -1), 0.5, BORDER),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.4, BORDER),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 7),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ]
+            )
+        )
+
+        fluxo += [
+            datas_table,
+            Spacer(1, 4 * mm),
+        ]
+
+    # ================================================================
+    # ITENS
+    # ================================================================
+
+    itens = list(documento.itens.all())
+
+    for tipo, label, subtotal in [
+        ("peca", "PEÇAS / PRODUTOS", documento.subtotal_pecas),
+        ("servico", "SERVIÇOS / MÃO DE OBRA", documento.subtotal_servicos),
+    ]:
+        selecionados = [
+            item
+            for item in itens
+            if getattr(item, tipo + "_id")
+        ]
+
         if not selecionados and not termico:
             continue
-        fluxo.append(p(label,section))
-        linhas=[[p(t,small) for t in (['QTD / DESCRIÇÃO','TOTAL'] if termico else ['QTD','DESCRIÇÃO','UNITÁRIO (R$)','TOTAL (R$)'])]]
-        for i in itens:
-            if not getattr(i,tipo+'_id'): continue
-            linhas.append([p(f'{i.quantidade} x {i.descricao}\nUnit.: R$ {moeda(i.preco)}',small),p(moeda(i.total),small)] if termico else [p(i.quantidade),p(i.descricao),p(moeda(i.preco)),p(moeda(i.total))])
-        if len(linhas)==1: linhas.append([p('Sem itens')]+['']*(len(linhas[0])-1))
-        widths=[largura*.72,largura*.28] if termico else [largura*.08,largura*.56,largura*.18,largura*.18]
-        tabela=Table(linhas,colWidths=widths,repeatRows=1,hAlign='LEFT',splitByRow=1)
-        tabela.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),PALE),('VALIGN',(0,0),(-1,-1),'TOP'),('LINEBELOW',(0,0),(-1,0),.6,GREEN),('LINEBELOW',(0,1),(-1,-1),.25,colors.HexColor('#dbe3df')),('LEFTPADDING',(0,0),(-1,-1),3),('RIGHTPADDING',(0,0),(-1,-1),3),('TOPPADDING',(0,0),(-1,-1),5 if termico else 3),('BOTTOMPADDING',(0,0),(-1,-1),5 if termico else 3)]))
-        fluxo += [tabela,p(f'Subtotal: R$ {moeda(subtotal)}',section)]
-    resumo=Table([[p(label,small),p('R$ '+moeda(valor),section if label == 'TOTAL' else normal)] for label,valor in [('Produtos / Peças',documento.subtotal_pecas),('Serviços',documento.subtotal_servicos),('Desconto',documento.desconto),('TOTAL',documento.total)]],colWidths=[largura*.65,largura*.35])
-    resumo.setStyle(TableStyle([('BACKGROUND',(0,-1),(-1,-1),PALE),('BOX',(0,-1),(-1,-1),1,GREEN),('VALIGN',(0,0),(-1,-1),'TOP'),('TOPPADDING',(0,0),(-1,-1),6)]))
-    if not termico:
-        totais=[('Peças',documento.subtotal_pecas),('Serviços',documento.subtotal_servicos),('Desconto',documento.desconto),('TOTAL',documento.total)]
-        resumo=Table([[[p(label,small),p('R$ '+moeda(valor),section)] for label,valor in totais]],colWidths=[largura/4]*4)
-        resumo.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),PALE),('BOX',(-1,0),(-1,0),.8,GREEN),('VALIGN',(0,0),(-1,-1),'TOP'),('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4)]))
-    fluxo += [Spacer(1,3*mm),KeepTogether([resumo])]
-    def data(v): return v.strftime('%d/%m/%Y') if v else ''
-    campos=[('Emissão / Abertura',data(documento.criado_em)),('Validade',data(documento.validade))] if documento.tipo=='orcamento' else [('Abertura',data(documento.criado_em)),('Previsão',data(documento.previsao)),('Conclusão',data(documento.conclusao)),('Técnico / Responsável',documento.responsavel),('Relato do cliente',documento.relato),('Diagnóstico',documento.diagnostico),('Serviço solicitado',documento.solicitado)]
-    campos += [('Observações',documento.observacoes),('Condições',documento.condicoes)]
-    if not termico:
-        datas = [f'{label}: {valor}' for label,valor in campos if valor and label in ['Emissão / Abertura','Validade','Abertura','Previsão','Conclusão','Técnico / Responsável']]
-        if datas: fluxo += [Spacer(1,3*mm),p(' • '.join(datas),small)]
-    for label,valor in campos:
-        if not valor: continue
+
+        fluxo.append(p(label, section))
+
         if termico:
-            fluxo += [p(label.upper(),section),p(valor)]
-        elif label not in ['Emissão / Abertura','Validade','Abertura','Previsão','Conclusão','Técnico / Responsável']:
-            fluxo.append(Paragraph('<b>'+escape(label)+':</b> '+escape(str(valor)).replace('\n','<br/>'),normal))
-    assinaturas=[Spacer(1,14*mm),p('____________________________',small),p('Responsável da empresa',small),Spacer(1,9*mm),p('____________________________',small),p('Cliente',small)]
-    if not termico:
-        assinaturas = [Spacer(1,9*mm),Table([[p('____________________________',small),p('____________________________',small)],[p('Responsável da empresa',small),p('Cliente',small)]],colWidths=[largura/2,largura/2])]
-    fluxo.append(KeepTogether(assinaturas))
-    rodape=' • '.join(filter(None,[nome,empresa.documento if empresa else '',(empresa.whatsapp or empresa.telefone) if empresa else '']))
-    buffer=BytesIO()
-    doc=SimpleDocTemplate(buffer,pagesize=(w,h),leftMargin=margem,rightMargin=margem,topMargin=hh+14*mm,bottomMargin=16*mm)
-    doc.build(fluxo,onFirstPage=cabecalho,onLaterPages=cabecalho,canvasmaker=lambda *a,**k:Paginas(*a,rodape=rodape,**k))
+            linhas = [
+                [
+                    p("QTD / DESCRIÇÃO", small),
+                    p("TOTAL", small),
+                ]
+            ]
+        else:
+            linhas = [
+                [
+                    p("QTD", small),
+                    p("DESCRIÇÃO", small),
+                    p("VALOR UNITÁRIO", small),
+                    p("TOTAL", small),
+                ]
+            ]
+
+        for item in selecionados:
+            if termico:
+                linhas.append(
+                    [
+                        p(
+                            f"{item.quantidade} x {item.descricao}\n"
+                            f"Unit.: R$ {moeda(item.preco)}",
+                            small,
+                        ),
+                        p(
+                            "R$ " + moeda(item.total),
+                            small,
+                        ),
+                    ]
+                )
+            else:
+                linhas.append(
+                    [
+                        p(item.quantidade),
+                        p(item.descricao),
+                        p("R$ " + moeda(item.preco)),
+                        p("R$ " + moeda(item.total)),
+                    ]
+                )
+
+        if len(linhas) == 1:
+            linhas.append(
+                [p("Sem itens")]
+                + [""] * (len(linhas[0]) - 1)
+            )
+
+        widths = (
+            [largura * 0.72, largura * 0.28]
+            if termico
+            else [
+                largura * 0.08,
+                largura * 0.52,
+                largura * 0.20,
+                largura * 0.20,
+            ]
+        )
+
+        tabela = Table(
+            linhas,
+            colWidths=widths,
+            repeatRows=1,
+            hAlign="LEFT",
+            splitByRow=1,
+        )
+
+        tabela.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), GREEN),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [WHITE, LIGHT],
+                    ),
+                    (
+                        "LINEBELOW",
+                        (0, 1),
+                        (-1, -1),
+                        0.25,
+                        BORDER,
+                    ),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                    (
+                        "TOPPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        5 if termico else 6,
+                    ),
+                    (
+                        "BOTTOMPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        5 if termico else 6,
+                    ),
+                    ("ALIGN", (-2, 1), (-1, -1), "RIGHT"),
+                ]
+            )
+        )
+
+        fluxo.append(tabela)
+
+        if termico:
+            fluxo.append(
+                p(
+                    f"Subtotal: R$ {moeda(subtotal)}",
+                    section,
+                )
+            )
+        else:
+            subtotal_table = Table(
+                [
+                    [
+                        "",
+                        p("Subtotal", small),
+                        p(
+                            "R$ " + moeda(subtotal),
+                            codigo_style,
+                        ),
+                    ]
+                ],
+                colWidths=[
+                    largura * 0.60,
+                    largura * 0.20,
+                    largura * 0.20,
+                ],
+            )
+
+            subtotal_table.setStyle(
+                TableStyle(
+                    [
+                        ("ALIGN", (-2, 0), (-1, -1), "RIGHT"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 4),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ]
+                )
+            )
+
+            fluxo += [
+                subtotal_table,
+                Spacer(1, 2 * mm),
+            ]
+
+    # ================================================================
+    # RESUMO FINANCEIRO
+    # ================================================================
+
+    if termico:
+        resumo = Table(
+            [
+                [
+                    p(label, small),
+                    p(
+                        "R$ " + moeda(valor),
+                        total_style if label == "TOTAL" else normal,
+                    ),
+                ]
+                for label, valor in [
+                    ("Produtos / Peças", documento.subtotal_pecas),
+                    ("Serviços", documento.subtotal_servicos),
+                    ("Desconto", documento.desconto),
+                    ("TOTAL", documento.total),
+                ]
+            ],
+            colWidths=[
+                largura * 0.58,
+                largura * 0.42,
+            ],
+        )
+
+        resumo.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, -1), (-1, -1), PALE),
+                    ("BOX", (0, -1), (-1, -1), 0.8, GREEN),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ]
+            )
+        )
+
+        fluxo += [
+            Spacer(1, 3 * mm),
+            KeepTogether([resumo]),
+        ]
+
+    else:
+        resumo_dados = [
+            [
+                p("Produtos / Peças", normal),
+                p(
+                    "R$ " + moeda(documento.subtotal_pecas),
+                    codigo_style,
+                ),
+            ],
+            [
+                p("Serviços / Mão de obra", normal),
+                p(
+                    "R$ " + moeda(documento.subtotal_servicos),
+                    codigo_style,
+                ),
+            ],
+        ]
+
+        if documento.desconto:
+            resumo_dados.append(
+                [
+                    p("Desconto", normal),
+                    p(
+                        "- R$ " + moeda(documento.desconto),
+                        codigo_style,
+                    ),
+                ]
+            )
+
+        resumo_dados.append(
+            [
+                p("TOTAL", empresa_nome),
+                p(
+                    "R$ " + moeda(documento.total),
+                    total_style,
+                ),
+            ]
+        )
+
+        resumo = Table(
+            resumo_dados,
+            colWidths=[
+                largura * 0.65,
+                largura * 0.35,
+            ],
+            hAlign="RIGHT",
+        )
+
+        resumo.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    (
+                        "LINEBELOW",
+                        (0, 0),
+                        (-1, -2),
+                        0.3,
+                        BORDER,
+                    ),
+                    ("BACKGROUND", (0, -1), (-1, -1), PALE),
+                    ("BOX", (0, -1), (-1, -1), 0.8, GREEN),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ]
+            )
+        )
+
+        bloco_resumo = Table(
+            [["", resumo]],
+            colWidths=[
+                largura * 0.46,
+                largura * 0.54,
+            ],
+        )
+
+        bloco_resumo.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]
+            )
+        )
+
+        fluxo += [
+            Spacer(1, 3 * mm),
+            KeepTogether([bloco_resumo]),
+            Spacer(1, 4 * mm),
+        ]
+
+    # ================================================================
+    # INFORMAÇÕES DO ORÇAMENTO / OS
+    # ================================================================
+
+    if documento.tipo == "os":
+        if documento.responsavel:
+            if termico:
+                fluxo += [
+                    p("TÉCNICO / RESPONSÁVEL", section),
+                    p(documento.responsavel),
+                ]
+            else:
+                fluxo += [
+                    p(
+                        f"<b>Técnico / Responsável:</b> "
+                        f"{escape(str(documento.responsavel))}",
+                        normal,
+                    )
+                ]
+
+        campos = [
+            ("RELATO DO CLIENTE", documento.relato),
+            ("DIAGNÓSTICO", documento.diagnostico),
+            ("SERVIÇO SOLICITADO", documento.solicitado),
+        ]
+
+        for label, valor in campos:
+            if not valor:
+                continue
+
+            if termico:
+                fluxo += [
+                    p(label, section),
+                    p(valor),
+                ]
+            else:
+                bloco = Table(
+                    [
+                        [p(label, section)],
+                        [p(valor)],
+                    ],
+                    colWidths=[largura],
+                )
+
+                bloco.setStyle(
+                    TableStyle(
+                        [
+                            ("BACKGROUND", (0, 0), (-1, 0), PALE),
+                            ("BOX", (0, 0), (-1, -1), 0.4, BORDER),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 7),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                            ("TOPPADDING", (0, 0), (-1, -1), 4),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                        ]
+                    )
+                )
+
+                fluxo += [
+                    Spacer(1, 2 * mm),
+                    bloco,
+                ]
+
+    # ================================================================
+    # OBSERVAÇÕES E CONDIÇÕES
+    # ================================================================
+
+    for label, valor in [
+        ("OBSERVAÇÕES", documento.observacoes),
+        ("CONDIÇÕES", documento.condicoes),
+    ]:
+        if not valor:
+            continue
+
+        if termico:
+            fluxo += [
+                p(label, section),
+                p(valor),
+            ]
+        else:
+            bloco = Table(
+                [
+                    [p(label, section)],
+                    [p(valor)],
+                ],
+                colWidths=[largura],
+            )
+
+            bloco.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), PALE),
+                        ("BOX", (0, 0), (-1, -1), 0.4, BORDER),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 7),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                        ("TOPPADDING", (0, 0), (-1, -1), 4),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                    ]
+                )
+            )
+
+            fluxo += [
+                Spacer(1, 2 * mm),
+                bloco,
+            ]
+
+    # ================================================================
+    # ASSINATURAS
+    # ================================================================
+
+    if termico:
+        assinaturas = [
+            Spacer(1, 14 * mm),
+            p("____________________________", small),
+            p("Responsável da empresa", small),
+            Spacer(1, 9 * mm),
+            p("____________________________", small),
+            p("Cliente", small),
+        ]
+
+    else:
+        assinatura_empresa = [
+            p("________________________________________", small),
+            p("Responsável da empresa", small),
+        ]
+
+        assinatura_cliente = [
+            p("________________________________________", small),
+            p("Cliente", small),
+        ]
+
+        assinaturas = [
+            Spacer(1, 12 * mm),
+            Table(
+                [[assinatura_empresa, assinatura_cliente]],
+                colWidths=[
+                    largura / 2,
+                    largura / 2,
+                ],
+                style=TableStyle(
+                    [
+                        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                    ]
+                ),
+            ),
+        ]
+
+    fluxo.append(
+        KeepTogether(assinaturas)
+    )
+
+    # ================================================================
+    # RODAPÉ
+    # ================================================================
+
+    rodape = " • ".join(
+        filter(
+            None,
+            [
+                nome,
+                empresa.documento if empresa else "",
+                (
+                    empresa.whatsapp or empresa.telefone
+                    if empresa
+                    else ""
+                ),
+            ],
+        )
+    )
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=(w, h),
+        leftMargin=margem,
+        rightMargin=margem,
+        topMargin=hh + 14 * mm,
+        bottomMargin=18 * mm if not termico else 16 * mm,
+    )
+
+    doc.build(
+        fluxo,
+        onFirstPage=cabecalho,
+        onLaterPages=cabecalho,
+        canvasmaker=lambda *args, **kwargs: Paginas(
+            *args,
+            rodape=rodape,
+            **kwargs,
+        ),
+    )
+
     return buffer.getvalue()
