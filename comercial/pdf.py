@@ -78,7 +78,7 @@ class Paginas(Canvas):
             self.drawRightString(
                 w - 13 * mm,
                 8 * mm,
-                f"PÃ¡gina {self._pageNumber} de {total}",
+                f"Página {self._pageNumber} de {total}",
             )
 
             Canvas.showPage(self)
@@ -219,7 +219,7 @@ def gerar_pdf(documento, termico=False):
         if empresa.razao_social and empresa.razao_social != nome:
             dados.append(empresa.razao_social)
 
-        documentos = " â€¢ ".join(
+        documentos = " • ".join(
             filter(
                 None,
                 [
@@ -265,7 +265,7 @@ def gerar_pdf(documento, termico=False):
         if local:
             dados.append(local)
 
-        contato = " â€¢ ".join(
+        contato = " • ".join(
             filter(
                 None,
                 [
@@ -282,19 +282,19 @@ def gerar_pdf(documento, termico=False):
             dados.append(contato)
 
     # ================================================================
-    # CABEÃ‡ALHO
+    # CABEÇALHO
     # ================================================================
 
     tipo_nome = (
-        "ORÃ‡AMENTO"
+        "ORÇAMENTO"
         if documento.tipo == "orcamento"
-        else "ORDEM DE SERVIÃ‡O"
+        else "ORDEM DE SERVIÇO"
     )
 
     identidade = [p(nome, empresa_nome)]
     identidade += [p(item, small) for item in dados]
 
-        # IdentificaÃ§Ã£o do documento
+        # Identificação do documento
     if termico:
         identificacao = [
             p(tipo_nome, titulo),
@@ -395,7 +395,7 @@ def gerar_pdf(documento, termico=False):
     fluxo = list(dados_header)
 
     # ================================================================
-    # CLIENTE E VEÃCULO
+    # CLIENTE E VEÍCULO
     # ================================================================
 
     cliente = documento.cliente
@@ -410,19 +410,19 @@ def gerar_pdf(documento, termico=False):
             ("CPF/CNPJ", cliente.documento),
             ("Telefone", cliente.telefone),
             ("E-mail", cliente.email),
-            ("EndereÃ§o", cliente.endereco),
+            ("Endereço", cliente.endereco),
         ]:
             if valor:
                 fluxo.append(p(f"{label}: {valor}"))
 
-        fluxo.append(p("DADOS DO VEÃCULO", section))
+        fluxo.append(p("DADOS DO VEÍCULO", section))
 
         for label, valor in [
             ("Marca / Modelo", documento.veiculo),
             ("Placa", documento.placa),
             ("Ano", documento.ano),
             ("KM", documento.km),
-            ("CombustÃ­vel", documento.combustivel),
+            ("Combustível", documento.combustivel),
         ]:
             if valor is not None and str(valor):
                 fluxo.append(p(f"{label}: {valor}"))
@@ -430,7 +430,7 @@ def gerar_pdf(documento, termico=False):
     else:
 
         # ============================================================
-        # CLIENTE â€” grade principal com largura total
+        # CLIENTE — grade principal com largura total
         # ============================================================
 
         cliente_linhas = [
@@ -466,7 +466,7 @@ def gerar_pdf(documento, termico=False):
         if cliente.endereco:
             cliente_linhas.append(
                 [
-                    p(f"EndereÃ§o: {cliente.endereco}", small),
+                    p(f"Endereço: {cliente.endereco}", small),
                     "",
                 ]
             )
@@ -509,14 +509,14 @@ def gerar_pdf(documento, termico=False):
         ]
 
         # ============================================================
-        # VEÃCULO â€” mesma largura e alinhamento do cliente
+        # VEÍCULO — mesma largura e alinhamento do cliente
         # ============================================================
 
         veiculo_dados = []
 
         if documento.veiculo:
             veiculo_dados.append(
-                ("VeÃ­culo", str(documento.veiculo))
+                ("Veículo", str(documento.veiculo))
             )
 
         if documento.placa:
@@ -536,7 +536,7 @@ def gerar_pdf(documento, termico=False):
 
         if documento.combustivel:
             veiculo_dados.append(
-                ("CombustÃ­vel", str(documento.combustivel))
+                ("Combustível", str(documento.combustivel))
             )
 
         veiculo_linha = []
@@ -558,7 +558,7 @@ def gerar_pdf(documento, termico=False):
 
         veiculo_table = Table(
             [
-                [p("DADOS DO VEÃCULO", section)]
+                [p("DADOS DO VEÍCULO", section)]
                 + [""] * (quantidade_colunas - 1),
                 veiculo_linha,
             ],
@@ -600,15 +600,15 @@ def gerar_pdf(documento, termico=False):
     if not termico:
         if documento.tipo == "orcamento":
             datas = [
-                ("EMISSÃƒO", data(documento.criado_em)),
+                ("EMISSÃO", data(documento.criado_em)),
                 ("VALIDADE", data(documento.validade)),
-                ("SITUAÃ‡ÃƒO", documento.situacao),
+                ("SITUAÇÃO", documento.situacao),
             ]
         else:
             datas = [
                 ("ABERTURA", data(documento.criado_em)),
-                ("PREVISÃƒO", data(documento.previsao)),
-                ("CONCLUSÃƒO", data(documento.conclusao) or "â€”"),
+                ("PREVISÃO", data(documento.previsao)),
+                ("CONCLUSÃO", data(documento.conclusao) or "—"),
             ]
 
         data_cells = []
@@ -617,7 +617,7 @@ def gerar_pdf(documento, termico=False):
             data_cells.append(
                 [
                     p(f"<b>{label}</b>", small),
-                    p(valor or "â€”", normal),
+                    p(valor or "—", normal),
                 ]
             )
 
@@ -631,11 +631,11 @@ def gerar_pdf(documento, termico=False):
         datas_table.setStyle(
             TableStyle(
                 [
-                    # Uma Ãºnica faixa na largura total
+                    # Uma única faixa na largura total
                     ("BACKGROUND", (0, 0), (-1, -1), LIGHT),
                     ("BOX", (0, 0), (-1, -1), 0.5, BORDER),
 
-                    # DivisÃµes internas discretas
+                    # Divisões internas discretas
                     ("LINEAFTER", (0, 0), (-2, -1), 0.4, BORDER),
 
                     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
@@ -660,8 +660,8 @@ def gerar_pdf(documento, termico=False):
     itens = list(documento.itens.all())
 
     for tipo, label, subtotal in [
-        ("peca", "PEÃ‡AS / PRODUTOS", documento.subtotal_pecas),
-        ("servico", "SERVIÃ‡OS / MÃƒO DE OBRA", documento.subtotal_servicos),
+        ("peca", "PEÇAS / PRODUTOS", documento.subtotal_pecas),
+        ("servico", "SERVIÇOS / MÃO DE OBRA", documento.subtotal_servicos),
     ]:
         selecionados = [
             item
@@ -702,7 +702,7 @@ def gerar_pdf(documento, termico=False):
         if termico:
             linhas = [
                 [
-                    p("QTD / DESCRIÃ‡ÃƒO", small),
+                    p("QTD / DESCRIÇÃO", small),
                     p("TOTAL", small),
                 ]
             ]
@@ -710,8 +710,8 @@ def gerar_pdf(documento, termico=False):
             linhas = [
                 [
                     p("QTD", small),
-                    p("DESCRIÃ‡ÃƒO", small),
-                    p("VALOR UNITÃRIO", small),
+                    p("DESCRIÇÃO", small),
+                    p("VALOR UNITÁRIO", small),
                     p("TOTAL", small),
                 ]
             ]
@@ -770,7 +770,7 @@ def gerar_pdf(documento, termico=False):
         tabela.setStyle(
             TableStyle(
                 [
-                    # CabeÃ§alho claro e mais legÃ­vel
+                    # Cabeçalho claro e mais legível
                     ("BACKGROUND", (0, 0), (-1, 0), PALE),
                     ("TEXTCOLOR", (0, 0), (-1, 0), GREEN_DARK),
                     ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
@@ -795,7 +795,7 @@ def gerar_pdf(documento, termico=False):
                         BORDER,
                     ),
 
-                    # EspaÃ§amento
+                    # Espaçamento
                     ("LEFTPADDING", (0, 0), (-1, -1), 6),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 6),
                     (
@@ -811,7 +811,7 @@ def gerar_pdf(documento, termico=False):
                         6 if termico else 7,
                     ),
 
-                    # Valores numÃ©ricos
+                    # Valores numéricos
                     ("ALIGN", (-2, 0), (-1, -1), "RIGHT"),
                 ]
             )
@@ -842,8 +842,8 @@ def gerar_pdf(documento, termico=False):
                     ),
                 ]
                 for label, valor in [
-                    ("Produtos / PeÃ§as", documento.subtotal_pecas),
-                    ("ServiÃ§os", documento.subtotal_servicos),
+                    ("Produtos / Peças", documento.subtotal_pecas),
+                    ("Serviços", documento.subtotal_servicos),
                     ("Desconto", documento.desconto),
                     ("TOTAL", documento.total),
                 ]
@@ -874,14 +874,14 @@ def gerar_pdf(documento, termico=False):
     else:
         resumo_dados = [
             [
-                p("Produtos / PeÃ§as", normal),
+                p("Produtos / Peças", normal),
                 p(
                     "R$ " + moeda(documento.subtotal_pecas),
                     codigo_style,
                 ),
             ],
             [
-                p("ServiÃ§os / MÃ£o de obra", normal),
+                p("Serviços / Mão de obra", normal),
                 p(
                     "R$ " + moeda(documento.subtotal_servicos),
                     codigo_style,
@@ -922,11 +922,11 @@ def gerar_pdf(documento, termico=False):
         resumo.setStyle(
             TableStyle(
                 [
-                    # Toda a estrutura usa exatamente a largura da pÃ¡gina
+                    # Toda a estrutura usa exatamente a largura da página
                     ("BOX", (0, 0), (-1, -1), 0.5, BORDER),
                     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
 
-                    # SeparaÃ§Ã£o das linhas
+                    # Separação das linhas
                     (
                         "LINEBELOW",
                         (0, 0),
@@ -960,20 +960,20 @@ def gerar_pdf(documento, termico=False):
         ]
 
     # ================================================================
-    # INFORMAÃ‡Ã•ES DO ORÃ‡AMENTO / OS
+    # INFORMAÇÕES DO ORÇAMENTO / OS
     # ================================================================
 
     if documento.tipo == "os":
         if documento.responsavel:
             if termico:
                 fluxo += [
-                    p("TÃ‰CNICO / RESPONSÃVEL", section),
+                    p("TÉCNICO / RESPONSÁVEL", section),
                     p(documento.responsavel),
                 ]
             else:
                 fluxo += [
                     p(
-                        f"<b>TÃ©cnico / ResponsÃ¡vel:</b> "
+                        f"<b>Técnico / Responsável:</b> "
                         f"{escape(str(documento.responsavel))}",
                         normal,
                     )
@@ -981,8 +981,8 @@ def gerar_pdf(documento, termico=False):
 
         campos = [
             ("RELATO DO CLIENTE", documento.relato),
-            ("DIAGNÃ“STICO", documento.diagnostico),
-            ("SERVIÃ‡O SOLICITADO", documento.solicitado),
+            ("DIAGNÓSTICO", documento.diagnostico),
+            ("SERVIÇO SOLICITADO", documento.solicitado),
         ]
 
         for label, valor in campos:
@@ -1022,12 +1022,12 @@ def gerar_pdf(documento, termico=False):
                 ]
 
     # ================================================================
-    # OBSERVAÃ‡Ã•ES E CONDIÃ‡Ã•ES
+    # OBSERVAÇÕES E CONDIÇÕES
     # ================================================================
 
     for label, valor in [
-        ("OBSERVAÃ‡Ã•ES", documento.observacoes),
-        ("CONDIÃ‡Ã•ES", documento.condicoes),
+        ("OBSERVAÇÕES", documento.observacoes),
+        ("CONDIÇÕES", documento.condicoes),
     ]:
         if not valor:
             continue
@@ -1072,7 +1072,7 @@ def gerar_pdf(documento, termico=False):
         assinaturas = [
             Spacer(1, 14 * mm),
             p("____________________________", small),
-            p("ResponsÃ¡vel da empresa", small),
+            p("Responsável da empresa", small),
             Spacer(1, 9 * mm),
             p("____________________________", small),
             p("Cliente", small),
@@ -1090,7 +1090,7 @@ def gerar_pdf(documento, termico=False):
 
         assinatura_empresa = [
             p("____________________________________", assinatura_style),
-            p("ResponsÃ¡vel da empresa", assinatura_style),
+            p("Responsável da empresa", assinatura_style),
         ]
 
         assinatura_cliente = [
@@ -1124,10 +1124,10 @@ def gerar_pdf(documento, termico=False):
             tabela_assinaturas,
         ]
     # ================================================================
-    # RODAPÃ‰
+    # RODAPÉ
     # ================================================================
 
-    rodape = " â€¢ ".join(
+    rodape = " • ".join(
         filter(
             None,
             [
