@@ -81,7 +81,7 @@ def gerar_etiqueta_pdf(peca):
 
     # Uma única linha.
     # A próxima informação começa imediatamente abaixo.
-    y = altura - 10
+    y = altura - 6
 
     pdf.drawString(
         x,
@@ -93,7 +93,7 @@ def gerar_etiqueta_pdf(peca):
     # MARCA + MODELO
     # ---------------------------------------------------------
 
-    y -= 9
+    y -= 6
 
     marca_modelo = (
         f"Marca: {peca.marca or '-'}"
@@ -137,16 +137,10 @@ def gerar_etiqueta_pdf(peca):
         ano = "-"
 
     # ---------------------------------------------------------
-    # ANO + LADO/POSIÇÃO
-    # ---------------------------------------------------------
-
-    y -= 8.5
-
-        # ---------------------------------------------------------
     # ANO
     # ---------------------------------------------------------
 
-    y -= 8
+    y -= 6
 
     linha_ano = f"Ano: {ano}"
 
@@ -167,7 +161,7 @@ def gerar_etiqueta_pdf(peca):
     # LADO / POSIÇÃO
     # ---------------------------------------------------------
 
-    y -= 7.5
+    y -= 6
 
     linha_posicao = f"Lado/posição: {peca.posicao or '-'}"
 
@@ -186,8 +180,7 @@ def gerar_etiqueta_pdf(peca):
     # CÓDIGO DA PEÇA
     # ---------------------------------------------------------
 
-    y -= 7.5
-
+    y -= 6
     codigo = f"Cód.: {peca.codigo}"
 
     texto = pdf.beginText(x, y)
