@@ -37,6 +37,18 @@ def pecas_filtradas(params):
 @permission_required("estoque.view_peca", raise_exception=True)
 def etiqueta(request, pk):
     peca = get_object_or_404(Peca.objects.select_related("categoria", "localizacao"), pk=pk)
+    if request.GET.get("formato") != "pdf":
+        from base64 import b64encode, urlsafe_b64encode
+        from .codigo_barras import gerar_svg
+        from .etiqueta_pdf import gerar_etiqueta_pdf
+        barras = gerar_svg(peca.codigo).replace(
+            'preserveAspectRatio="xMinYMin meet"', 'preserveAspectRatio="none"')
+        response = render(request, "impressao/etiqueta.html", {
+            "peca": peca, "codigo_barras_etiqueta": b64encode(barras.encode()).decode(),
+            "etiqueta_direta": urlsafe_b64encode(gerar_etiqueta_pdf(peca)).decode().rstrip('='),
+        })
+        response["Cache-Control"] = "private, no-store"
+        return response
     from django.http import HttpResponse
     from .etiqueta_pdf import gerar_etiqueta_pdf
     response = HttpResponse(gerar_etiqueta_pdf(peca), content_type="application/pdf")

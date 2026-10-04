@@ -41,6 +41,8 @@ class CodigoBarrasTests(TestCase):
             resposta = self.client.get(reverse("estoque:"+rota,args=[self.peca.pk]))
             self.assertContains(resposta, reverse("estoque:codigo_barras",args=[self.peca.pk]))
         resposta = self.client.get(reverse("estoque:etiqueta",args=[self.peca.pk]))
+        self.assertContains(resposta, 'id="imprimir"')
+        resposta = self.client.get(reverse("estoque:etiqueta",args=[self.peca.pk]), {"formato": "pdf"})
         self.assertEqual(resposta["Content-Type"], "application/pdf")
         self.assertTrue(resposta.content.startswith(b"%PDF-"))
         admin = site._registry[Peca]

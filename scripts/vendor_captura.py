@@ -7,6 +7,7 @@ from pathlib import Path
 import hashlib
 import json
 import shutil
+import re
 
 src = Path('.local/captura-deps/node_modules')
 dst = Path('static/vendor/captura-v1')
@@ -14,6 +15,8 @@ dst.mkdir(parents=True, exist_ok=True)
 items = {
     'tesseract.js/dist/tesseract.min.js': 'tesseract.min.js',
     'tesseract.js/dist/worker.min.js': 'worker.min.js',
+    'tesseract.js/dist/tesseract.min.js.LICENSE.txt': 'tesseract.min.js.LICENSE.txt',
+    'tesseract.js/dist/worker.min.js.LICENSE.txt': 'worker.min.js.LICENSE.txt',
     'zxing-wasm/dist/iife/reader/index.js': 'zxing-reader.js',
     'zxing-wasm/dist/reader/zxing_reader.wasm': 'zxing_reader.wasm',
     'pdfjs-dist/build/pdf.mjs': 'pdf.mjs',
@@ -34,6 +37,10 @@ for package in ['tesseract.js', 'tesseract.js-core', 'zxing-wasm', 'pdfjs-dist',
     for f in (src / package).iterdir():
         if f.is_file() and f.name.lower().startswith(('license', 'copying', 'notice')):
             shutil.copyfile(f, dst / (package.replace('/', '-').replace('@', '') + '-' + f.name))
+# Mapas de depuração não são usados em produção; remover apenas a referência.
+for f in dst.rglob('*'):
+    if f.suffix in ['.js', '.mjs']:
+        f.write_text(re.sub(r'(?m)^//# sourceMappingURL=.*$', '', f.read_text(encoding='utf-8')), encoding='utf-8')
 manifest = {f.relative_to(dst).as_posix(): hashlib.sha256(f.read_bytes()).hexdigest()
             for f in dst.rglob('*') if f.is_file() and f.name != 'versions.json'}
 (dst / 'versions.json').write_text(json.dumps({'versions': versions, 'sha256': manifest}, indent=2), encoding='utf-8')
