@@ -81,7 +81,7 @@ def gerar_etiqueta_pdf(peca):
 
     # Uma única linha.
     # A próxima informação começa imediatamente abaixo.
-    y -= 6
+    y = altura - 12
 
     pdf.drawString(
         x,
