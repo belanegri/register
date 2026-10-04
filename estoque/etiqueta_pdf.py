@@ -142,10 +142,13 @@ def gerar_etiqueta_pdf(peca):
 
     y -= 8.5
 
-    ano_posicao = (
-        f"Ano: {ano}"
-        f" | Lado/posição: {peca.posicao or '-'}"
-    )
+        # ---------------------------------------------------------
+    # ANO
+    # ---------------------------------------------------------
+
+    y -= 8
+
+    linha_ano = f"Ano: {ano}"
 
     pdf.setFont("Helvetica-Bold", 8)
 
@@ -153,7 +156,26 @@ def gerar_etiqueta_pdf(peca):
         x,
         y,
         _abreviar(
-            ano_posicao,
+            linha_ano,
+            util,
+            pdf.stringWidth,
+            8,
+        ),
+    )
+
+    # ---------------------------------------------------------
+    # LADO / POSIÇÃO
+    # ---------------------------------------------------------
+
+    y -= 7.5
+
+    linha_posicao = f"Lado/posição: {peca.posicao or '-'}"
+
+    pdf.drawString(
+        x,
+        y,
+        _abreviar(
+            linha_posicao,
             util,
             pdf.stringWidth,
             8,
@@ -164,7 +186,7 @@ def gerar_etiqueta_pdf(peca):
     # CÓDIGO DA PEÇA
     # ---------------------------------------------------------
 
-    y -= 9
+    y -= 7.5
 
     codigo = f"Cód.: {peca.codigo}"
 
