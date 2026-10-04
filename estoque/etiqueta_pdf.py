@@ -180,7 +180,7 @@ def gerar_etiqueta_pdf(peca):
     # CÓDIGO DA PEÇA
     # ---------------------------------------------------------
 
-    y -= 7
+    y -= 4
     codigo = f"Cód.: {peca.codigo}"
 
     texto = pdf.beginText(x, y)
