@@ -43,7 +43,6 @@ def gerar_etiqueta_pdf(peca):
     pdf.setTitle("Etiqueta 57 x 30 mm")
     pdf.setPageRotation(0)
 
-    # Impede o leitor/driver de redimensionar a página.
     pdf._doc.Catalog.ViewerPreferences = pdfdoc.PDFDictionary({
         "PrintScaling": pdfdoc.PDFName("None"),
         "PickTrayByPDFSize": pdfdoc.PDFtrue,
@@ -55,164 +54,18 @@ def gerar_etiqueta_pdf(peca):
     pdf.setFillColorRGB(0, 0, 0)
     pdf.setStrokeColorRGB(0, 0, 0)
 
-    # Mantém a orientação necessária para a POS-58.
+    # Orientação necessária para a POS-58.
     pdf.translate(largura, altura)
     pdf.rotate(180)
 
-    # Área útil da impressão.
-    # Mantemos os limites já medidos para a POS-58.
+    # Área útil já calibrada para a impressora.
     x = 4.5 * mm
     util = 47 * mm
 
-    # ---------------------------------------------------------
-    # NOME DA PEÇA
-    # ---------------------------------------------------------
-
-    nome = " ".join(peca.nome.split())
-
-    pdf.setFont("Helvetica-Bold", 10)
-
-    nome = _abreviar(
-        nome,
-        util,
-        pdf.stringWidth,
-        10,
-    )
-
-    # Uma única linha.
-    # A próxima informação começa imediatamente abaixo.
-    y = altura - 8
-
-    pdf.drawString(
-        x,
-        y,
-        nome,
-    )
-
-    # ---------------------------------------------------------
-    # MARCA + MODELO
-    # ---------------------------------------------------------
-
-    y -= 6
-
-    marca_modelo = (
-        f"Marca: {peca.marca or '-'}"
-        f" | Modelo: {peca.aplicacao or '-'}"
-    )
-
-    pdf.setFont("Helvetica-Bold", 8)
-
-    pdf.drawString(
-        x,
-        y,
-        _abreviar(
-            marca_modelo,
-            util,
-            pdf.stringWidth,
-            8,
-        ),
-    )
-
-    # ---------------------------------------------------------
-    # ANO
-    # ---------------------------------------------------------
-
-    if peca.ano_inicial and peca.ano_final:
-
-        if peca.ano_inicial == peca.ano_final:
-            ano = str(peca.ano_inicial)
-        else:
-            ano = f"{peca.ano_inicial} a {peca.ano_final}"
-
-    elif peca.ano_inicial:
-
-        ano = f"{peca.ano_inicial}+"
-
-    elif peca.ano_final:
-
-        ano = f"Até {peca.ano_final}"
-
-    else:
-
-        ano = "-"
-
-    # ---------------------------------------------------------
-    # ANO
-    # ---------------------------------------------------------
-
-    y -= 6
-
-    linha_ano = f"Ano: {ano}"
-
-    pdf.setFont("Helvetica-Bold", 8)
-
-    pdf.drawString(
-        x,
-        y,
-        _abreviar(
-            linha_ano,
-            util,
-            pdf.stringWidth,
-            8,
-        ),
-    )
-
-    # ---------------------------------------------------------
-    # LADO / POSIÇÃO
-    # ---------------------------------------------------------
-
-    y -= 6
-
-    linha_posicao = f"Lado/posição: {peca.posicao or '-'}"
-
-    pdf.drawString(
-        x,
-        y,
-        _abreviar(
-            linha_posicao,
-            util,
-            pdf.stringWidth,
-            8,
-        ),
-    )
-
-    # ---------------------------------------------------------
-    # CÓDIGO DA PEÇA
-    # ---------------------------------------------------------
-
-    y -= 4
-    codigo = f"Cód.: {peca.codigo}"
-
-    texto = pdf.beginText(x, y)
-
-    texto.setFont(
-        "Helvetica-Bold",
-        9,
-    )
-
-    largura_codigo = pdf.stringWidth(
-        codigo,
-        "Helvetica-Bold",
-        9,
-    )
-
-    if largura_codigo > 0:
-        escala = min(
-            100,
-            100 * util / largura_codigo,
-        )
-    else:
-        escala = 100
-
-    texto.setHorizScale(escala)
-
-    texto.textOut(codigo)
-
-    pdf.drawText(texto)
-
-    # ---------------------------------------------------------
+    # =========================================================
     # CÓDIGO DE BARRAS
-    # ---------------------------------------------------------
+    # NÃO ALTERAR: tamanho e posição já estão corretos.
+    # =========================================================
 
     barras = Code128(
         str(peca.codigo),
@@ -245,6 +98,126 @@ def gerar_etiqueta_pdf(peca):
     )
 
     pdf.restoreState()
+
+    # =========================================================
+    # INFORMAÇÕES DA PEÇA
+    #
+    # O texto começa imediatamente acima do código de barras.
+    # Usamos posições fixas para não acumular espaçamentos.
+    # =========================================================
+
+    # ---------------------------------------------------------
+    # CÓDIGO DA PEÇA
+    # ---------------------------------------------------------
+
+    codigo = f"Cód.: {peca.codigo}"
+
+    pdf.setFont("Helvetica-Bold", 7.5)
+
+    pdf.drawString(
+        x,
+        9.0 * mm,
+        _abreviar(
+            codigo,
+            util,
+            pdf.stringWidth,
+            7.5,
+        ),
+    )
+
+    # ---------------------------------------------------------
+    # LADO / POSIÇÃO
+    # ---------------------------------------------------------
+
+    linha_posicao = f"Lado/posição: {peca.posicao or '-'}"
+
+    pdf.setFont("Helvetica-Bold", 7)
+
+    pdf.drawString(
+        x,
+        11.7 * mm,
+        _abreviar(
+            linha_posicao,
+            util,
+            pdf.stringWidth,
+            7,
+        ),
+    )
+
+    # ---------------------------------------------------------
+    # ANO
+    # ---------------------------------------------------------
+
+    if peca.ano_inicial and peca.ano_final:
+        if peca.ano_inicial == peca.ano_final:
+            ano = str(peca.ano_inicial)
+        else:
+            ano = f"{peca.ano_inicial} a {peca.ano_final}"
+
+    elif peca.ano_inicial:
+        ano = f"{peca.ano_inicial}+"
+
+    elif peca.ano_final:
+        ano = f"Até {peca.ano_final}"
+
+    else:
+        ano = "-"
+
+    linha_ano = f"Ano: {ano}"
+
+    pdf.setFont("Helvetica-Bold", 7)
+
+    pdf.drawString(
+        x,
+        14.4 * mm,
+        _abreviar(
+            linha_ano,
+            util,
+            pdf.stringWidth,
+            7,
+        ),
+    )
+
+    # ---------------------------------------------------------
+    # MARCA + MODELO
+    # ---------------------------------------------------------
+
+    marca_modelo = (
+        f"Marca: {peca.marca or '-'}"
+        f" | Modelo: {peca.aplicacao or '-'}"
+    )
+
+    pdf.setFont("Helvetica-Bold", 7)
+
+    pdf.drawString(
+        x,
+        17.1 * mm,
+        _abreviar(
+            marca_modelo,
+            util,
+            pdf.stringWidth,
+            7,
+        ),
+    )
+
+    # ---------------------------------------------------------
+    # NOME DA PEÇA
+    # ---------------------------------------------------------
+
+    nome = " ".join(peca.nome.split())
+
+    pdf.setFont("Helvetica-Bold", 7.5)
+
+    pdf.drawString(
+        x,
+        19.8 * mm,
+        _abreviar(
+            nome,
+            util,
+            pdf.stringWidth,
+            7.5,
+        ),
+    )
 
     # Exatamente uma página = uma etiqueta.
     pdf.showPage()
