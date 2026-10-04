@@ -1,21 +1,141 @@
-{% load static %}<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Etiqueta {{ peca.codigo }} · 57 × 30 mm</title>
-{% include 'components/site_icons.html' %}
-<link rel="stylesheet" href="{% static 'css/etiqueta.css' %}">
-<script src="{% static 'js/etiqueta.js' %}" defer></script></head>
-<body><nav class="controles" aria-label="Impressão">
-<button type="button" id="imprimir">Imprimir etiqueta</button> <a href="{% url 'estoque:lista' %}">Voltar ao estoque</a>
-<p>No driver da impressora, configure papel personalizado de 57 × 30 mm. Na impressão, use escala 100%, margens nenhuma e desative cabeçalhos e rodapés. Desative avanço extra/corte adicional, se disponível.</p>
-</nav>
-<main class="etiqueta" id="papel">
-<div class="etiqueta-texto" id="etiqueta-texto"><div id="etiqueta-conteudo">
-<div class="etiqueta-nome">{{ peca.nome }}</div>
-<div><strong>Marca:</strong> {{ peca.marca|default:'Não informada' }}</div>
-<div><strong>Modelo:</strong> {{ peca.aplicacao|default:'Não informado' }}</div>
-<div><strong>Ano:</strong> {% if peca.ano_inicial and peca.ano_final %}{{ peca.ano_inicial }}{% if peca.ano_final != peca.ano_inicial %} a {{ peca.ano_final }}{% endif %}{% elif peca.ano_inicial %}A partir de {{ peca.ano_inicial }}{% elif peca.ano_final %}Até {{ peca.ano_final }}{% else %}Não informado{% endif %}</div>
-<div><strong>Lado / posição:</strong> {{ peca.posicao|default:'Não informado' }}</div>
-<div><strong>Cód. da peça:</strong> {{ peca.codigo }}</div>
-</div></div>
-<img class="etiqueta-barras" src="{% url 'estoque:codigo_barras' peca.pk %}" alt="Código de barras {{ peca.codigo }}">
-</main></body></html>
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Etiqueta {{ peca.codigo }} · 57 × 30 mm</title>
+
+    {% include 'components/site_icons.html' %}
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/etiqueta.css' %}?v=local30-20261004"
+    >
+
+    <script
+        src="{% static 'js/etiqueta.js' %}?v=local30-20261004"
+        defer>
+    </script>
+</head>
+
+<body>
+
+    <nav class="controles" aria-label="Impressão">
+
+        <button
+            type="button"
+            id="imprimir"
+            data-etiqueta="{{ etiqueta_direta }}">
+            Imprimir etiqueta — POS-58
+        </button>
+
+        <a href="{% url 'estoque:lista' %}">
+            Voltar ao estoque
+        </a>
+
+        <p
+            id="impressao-status"
+            role="status"
+            aria-live="polite">
+            Envio direto · 1 etiqueta de 57 × 30 mm.
+        </p>
+
+        <details>
+            <summary>Salvar etiqueta em PDF</summary>
+
+            <a
+                href="{% url 'estoque:etiqueta' peca.pk %}?formato=pdf"
+                target="_blank"
+                rel="noopener">
+                Abrir PDF para salvar
+            </a>
+        </details>
+
+    </nav>
+
+
+    <main class="etiqueta" id="papel">
+
+        <div class="etiqueta-texto" id="etiqueta-texto">
+
+            <div id="etiqueta-conteudo">
+
+                <!-- NOME DA PEÇA -->
+                <div class="etiqueta-nome">
+                    {{ peca.nome }}
+                </div>
+
+
+                <!-- MARCA + MODELO NA MESMA LINHA -->
+                <div class="etiqueta-veiculo">
+                    <strong>Marca:</strong>
+                    {{ peca.marca|default:'-' }}
+
+                    <span> | </span>
+
+                    <strong>Modelo:</strong>
+                    {{ peca.aplicacao|default:'-' }}
+                </div>
+
+
+                <!-- ANO + LADO/POSIÇÃO -->
+                <div class="etiqueta-veiculo">
+
+                    <strong>Ano:</strong>
+
+                    {% if peca.ano_inicial and peca.ano_final %}
+
+                        {{ peca.ano_inicial }}
+
+                        {% if peca.ano_final != peca.ano_inicial %}
+                            a {{ peca.ano_final }}
+                        {% endif %}
+
+                    {% elif peca.ano_inicial %}
+
+                        {{ peca.ano_inicial }}+
+
+                    {% elif peca.ano_final %}
+
+                        Até {{ peca.ano_final }}
+
+                    {% else %}
+
+                        -
+
+                    {% endif %}
+
+
+                    <span> | </span>
+
+                    <strong>Lado/posição:</strong>
+                    {{ peca.posicao|default:'-' }}
+
+                </div>
+
+
+                <!-- CÓDIGO DA PEÇA -->
+                <div class="etiqueta-codigo">
+                    <strong>Cód.:</strong>
+                    {{ peca.codigo }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CÓDIGO DE BARRAS -->
+        <img
+            class="etiqueta-barras"
+            src="data:image/svg+xml;base64,{{ codigo_barras_etiqueta }}"
+            alt="Código de barras {{ peca.codigo }}"
+        >
+
+    </main>
+
+</body>
+</html>

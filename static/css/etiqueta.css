@@ -1,15 +1,229 @@
-*{box-sizing:border-box}
-body{margin:0;background:#edf0ec;color:#000;font-family:Arial,sans-serif}
-.controles{max-width:600px;padding:16px;font-size:14px;line-height:1.5}
-.controles button{padding:12px 18px;background:#21654d;color:#fff;border:0;border-radius:5px;cursor:pointer}
-.controles a{color:#21654d;margin-left:10px}
-.etiqueta{width:57mm;height:30mm;padding:1mm 2.5mm;background:#fff;margin:0;break-inside:avoid;page-break-inside:avoid}
-.etiqueta-texto{height:19mm;font-size:9px;line-height:1.1;overflow-wrap:anywhere}
-.etiqueta-nome{font-weight:bold}
-.etiqueta-barras{display:block;width:52mm;height:9mm;object-fit:fill;margin:0}
-@page{size:57mm 30mm;margin:0}
-@media print{
- html,body{width:57mm;height:30mm;margin:0!important;padding:0!important;background:#fff}
- .controles{display:none!important}
- .etiqueta{position:absolute;top:0;left:0;margin:0!important}
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #edf0ec;
+    color: #000;
+    font-family: Arial, sans-serif;
+}
+
+
+/* ==============================
+   CONTROLES DA TELA
+   ============================== */
+
+.controles {
+    max-width: 600px;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.controles button {
+    padding: 12px 18px;
+    background: #21654d;
+    color: #fff;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.controles a {
+    color: #21654d;
+    margin-left: 10px;
+}
+
+.controles a.imprimir-direto {
+    display: inline-block;
+    padding: 12px 18px;
+    background: #21654d;
+    color: #fff;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-left: 0;
+}
+
+
+/* ==============================
+   ETIQUETA 57 x 30 MM
+   ============================== */
+
+.etiqueta {
+    width: 57mm;
+    height: 30mm;
+
+    padding:
+        0.8mm
+        2mm
+        0.5mm
+        2mm;
+
+    margin: 0;
+
+    background: #fff;
+    overflow: hidden;
+
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+
+/* ==============================
+   ÁREA DE TEXTO
+   ============================== */
+
+.etiqueta-texto {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+
+    font-size: 8pt;
+    line-height: 9pt;
+
+    font-weight: normal;
+}
+
+#etiqueta-conteudo {
+    margin: 0;
+    padding: 0;
+}
+
+#etiqueta-conteudo > div {
+    margin: 0;
+    padding: 0;
+}
+
+
+/* ==============================
+   NOME DA PEÇA
+   ============================== */
+
+.etiqueta-nome {
+    margin: 0;
+    padding: 0;
+
+    font-size: 10pt;
+    line-height: 10.5pt;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ==============================
+   MARCA / MODELO
+   ANO / LADO-POSIÇÃO
+   ============================== */
+
+.etiqueta-veiculo {
+    margin: 0;
+    padding: 0;
+
+    font-size: 8pt;
+    line-height: 9pt;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.etiqueta-veiculo strong {
+    font-weight: 700;
+}
+
+
+/* ==============================
+   CÓDIGO DA PEÇA
+   ============================== */
+
+.etiqueta-codigo {
+    margin: 0;
+    padding: 0;
+
+    font-size: 8.5pt;
+    line-height: 9.5pt;
+
+    white-space: nowrap;
+    overflow: hidden;
+
+    font-weight: normal;
+}
+
+.etiqueta-codigo strong {
+    font-weight: 700;
+}
+
+
+/* ==============================
+   CÓDIGO DE BARRAS
+   ============================== */
+
+.etiqueta-barras {
+    display: block;
+
+    width: 53mm;
+    height: 8mm;
+
+    margin: 0;
+    padding: 0;
+
+    object-fit: fill;
+}
+
+
+/* ==============================
+   CONFIGURAÇÃO DA PÁGINA
+   ============================== */
+
+@page {
+    size: 57mm 30mm;
+    margin: 0;
+}
+
+
+/* ==============================
+   IMPRESSÃO
+   ============================== */
+
+@media print {
+
+    html,
+    body {
+        width: 57mm;
+        height: 30mm;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        background: #fff;
+    }
+
+    .controles {
+        display: none !important;
+    }
+
+    .etiqueta {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+
+        width: 57mm;
+        height: 30mm;
+
+        margin: 0 !important;
+
+        transform: rotate(180deg);
+        transform-origin: center;
+    }
 }
