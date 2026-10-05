@@ -6,23 +6,21 @@ from reportlab.lib.units import mm
 from reportlab.graphics.barcode.code128 import Code128
 
 
-def _abreviar_texto_misto(partes, largura, fonte_largura):
-    """
-    partes: lista de tuplas (texto, estilo, tamanho)
-    Verifica a largura total acumulada e abrevia o último item se necessário.
-    """
-    largura_total = sum(fonte_largura(t, f, s) for t, f, s in partes)
-    if largura_total <= largura:
-        return partes
+def _abreviar(texto, largura, fonte, tamanho):
+    """Abrevia somente quando o texto ultrapassa a largura disponível."""
+    texto = " ".join(str(texto).split())
 
-    # Se ultrapassar, ajusta a última string adicionando reticências
-    texto_final, fonte_final, tamanho_final = partes[-1]
-    while texto_final and (sum(fonte_largura(t, f, s) for t, f, s in partes[:-1]) +
-                           fonte_largura(texto_final + "...", fonte_final, tamanho_final)) > largura:
-        texto_final = texto_final[:-1]
+    if fonte(texto, "Helvetica-Bold", tamanho) <= largura:
+        return texto
 
-    partes[-1] = (texto_final.rstrip() + "...", fonte_final, tamanho_final)
-    return partes
+    while texto and fonte(
+        texto + "...",
+        "Helvetica-Bold",
+        tamanho,
+    ) > largura:
+        texto = texto[:-1]
+
+    return texto.rstrip() + "..."
 
 
 def gerar_etiqueta_pdf(peca):
@@ -56,26 +54,26 @@ def gerar_etiqueta_pdf(peca):
     pdf.setFillColorRGB(0, 0, 0)
     pdf.setStrokeColorRGB(0, 0, 0)
 
-    # Orientação necessária para a POS-58
+    # Orientação necessária para a POS-58.
     pdf.translate(largura, altura)
     pdf.rotate(180)
 
-    # Margem esquerda e largura útil
-    x_inicio = 4.5 * mm
+    # Área útil já calibrada para a impressora.
+    x = 4.5 * mm
     util = 47 * mm
 
-    # Código de barras no rodapé
+    # Bloco de quatro linhas e barras centralizado na etiqueta.
+    # Mantém a largura e a altura das barras já calibradas.
     barras = Code128(
         str(peca.codigo), barWidth=0.25 * mm, barHeight=7 * mm,
         humanReadable=False, quiet=True, lquiet=2.5 * mm, rquiet=2.5 * mm,
     )
     pdf.saveState()
-    pdf.translate(x_inicio, 4.5 * mm)
+    pdf.translate(x, 6 * mm)
     pdf.scale(util / barras.width, 1)
     barras.drawOn(pdf, 0, 0)
     pdf.restoreState()
 
-    # Formatação do Ano
     if peca.ano_inicial and peca.ano_final:
         ano = (str(peca.ano_inicial) if peca.ano_inicial == peca.ano_final
                else f"{peca.ano_inicial} a {peca.ano_final}")
@@ -86,44 +84,16 @@ def gerar_etiqueta_pdf(peca):
     else:
         ano = "-"
 
-    # Estrutura com separação exata entre Negrito (Rótulo) e Normal (Valor)
     linhas = [
-        # Linha 1: Título completo em negrito
-        [
-            (str(peca.nome or '-'), "Helvetica-Bold", 8.5)
-        ],
-        # Linha 2: Marca | Modelo
-        [
-            ("Marca: ", "Helvetica-Bold", 7),
-            (f"{peca.marca or '-'} | ", "Helvetica", 7),
-            ("Modelo: ", "Helvetica-Bold", 7),
-            (f"{peca.aplicacao or '-'}", "Helvetica", 7),
-        ],
-        # Linha 3: Ano | Lado/posição
-        [
-            ("Ano: ", "Helvetica-Bold", 7),
-            (f"{ano} | ", "Helvetica", 7),
-            ("Lado/posição: ", "Helvetica-Bold", 7),
-            (f"{peca.posicao or '-'}", "Helvetica", 7),
-        ],
-        # Linha 4: Cód.
-        [
-            ("Cód.: ", "Helvetica-Bold", 7.5),
-            (f"{peca.codigo}", "Helvetica", 7.5),
-        ],
+        (peca.nome, 7.5),
+        (f"Marca: {peca.marca or '-'} | Modelo: {peca.aplicacao or '-'}", 7),
+        (f"Ano: {ano} | Lado/posição: {peca.posicao or '-'}", 7),
+        (f"Cód.: {peca.codigo}", 7.5),
     ]
-
-    # Posições Y de cada linha na etiqueta
-    posicoes_y = [23.5, 19.8, 16.3, 12.8]
-
-    for partes, y_mm in zip(linhas, posicoes_y):
-        partes_ajustadas = _abreviar_texto_misto(partes, util, pdf.stringWidth)
-        x_atual = x_inicio
-
-        for texto, fonte, tamanho in partes_ajustadas:
-            pdf.setFont(fonte, tamanho)
-            pdf.drawString(x_atual, y_mm * mm, texto)
-            x_atual += pdf.stringWidth(texto, fonte, tamanho)
+    for indice, (texto, tamanho) in enumerate(linhas):
+        pdf.setFont("Helvetica-Bold", tamanho)
+        pdf.drawString(x, (22.4 - indice * 2.8) * mm,
+                       _abreviar(texto, util, pdf.stringWidth, tamanho))
 
     pdf.showPage()
     pdf.save()
