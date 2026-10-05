@@ -227,3 +227,10 @@ body {
         transform-origin: center;
     }
 }
+/* Mesmas medidas do PDF usado pelo envio direto à impressora. */
+.etiqueta { padding: 5.6mm 5.5mm 6mm 4.5mm; }
+.etiqueta-texto { font-size: 7pt; line-height: 2.8mm; font-weight: 700; }
+#etiqueta-conteudo > div { height: 2.8mm; line-height: 2.8mm; }
+.etiqueta-nome, .etiqueta-codigo { font-size: 7.5pt; line-height: 2.8mm; }
+.etiqueta-veiculo { font-size: 7pt; line-height: 2.8mm; }
+.etiqueta-barras { width: 47mm; height: 7mm; margin-top: .2mm; }

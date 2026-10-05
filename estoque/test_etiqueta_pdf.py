@@ -28,7 +28,7 @@ class EtiquetaPaginaTests(SimpleTestCase):
             self.assertContains(response, 'data-etiqueta="')
             self.assertContains(response, 'id="impressao-status"')
             self.assertNotContains(response, 'imprimir-navegador')
-            self.assertContains(response, '?v=local30-20261004')
+            self.assertContains(response, '?v=layout4linhas-20261004')
             self.assertContains(response, 'REG000002')
             self.assertContains(response, '?formato=pdf')
             self.assertEqual(response['Cache-Control'], 'private, no-store')
@@ -67,4 +67,8 @@ class EtiquetaPDFTests(SimpleTestCase):
         impressao.setPageRotation.assert_called_once_with(0)
         impressao.rotate.assert_called_once_with(180)
         impressao.showPage.assert_called_once_with()
-        impressao.drawString.assert_any_call(4.5 * mm, 30 * mm - 11, 'Farol')
+        impressao.drawString.assert_any_call(4.5 * mm, 22.4 * mm, 'Farol')
+        chamadas = impressao.drawString.call_args_list
+        self.assertEqual(len(chamadas), 4)
+        self.assertIn(' | Lado/posição:', chamadas[2].args[2])
+        self.assertTrue(all(chamadas[i].args[1] - chamadas[i+1].args[1] > 7.5 for i in range(3)))

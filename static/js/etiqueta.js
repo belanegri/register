@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   const codigo = document.querySelector(".etiqueta-codigo");
   function ajustarCodigo() {
-    let tamanho = 9;
+    let tamanho = 7.5;
     codigo.style.fontSize = `${tamanho}pt`;
     while (codigo.scrollWidth > codigo.clientWidth && tamanho > 5) {
       tamanho -= 0.25;
