@@ -16,7 +16,7 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
     "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
-    "core", "accounts", "dashboard", "veiculos", "estoque", "clientes", "vendas", "caixa", "contas", "comercial",
+    "core", "accounts", "dashboard", "veiculos", "estoque", "clientes", "vendas", "caixa", "contas", "comercial", "fiscal",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -110,3 +110,11 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
 
 # False em instalações novas; preserva identificação dos documentos legados.
 LEGACY_PONTOCAR_DOCUMENTS = env.bool("LEGACY_PONTOCAR_DOCUMENTS", default=True)
+
+# Fiscal é opt-in por instalação. Nenhuma emissão automática no fluxo comercial.
+FISCAL_ENABLED = env.bool("FISCAL_ENABLED", default=False)
+FISCAL_ALLOW_PRODUCTION = env.bool("FISCAL_ALLOW_PRODUCTION", default=False)
+FISCAL_SECRET_KEY = env("FISCAL_SECRET_KEY", default="")
+FISCAL_SCHEMA_DIR = Path(env("FISCAL_SCHEMA_DIR", default=str(BASE_DIR / "fiscal" / "schemas")))
+FISCAL_ENDPOINT_HOSTS = env.list("FISCAL_ENDPOINT_HOSTS", default=[])
+FISCAL_NFSE_ADAPTER = env("FISCAL_NFSE_ADAPTER", default="")

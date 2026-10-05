@@ -1,0 +1,13 @@
+{% if perms.fiscal.consultar_fiscal or perms.fiscal.configurar_fiscal %}
+<div class="nav-label">FISCAL</div>
+{% if perms.fiscal.consultar_fiscal %}
+<a class="nav-link {% if request.resolver_match.app_name == 'fiscal' and request.resolver_match.url_name == 'lista' %}active{% endif %}" href="{% url 'fiscal:lista' %}">{% include 'components/nav_icon.html' with name='sale' %}<span class="nav-text">Notas fiscais</span></a>
+<a class="nav-link" href="{% url 'fiscal:nfe' %}">{% include 'components/nav_icon.html' with name='quote' %}<span class="nav-text">NF-e</span></a>
+<a class="nav-link" href="{% url 'fiscal:nfce' %}">{% include 'components/nav_icon.html' with name='quote' %}<span class="nav-text">NFC-e</span></a>
+<a class="nav-link" href="{% url 'fiscal:nfse' %}">{% include 'components/nav_icon.html' with name='service' %}<span class="nav-text">NFS-e</span></a>
+<a class="nav-link" href="{% url 'fiscal:pendentes' %}">{% include 'components/nav_icon.html' with name='quote' %}<span class="nav-text">Pendentes/Rejeitadas</span></a>
+<a class="nav-link" href="{% url 'fiscal:eventos' %}">{% include 'components/nav_icon.html' with name='quote' %}<span class="nav-text">Eventos/Cancelamentos</span></a>
+<a class="nav-link" href="{% url 'fiscal:documentos' %}">{% include 'components/nav_icon.html' with name='quote' %}<span class="nav-text">XML/Documentos</span></a>
+{% endif %}
+{% if perms.fiscal.configurar_fiscal %}<a class="nav-link" href="{% url 'fiscal:configuracao' %}">{% include 'components/nav_icon.html' with name='settings' %}<span class="nav-text">Configurações fiscais</span></a>{% endif %}
+{% endif %}

@@ -19,3 +19,10 @@ staticfiles/
 Thumbs.db
 *.sqlite3
 backups/
+# Materiais fiscais privados nunca entram no repositório.
+*.pfx
+*.p12
+*.pem
+*.key
+fiscal-private/
+/tmp/fiscal/

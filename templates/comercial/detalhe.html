@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block content %}
+{% block content %}{% if perms.fiscal.emitir_fiscal and doc.tipo == 'os' %}<p><a class="btn btn-outline-primary" href="{% url 'fiscal:solicitar' %}?os={{ doc.pk }}">Solicitar documento fiscal</a></p>{% endif %}
 
 <div class="page-heading">
     <div>

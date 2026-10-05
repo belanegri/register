@@ -31,6 +31,7 @@
 {% if user.is_staff and perms.veiculos.view_veiculo %}<a class="nav-link" href="{% url 'admin:veiculos_veiculo_changelist' %}">{% include 'components/nav_icon.html' with name='car' %}<span class="nav-text">Veículos de origem</span></a>{% endif %}
 {% if user.is_staff and perms.estoque.view_categoria %}<a class="nav-link" href="{% url 'admin:estoque_categoria_changelist' %}">{% include 'components/nav_icon.html' with name='grid' %}<span class="nav-text">Categorias</span></a>{% endif %}
 {% if user.is_staff and perms.estoque.view_localizacao %}<a class="nav-link" href="{% url 'admin:estoque_localizacao_changelist' %}">{% include 'components/nav_icon.html' with name='pin' %}<span class="nav-text">Localizações</span></a>{% endif %}
+{% include 'fiscal/menu.html' %}
 <div class="nav-label">FINANCEIRO</div>
 {% if perms.caixa.operar_caixa %}<a class="nav-link {% if request.resolver_match.app_name == 'caixa' %}active{% endif %}" href="{% url 'caixa:painel' %}">{% include 'components/nav_icon.html' with name='wallet' %}<span class="nav-text">Meu caixa</span></a>{% endif %}
 {% if perms.comercial.view_contareceber %}<a class="nav-link {% if request.resolver_match.url_name == 'contas' or request.resolver_match.url_name == 'conta' or request.resolver_match.url_name == 'conta_nova' %}active{% endif %}" href="{% url 'comercial:contas' %}">{% include 'components/nav_icon.html' with name='income' %}<span class="nav-text">Contas a receber</span></a>{% endif %}

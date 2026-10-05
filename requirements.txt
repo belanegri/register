@@ -8,3 +8,5 @@ reportlab>=5.0,<6
 
 gunicorn>=23,<26
 django-storages[s3]>=1.14,<2
+cryptography>=46,<47
+lxml>=6,<7

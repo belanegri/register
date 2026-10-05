@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Evento fiscal{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">FISCAL</div><h1>{{ evento.get_tipo_display }}</h1><p>{{ evento.get_status_display }} · {{ evento.get_ambiente_display }}</p></div></div>
+<section class="surface p-4"><p>{{ evento.documento }}</p><p>{{ evento.justificativa }}</p><p>{{ evento.numero_inicial|default:'' }} {{ evento.numero_final|default:'' }}</p><p>{{ evento.codigo_resposta }} {{ evento.mensagem }}</p><p>Protocolo: {{ evento.protocolo }}</p>
+{% if evento.tipo == 'cancelamento' or evento.tipo == 'inutilizacao' %}
+<form method="post" action="{% url 'fiscal:transmitir_evento' evento.pk %}">{% csrf_token %}<button class="btn btn-primary">Transmitir evento</button></form>
+{% endif %}
+{% if evento.tipo == 'cancelamento' %}
+<form method="post" action="{% url 'fiscal:consultar_evento' evento.pk %}" class="mt-3">{% csrf_token %}<button class="btn btn-outline-secondary">Consultar situação do cancelamento</button></form>
+{% elif evento.tipo == 'inutilizacao' %}<p class="mt-3">Após falha técnica, confirme a inutilização no portal oficial da SEFAZ antes de qualquer nova ação.</p>{% endif %}
+</section>
+{% endblock %}
