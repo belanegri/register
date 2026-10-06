@@ -8,8 +8,7 @@ import uuid
 
 class ContaPagar(TimestampedModel):
     MODOS = [('unica', 'Conta única'), ('recorrente', 'Recorrente'), ('parcelada', 'Parcelada')]
-    FREQUENCIAS = [('semanal', 'Semanal'), ('mensal', 'Mensal'), ('bimestral', 'Bimestral'),
-                  ('trimestral', 'Trimestral'), ('semestral', 'Semestral'), ('anual', 'Anual')]
+    from core.parcelamento import FREQUENCIAS
     descricao = models.CharField("descrição", max_length=200, blank=True)
     categoria = models.CharField("categoria", max_length=80, choices=CATEGORIAS, blank=True)
     tipo_conta = models.CharField("tipo de conta", max_length=12, choices=[("residencial", "Residencial"), ("empresa", "Empresa")], blank=True)

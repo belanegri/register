@@ -77,6 +77,7 @@ def contexto_formulario(form, conta=None):
                 'modo',
                 'frequencia',
                 'quantidade_lancamentos',
+                'entrada', 'data_entrada', 'intervalo_dias', 'plano_personalizado',
             ],
         ),
         (

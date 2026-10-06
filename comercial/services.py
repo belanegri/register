@@ -34,6 +34,7 @@ def registrar_venda_os(usuario, pk):
     conta.origem = 'Ordem de serviço'
     conta.descricao = f'{doc.codigo} · {venda.codigo}'
     conta.save(update_fields=['os', 'origem', 'descricao'])
+    iniciar_parcelamento_os(conta, doc)
     registrar(usuario, 'os.venda_registrada', doc.codigo, venda=venda.codigo)
     return venda
 
@@ -69,12 +70,26 @@ def converter(usuario, pk, destino, confirmado=False, pagamentos=None, venciment
         if hasattr(novo,'conta_receber') and doc.tipo == 'os':
             novo.conta_receber.os = doc
             novo.conta_receber.save(update_fields=['os'])
+            iniciar_parcelamento_os(novo.conta_receber, doc)
     else:
         raise ValidationError('Conversão inválida.')
     doc.status = 'convertido'
     doc.save(update_fields=['status','venda','atualizado_em'])
     registrar(usuario,'documento.convertido',doc.codigo,destino=str(novo))
     return novo
+
+
+def iniciar_parcelamento_os(conta, documento):
+    """Utiliza a condição aprovada da OS, dentro da transação comercial existente."""
+    if documento.condicao_pagamento != 'parcelado' or documento.parcelas < 2:
+        return
+    from core.parcelamento import planejar
+    from .models import ParcelaReceber
+    plano = planejar(conta.valor_original, conta.vencimento, documento.parcelas)
+    forma = documento.forma_pagamento
+    forma_id = forma.pk if forma and forma.ativa and not forma.promissoria else None
+    ParcelaReceber.objects.bulk_create([ParcelaReceber(conta=conta, numero=i+1,
+        vencimento=p['vencimento'], valor=p['valor'], forma_prevista_id=forma_id) for i,p in enumerate(plano)])
 
 
 @transaction.atomic
@@ -93,5 +108,55 @@ def receber(usuario, pk, valor, forma_id, chave):
         raise ValidationError('Confira a situação da conta, o saldo e a forma de pagamento.')
     movimento = MovimentoCaixa.objects.create(sessao=caixa,operador=usuario,tipo='venda',valor=valor,afeta_saldo=forma.dinheiro,venda=conta.venda,descricao=f'Recebimento conta #{conta.pk} · {forma.nome}')
     resultado = Recebimento.objects.create(conta=conta,chave=chave,valor=valor,forma=forma,forma_nome=forma.nome,operador=usuario,movimento=movimento)
+    proxima = next((p for p in conta.plano_recebimento if p['saldo'] > 0), None)
+    if proxima:
+        conta.vencimento = proxima['vencimento']
+        conta.save(update_fields=['vencimento'])
     registrar(usuario,'conta.recebida',str(conta.pk),valor=str(valor))
     return resultado
+
+
+@transaction.atomic
+def salvar_plano_receber(usuario, conta, plano):
+    from .models import ParcelaReceber
+    from core.forms_parcelamento import validar_formas
+    exigir(usuario, 'comercial.change_contareceber')
+    conta = ContaReceber.objects.select_for_update().get(pk=conta.pk)
+    if conta.cancelada or conta.recebimentos.exists():
+        raise ValidationError('Contas canceladas ou com recebimentos mantêm o plano e o histórico financeiro.')
+    if not plano or len(plano) > 120 or sum(p['valor'] for p in plano) != conta.valor_original:
+        raise ValidationError('O plano deve fechar exatamente o valor original da conta.')
+    validar_formas(plano)
+    conta.parcelas_financeiras.all().delete()
+    ParcelaReceber.objects.bulk_create([ParcelaReceber(conta=conta, numero=i+1,
+        vencimento=p['vencimento'], valor=p['valor'], forma_prevista_id=p['forma_id']) for i, p in enumerate(plano)])
+    conta.vencimento = plano[0]['vencimento']
+    conta.save(update_fields=['vencimento'])
+    registrar(usuario, 'conta.plano_receber', conta.codigo, parcelas=len(plano))
+    return conta
+
+
+@transaction.atomic
+def criar_conta_receber(usuario, dados):
+    from django.contrib.auth import get_user_model
+    from .models import ParcelaReceber
+    exigir(usuario, 'comercial.add_contareceber')
+    get_user_model().objects.select_for_update().get(pk=usuario.pk)
+    anterior = ContaReceber.objects.filter(lancamento_chave=dados['chave']).first()
+    if anterior:
+        if anterior.criado_por_id != usuario.pk:
+            raise PermissionDenied
+        return anterior
+    conta = ContaReceber.objects.create(criado_por=usuario, lancamento_chave=dados['chave'],
+        **{c: dados[c] for c in ['cliente', 'descricao', 'valor_original', 'vencimento', 'observacoes']})
+    plano = dados['plano']
+    from core.forms_parcelamento import validar_formas
+    validar_formas(plano)
+    if sum(p['valor'] for p in plano) != conta.valor_original:
+        raise ValidationError('Confira o total do parcelamento.')
+    ParcelaReceber.objects.bulk_create([ParcelaReceber(conta=conta, numero=i+1,
+        vencimento=p['vencimento'], valor=p['valor'], forma_prevista_id=p['forma_id']) for i,p in enumerate(plano)])
+    conta.vencimento = plano[0]['vencimento']
+    conta.save(update_fields=['vencimento'])
+    registrar(usuario, 'conta.receber_criada', conta.codigo, parcelas=len(plano), valor=str(conta.valor_original))
+    return conta

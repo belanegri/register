@@ -46,12 +46,12 @@
 
     let date;
 
-    if (frequency === 'semanal') {
+    if (['semanal', 'quinzenal', 'dias'].includes(frequency)) {
       date = new Date(
         Date.UTC(
           year,
           month - 1,
-          day + index * 7
+          day + index * (frequency === 'semanal' ? 7 : frequency === 'quinzenal' ? 15 : Number(el('intervalo_dias')?.value || 30))
         )
       );
     } else {
@@ -153,7 +153,7 @@
 
     if (campoFrequencia) {
       campoFrequencia.hidden =
-        mode !== 'recorrente';
+        mode === 'unica';
     }
 
     if (campoQuantidade) {
@@ -243,7 +243,7 @@
 
       info.textContent =
         mode === 'parcelada'
-          ? 'O valor informado será dividido em parcelas mensais. A data de vencimento acima será a da primeira parcela.'
+          ? 'O valor informado será dividido em parcelas na frequência escolhida. A data de vencimento acima será a da primeira parcela.'
           : 'O mesmo valor será repetido na frequência escolhida. Serão gerados somente os lançamentos informados, sem renovação automática.';
     }
 
@@ -255,6 +255,7 @@
 
     if (preview) {
       preview.hidden =
+        Boolean(el('entrada')?.value || el('plano_personalizado')?.value) ||
         !series ||
         count < 2 ||
         count > 120 ||
@@ -311,9 +312,7 @@
           dataParcela(
             vencimentoCampo.value,
             i,
-            mode === 'parcelada'
-              ? 'mensal'
-              : frequenciaCampo.value
+            frequenciaCampo.value || 'mensal'
           ),
 
           money(amount)

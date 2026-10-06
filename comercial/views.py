@@ -5,14 +5,14 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.core.paginator import Paginator
-from django.db.models import Sum, Value, DecimalField, F
+from django.db.models import Sum, Value, DecimalField, F, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Servico, Documento, ContaReceber
-from .forms import ServicoForm, DocumentoForm, ItensFormSet, ContaForm
-from .services import converter, receber, registrar_venda_os
+from .forms import ServicoForm, DocumentoForm, ItensFormSet, ContaForm, PlanoReceberForm
+from .services import converter, receber, registrar_venda_os, criar_conta_receber, salvar_plano_receber
 from vendas.forms import CheckoutForm, PagamentosFormSet, ReceberNotaForm
 from vendas.views import dados_promissoria
 
@@ -173,8 +173,12 @@ def imprimir(request,pk,formato):
 @login_required
 @permission_required('comercial.view_contareceber',raise_exception=True)
 def contas(request):
+    from .financeiro_consultas import contexto_promissorias
     hoje = timezone.localdate()
     qs = ContaReceber.objects.select_related('cliente','venda','os').annotate(recebido=Coalesce(Sum('recebimentos__valor'),Value(Decimal('0')),output_field=DecimalField(max_digits=12,decimal_places=2)))
+    q = request.GET.get('q', '').strip()[:240]
+    if q:
+        qs = qs.filter(Q(descricao__icontains=q) | Q(cliente__nome__icontains=q) | Q(cliente__documento__icontains=q) | Q(origem__icontains=q))
     status = request.GET.get('status','')
     if status == 'vencidas': qs=qs.filter(cancelada=False,vencimento__lt=hoje,recebido__lt=F('valor_original'))
     elif status == 'vencer': qs=qs.filter(cancelada=False,vencimento__gte=hoje,recebido__lt=F('valor_original'))
@@ -186,7 +190,16 @@ def contas(request):
         try:
             if request.GET.get(key): qs=qs.filter(**{lookup:date.fromisoformat(request.GET[key])})
         except ValueError: messages.error(request,'Data inválida no filtro.')
-    return render(request,'comercial/contas.html',{'pagina':Paginator(qs.order_by('vencimento','pk').prefetch_related('recebimentos'),30).get_page(request.GET.get('page')),'status':status,'recebidos':qs.aggregate(s=Sum('recebido'))['s'] or 0})
+    resumo = qs.aggregate(recebidos=Sum('recebido'), total=Sum('valor_original'))
+    abertas = qs.filter(cancelada=False, recebido__lt=F('valor_original'))
+    saldo = F('valor_original') - F('recebido')
+    parametros = request.GET.copy()
+    parametros.pop('page', None)
+    return render(request,'comercial/contas.html',{'pagina':Paginator(qs.order_by('vencimento','pk').prefetch_related('recebimentos', 'parcelas_financeiras__forma_prevista'),30).get_page(request.GET.get('page')),
+        'status':status, 'q':q, 'recebidos':resumo['recebidos'] or 0, 'total_filtrado':resumo['total'] or 0,
+        'pendente':abertas.aggregate(s=Sum(saldo))['s'] or 0,
+        'atrasado':abertas.filter(vencimento__lt=hoje).aggregate(s=Sum(saldo))['s'] or 0,
+        'parametros':parametros.urlencode(), **contexto_promissorias(request.user,request.GET)})
 
 
 @login_required
@@ -194,15 +207,18 @@ def contas(request):
 def conta_nova(request):
     form = ContaForm(request.POST if request.method == "POST" else None)
     if request.method=='POST' and form.is_valid():
-        conta=form.save()
-        return redirect('comercial:conta',pk=conta.pk)
-    return render(request,'core/form.html',{'form':form,'titulo':'Nova conta a receber'})
+        try:
+            conta=criar_conta_receber(request.user, form.cleaned_data)
+            return redirect('comercial:conta',pk=conta.pk)
+        except ValidationError as exc:
+            form.add_error(None, exc)
+    return render(request,'comercial/conta_formulario.html',{'form':form,'titulo':'Nova conta a receber'})
 
 
 @login_required
 @permission_required('comercial.view_contareceber',raise_exception=True)
 def conta(request,pk):
-    conta=get_object_or_404(ContaReceber.objects.select_related('cliente','venda','os').prefetch_related('recebimentos'),pk=pk)
+    conta=get_object_or_404(ContaReceber.objects.select_related('cliente','venda','os').prefetch_related('recebimentos__operador','parcelas_financeiras__forma_prevista'),pk=pk)
     form=ReceberNotaForm(request.POST if request.method == "POST" else None,initial={'chave':uuid.uuid4(),'valor':conta.saldo})
     if request.method=='POST' and form.is_valid():
         try:
@@ -225,4 +241,3 @@ def conta_cancelar(request,pk):
         conta.cancelada=True
         conta.save(update_fields=['cancelada'])
     return redirect('comercial:conta',pk=pk)
-

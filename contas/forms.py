@@ -130,7 +130,11 @@ class ArquivosField(forms.FileField):
         ]
 
 
-class ContaForm(EstiloForm, CamposAnexo, forms.ModelForm):
+from core.forms_parcelamento import CamposParcelamento, validar_formas
+from core.parcelamento import planejar
+
+
+class ContaForm(EstiloForm, CamposAnexo, CamposParcelamento, forms.ModelForm):
     chave = forms.UUIDField(
         initial=uuid.uuid4,
         widget=forms.HiddenInput,
@@ -192,6 +196,9 @@ class ContaForm(EstiloForm, CamposAnexo, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            for nome in ['entrada', 'data_entrada', 'intervalo_dias', 'plano_personalizado']:
+                self.fields[nome].disabled = True
 
         # Recupera o código salvo ao editar uma conta.
         if self.instance.pk:
@@ -461,6 +468,15 @@ class ContaForm(EstiloForm, CamposAnexo, forms.ModelForm):
                 "anterior à emissão.",
             )
 
+        if not self.instance.pk and not self.errors and dados.get('modo') == 'parcelada':
+            forma = dados.get('forma_prevista')
+            total = dados['valor_original'] - (dados.get('desconto') or 0) + sum(dados.get(c) or 0 for c in ['juros', 'multa', 'acrescimos'])
+            dados['plano'] = planejar(total, dados['vencimento'], dados['quantidade_lancamentos'],
+                dados.get('frequencia') or 'mensal', dados.get('entrada') or 0, dados.get('data_entrada'),
+                dados.get('intervalo_dias') or 30, dados.get('plano_personalizado') or '', forma.pk if forma else None)
+            validar_formas(dados['plano'])
+        elif not self.instance.pk and (dados.get('entrada') or dados.get('plano_personalizado')):
+            raise forms.ValidationError('Selecione Parcelada para utilizar entrada ou parcelas personalizadas.')
         return dados
 
     class Meta:

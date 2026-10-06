@@ -306,7 +306,46 @@ ItensFormSet = inlineformset_factory(
 )
 
 
-class ContaForm(EstiloForm, forms.ModelForm):
+from core.forms_parcelamento import CamposParcelamento, validar_formas
+from core.parcelamento import FREQUENCIAS, planejar
+from vendas.models import FormaPagamento
+import uuid
+
+
+class PlanoReceberForm(EstiloForm, CamposParcelamento):
+    field_order = ['vencimento', 'quantidade_lancamentos', 'frequencia', 'forma_prevista',
+                   'entrada', 'data_entrada', 'intervalo_dias', 'plano_personalizado']
+    quantidade_lancamentos = forms.IntegerField(label='Número de parcelas (sem entrada)', min_value=1, max_value=120, initial=1, required=False)
+    frequencia = forms.ChoiceField(label='Frequência', choices=FREQUENCIAS, initial='mensal', required=False)
+    forma_prevista = forms.ModelChoiceField(label='Forma prevista', required=False,
+        queryset=FormaPagamento.objects.none())
+    vencimento = forms.DateField(label='Primeiro vencimento', widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'))
+
+    def __init__(self, *args, total=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        from vendas.models import FormaPagamento
+        self.total = total
+        self.fields['forma_prevista'].queryset = FormaPagamento.objects.filter(ativa=True, promissoria=False)
+
+    def clean(self):
+        dados = super().clean()
+        dados['quantidade_lancamentos'] = dados.get('quantidade_lancamentos') or 1
+        dados['frequencia'] = dados.get('frequencia') or 'mensal'
+        total = self.total or dados.get('valor_original')
+        if total and dados.get('vencimento') and dados.get('quantidade_lancamentos') and dados.get('frequencia') and not self.errors:
+            forma = dados.get('forma_prevista')
+            dados['plano'] = planejar(total, dados['vencimento'], dados['quantidade_lancamentos'],
+                dados['frequencia'], dados.get('entrada') or 0, dados.get('data_entrada'),
+                dados.get('intervalo_dias') or 30, dados.get('plano_personalizado') or '', forma.pk if forma else None)
+            validar_formas(dados['plano'])
+        return dados
+
+
+class ContaForm(PlanoReceberForm, forms.ModelForm):
+    field_order = ['cliente', 'descricao', 'valor_original', 'vencimento', 'quantidade_lancamentos',
+                   'frequencia', 'forma_prevista', 'entrada', 'data_entrada', 'intervalo_dias',
+                   'plano_personalizado', 'observacoes', 'chave']
+    chave = forms.UUIDField(widget=forms.HiddenInput, initial=uuid.uuid4)
     class Meta:
         model = ContaReceber
         fields = [

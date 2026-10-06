@@ -19,14 +19,8 @@ from .boleto import processar_boleto, BoletoInvalido
 def avancar_data(data, numero, frequencia):
     if data is None:
         return None
-    if frequencia == 'semanal':
-        return data + timedelta(weeks=numero)
-    meses = {'mensal': 1, 'bimestral': 2, 'trimestral': 3, 'semestral': 6, 'anual': 12}[frequencia] * numero
-    ano, mes = divmod(data.year * 12 + data.month - 1 + meses, 12)
-    try:
-        return data.replace(year=ano, month=mes + 1, day=min(data.day, calendar.monthrange(ano, mes + 1)[1]))
-    except (ValueError, OverflowError):
-        raise ValidationError('A série ultrapassa o limite de datas permitido. Revise a data inicial ou a quantidade.')
+    from core.parcelamento import data_parcela
+    return data_parcela(data, numero, frequencia)
 
 
 def dividir(valor, quantidade):
@@ -70,7 +64,7 @@ def criar_contas(usuario, dados):
     quantidade = dados.get('quantidade_lancamentos') if modo != 'unica' else 1
     if not quantidade or not 1 <= quantidade <= 120:
         raise ValidationError('Informe até 120 lançamentos.')
-    frequencia = dados.get('frequencia') if modo == 'recorrente' else 'mensal'
+    frequencia = dados.get('frequencia') or 'mensal'
     campos = [
     'descricao',
     'fornecedor',
@@ -91,13 +85,35 @@ def criar_contas(usuario, dados):
     if valores['valor_original'] <= 0 or any(v < 0 for v in valores.values()):
         raise ValidationError('Confira os valores do lançamento.')
     partes = {nome: dividir(valor, quantidade) if modo == 'parcelada' else [valor] * quantidade for nome, valor in valores.items()}
+    plano = None
+    if modo == 'parcelada':
+        from core.parcelamento import planejar
+        from core.forms_parcelamento import validar_formas
+        forma = dados.get('forma_prevista')
+        total = valores['valor_original'] - valores['desconto'] + valores['juros'] + valores['multa'] + valores['acrescimos']
+        plano = planejar(total, dados['vencimento'], quantidade, frequencia, dados.get('entrada') or 0,
+            dados.get('data_entrada'), dados.get('intervalo_dias') or 30, dados.get('plano_personalizado') or '',
+            forma.pk if forma else None)
+        validar_formas(plano)
+        quantidade = len(plano)
+        # Rateio dos ajustes com sobra de centavos na última parcela; o líquido segue o plano.
+        for nome in ['desconto', 'juros', 'multa', 'acrescimos']:
+            itens = [(valores[nome] * p['valor'] / total).quantize(Decimal('.01')) for p in plano[:-1]]
+            partes[nome] = itens + [valores[nome] - sum(itens)]
+            if partes[nome][-1] < 0:
+                raise ValidationError('Revise os ajustes e a distribuição das parcelas.')
+        partes['valor_original'] = [p['valor'] + partes['desconto'][i] - partes['juros'][i]
+            - partes['multa'][i] - partes['acrescimos'][i] for i,p in enumerate(plano)]
     contas = []
+    from core.parcelamento import data_parcela
     for i in range(quantidade):
         conta = ContaPagar(criado_por=usuario, lote=dados['chave'], parcela=i+1, total_parcelas=quantidade,
             modo=modo, frequencia=frequencia if modo == 'recorrente' else '',
-            vencimento=avancar_data(dados['vencimento'], i, frequencia),
-            data_programada=avancar_data(dados.get('data_programada'), i, frequencia),
+            vencimento=plano[i]['vencimento'] if plano else data_parcela(dados['vencimento'], i, frequencia, dados.get('intervalo_dias') or 30),
+            data_programada=(plano[i]['vencimento'] + (dados['data_programada'] - dados['vencimento'])) if plano and dados.get('data_programada') else (data_parcela(dados['data_programada'], i, frequencia, dados.get('intervalo_dias') or 30) if dados.get('data_programada') else None),
             **{c: dados.get(c) for c in campos}, **{nome: itens[i] for nome, itens in partes.items()})
+        if plano:
+            conta.forma_prevista_id = plano[i]['forma_id']
         if i:
             conta.codigo_barras = conta.linha_digitavel = ''
         conta.valor = conta.valor_original - conta.desconto + conta.juros + conta.multa + conta.acrescimos

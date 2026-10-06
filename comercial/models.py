@@ -374,6 +374,9 @@ class ItemDocumento(models.Model):
 
 
 class ContaReceber(TimestampedModel):
+    lancamento_chave = models.UUIDField(null=True, blank=True, unique=True, editable=False)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
+                                  related_name='contas_receber_criadas')
     cliente = models.ForeignKey(
         'clientes.Cliente',
         on_delete=models.PROTECT,
@@ -444,6 +447,26 @@ class ContaReceber(TimestampedModel):
         )
 
     @property
+    def codigo(self):
+        return f'CR-{self.pk:06d}'
+
+    @property
+    def atrasada(self):
+        return not self.cancelada and self.saldo > 0 and self.vencimento < timezone.localdate()
+
+    @property
+    def plano_recebimento(self):
+        restante = self.valor_recebido
+        plano = []
+        for parcela in self.parcelas_financeiras.all():
+            recebido = min(restante, parcela.valor)
+            restante -= recebido
+            plano.append({'numero': parcela.numero, 'vencimento': parcela.vencimento,
+                          'valor': parcela.valor, 'recebido': recebido, 'saldo': parcela.valor - recebido,
+                          'forma': parcela.forma_prevista})
+        return plano
+
+    @property
     def saldo(self):
         return self.valor_original - self.valor_recebido
 
@@ -511,3 +534,16 @@ class Recebimento(models.Model):
                 name='recebimento_positivo'
             )
         ]
+
+
+class ParcelaReceber(models.Model):
+    conta = models.ForeignKey(ContaReceber, on_delete=models.CASCADE, related_name='parcelas_financeiras')
+    numero = models.PositiveSmallIntegerField()
+    vencimento = models.DateField()
+    valor = models.DecimalField(max_digits=12, decimal_places=2)
+    forma_prevista = models.ForeignKey('vendas.FormaPagamento', null=True, blank=True, on_delete=models.PROTECT)
+
+    class Meta:
+        ordering = ['numero']
+        constraints = [models.UniqueConstraint(fields=['conta', 'numero'], name='receber_parcela_unica'),
+                       models.CheckConstraint(condition=Q(valor__gt=0), name='receber_parcela_positiva')]
