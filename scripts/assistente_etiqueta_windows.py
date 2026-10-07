@@ -6,6 +6,7 @@ import hashlib
 import io
 import json
 import sys
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -17,6 +18,42 @@ from PIL import Image
 DPI = 203
 LARGURA_PONTOS = 384
 ALTURA_PONTOS = round(30 * DPI / 25.4)
+
+
+def pasta_configuracao():
+    if getattr(sys, 'frozen', False):
+        pasta = Path(os.environ['LOCALAPPDATA']) / 'REGISTER' / 'etiquetas'
+        pasta.mkdir(parents=True, exist_ok=True)
+        return pasta
+    return Path(__file__).resolve().parent
+
+
+def listar_impressoras():
+    """Filas locais e conexões compartilhadas já instaladas no Windows."""
+    spool = ctypes.WinDLL('winspool.drv', use_last_error=True)
+    class Impressora(ctypes.Structure):
+        _fields_ = [('flags', wintypes.DWORD), ('descricao', wintypes.LPWSTR),
+                    ('nome', wintypes.LPWSTR), ('comentario', wintypes.LPWSTR)]
+    spool.EnumPrintersW.argtypes = [wintypes.DWORD, wintypes.LPWSTR, wintypes.DWORD,
+        ctypes.c_void_p, wintypes.DWORD, ctypes.POINTER(wintypes.DWORD), ctypes.POINTER(wintypes.DWORD)]
+    spool.EnumPrintersW.restype = wintypes.BOOL
+    tamanho, quantidade = wintypes.DWORD(), wintypes.DWORD()
+    spool.EnumPrintersW(6, None, 1, None, 0, ctypes.byref(tamanho), ctypes.byref(quantidade))
+    if not tamanho.value:
+        return []
+    buffer = ctypes.create_string_buffer(tamanho.value)
+    if not spool.EnumPrintersW(6, None, 1, buffer, tamanho, ctypes.byref(tamanho), ctypes.byref(quantidade)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    filas = ctypes.cast(buffer, ctypes.POINTER(Impressora))
+    return sorted({filas[i].nome for i in range(quantidade.value) if filas[i].nome})
+
+
+def impressora_configurada():
+    arquivo = pasta_configuracao() / 'impressora.json'
+    if arquivo.is_file():
+        return json.loads(arquivo.read_text(encoding='utf-8-sig')).get('nome', '')
+    nomes = listar_impressoras()
+    return next((n for n in ['POS-58', 'REGISTER - Etiquetas 57x30'] if n in nomes), '')
 
 
 def ler_etiqueta(uri):
@@ -59,18 +96,16 @@ def preparar_impressao(dados):
     tinta = sum(valor.bit_count() for valor in raster)
     if tinta < 20:
         raise ValueError('Etiqueta sem conteudo imprimivel; envio cancelado.')
-        saida = bytearray(b'\x1b@\x1ba\x00')
-
+    saida = bytearray(b'\x1b@\x1ba\x00')
     largura_bytes = LARGURA_PONTOS // 8
-
-    # Envia a etiqueta inteira em um único raster:
-    # 384 pontos de largura x 240 pontos de altura (~30 mm).
-    # Evita dividir a etiqueta em vários comandos GS v 0.
-    saida.extend(b'\x1dv0\x00')
-    saida.extend(largura_bytes.to_bytes(2, 'little'))
-    saida.extend(ALTURA_PONTOS.to_bytes(2, 'little'))
-    saida.extend(raster)
-
+    # Mantém os mesmos comandos em faixas de 24 linhas do assistente já validado.
+    # Não acrescenta avanço, corte, LF nem formulário do driver.
+    for inicio in range(0, ALTURA_PONTOS, 24):
+        linhas = min(24, ALTURA_PONTOS - inicio)
+        saida.extend(b'\x1dv0\x00')
+        saida.extend(largura_bytes.to_bytes(2, 'little'))
+        saida.extend(linhas.to_bytes(2, 'little'))
+        saida.extend(raster[inicio * largura_bytes:(inicio + linhas) * largura_bytes])
     return bytes(saida), tinta
 
 
@@ -116,15 +151,15 @@ def enviar_raw(nome, dados):
         spool.ClosePrinter(handle)
 
 
-def imprimir(uri):
+def imprimir(uri, impressora=None):
     pdf = ler_etiqueta(uri)
     comandos, tinta = preparar_impressao(pdf)
-    config = json.loads(Path(__file__).with_name('impressora.json').read_text(encoding='utf-8-sig'))
-    if config.get('nome') not in ['POS-58', 'REGISTER - Etiquetas 57x30']:
-        raise ValueError('Fila de etiquetas nao configurada.')
-    trabalho = enviar_raw(config['nome'], comandos)
+    nome = impressora if impressora is not None else impressora_configurada()
+    if not isinstance(nome, str) or not nome or nome not in listar_impressoras():
+        raise ValueError('Selecione uma impressora de etiquetas instalada neste computador, local ou compartilhada.')
+    trabalho = enviar_raw(nome, comandos)
     return {'sha256': hashlib.sha256(pdf).hexdigest(), 'trabalho': trabalho,
-            'altura_pontos': ALTURA_PONTOS, 'tinta_pontos': tinta, 'impressora': config['nome']}
+            'altura_pontos': ALTURA_PONTOS, 'tinta_pontos': tinta, 'impressora': nome}
 
 
 if __name__ == '__main__':

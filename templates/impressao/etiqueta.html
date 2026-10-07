@@ -12,11 +12,11 @@
 
     <link
         rel="stylesheet"
-        href="{% static 'css/etiqueta.css' %}?v=layout4linhas-20261004"
+        href="{% static 'css/etiqueta.css' %}?v=multi-computador-20261006"
     >
 
     <script
-        src="{% static 'js/etiqueta.js' %}?v=layout4linhas-20261004"
+        src="{% static 'js/etiqueta.js' %}?v=multi-computador-20261006"
         defer>
     </script>
 </head>
@@ -24,6 +24,10 @@
 <body>
 
     <nav class="controles" aria-label="Impressão">
+
+        <label for="impressora-etiqueta">Impressora de etiquetas deste computador</label>
+        <select id="impressora-etiqueta"><option value="">Atualize a lista para selecionar</option></select>
+        <button type="button" id="atualizar-impressoras">Atualizar impressoras</button>
 
         <button
             type="button"
@@ -43,6 +47,12 @@
             Envio direto · 1 etiqueta de 57 × 30 mm.
         </p>
 
+        <details>
+            <summary>Usar em outro computador ou impressora compartilhada</summary>
+            <p>Instale o assistente REGISTER em cada computador Windows. A impressora pode ser USB ou compartilhada pelo Windows na mesma rede. Para usar a compartilhada, adicione-a primeiro nas Impressoras e scanners do Windows.</p>
+            <a href="{% url 'estoque:assistente_etiquetas' %}">Baixar assistente Windows 64 bits</a>
+            <p>Extraia o ZIP completo e abra <strong>Instalar-Etiquetas.cmd</strong>. Depois atualize a lista e escolha a impressora POS-58. O computador que compartilha a impressora deve estar ligado.</p>
+        </details>
         <details>
             <summary>Salvar etiqueta em PDF</summary>
 

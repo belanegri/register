@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from assistente_etiqueta_windows import imprimir, ler_etiqueta, preparar_impressao
+from assistente_etiqueta_windows import imprimir, ler_etiqueta, preparar_impressao, listar_impressoras, impressora_configurada, pasta_configuracao
 
 ORIGENS = {
     'https://register-production-351c.up.railway.app',
@@ -14,7 +14,7 @@ ORIGENS = {
 }
 TRAVA = threading.Lock()
 RESULTADOS = {}
-REGISTRO = Path(__file__).with_name('ultimo-trabalho.json')
+REGISTRO = pasta_configuracao() / 'ultimo-trabalho.json'
 
 
 class Etiquetas(BaseHTTPRequestHandler):
@@ -46,7 +46,11 @@ class Etiquetas(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == '/status' and self.headers.get('Host') == '127.0.0.1:17857':
-            self.responder(200, {'assistente': 'REGISTER', 'versao': 'raw30-local-1'})
+            try:
+                self.responder(200, {'assistente': 'REGISTER', 'versao': 'raw30-multicomputador-2',
+                    'impressoras': listar_impressoras(), 'impressora': impressora_configurada()})
+            except Exception:
+                self.responder(503, {'erro': 'Não foi possível consultar as impressoras do Windows.'})
         else:
             self.responder(404, {'erro': 'Endereco invalido.'})
 
@@ -63,13 +67,16 @@ class Etiquetas(BaseHTTPRequestHandler):
                 raise ValueError('Pedido de etiqueta invalido.')
             self.connection.settimeout(5)
             pedido = json.loads(self.rfile.read(tamanho))
-            if set(pedido) != {'pdf', 'pedido'} or not isinstance(pedido['pdf'], str):
+            if set(pedido) not in ({'pdf', 'pedido'}, {'pdf', 'pedido', 'impressora'}) or not isinstance(pedido['pdf'], str):
                 raise ValueError('Pedido de etiqueta invalido.')
             identificador = pedido['pedido']
             if not isinstance(identificador, str) or not re.fullmatch(r'[a-zA-Z0-9-]{16,64}', identificador):
                 raise ValueError('Identificador de pedido invalido.')
             uri = 'register-etiqueta://imprimir?pdf=' + pedido['pdf']
             pdf = ler_etiqueta(uri)
+            nome = pedido.get('impressora')
+            if nome is not None and (not isinstance(nome, str) or nome not in listar_impressoras()):
+                raise ValueError('Impressora não instalada neste computador.')
             if self.path == '/validar':
                 _, tinta = preparar_impressao(pdf)
                 self.responder(200, {'status': 'validada', 'altura_pontos': 240, 'tinta_pontos': tinta})
@@ -77,20 +84,25 @@ class Etiquetas(BaseHTTPRequestHandler):
             with TRAVA:
                 if identificador in RESULTADOS:
                     resultado = RESULTADOS[identificador]
+                    if resultado.get('destino') != nome or resultado.get('conteudo') != pedido['pdf']:
+                        self.responder(409, {'erro': 'Pedido já utilizado para outra etiqueta ou impressora.'})
+                        return
                 else:
                     registro = {'hora': datetime.now(timezone.utc).isoformat(),
                                 'pedido': identificador, 'origem': self.headers['Origin']}
                     try:
-                        resultado = dict(imprimir(uri), status='enviada')
+                        resultado = dict(imprimir(uri, nome) if nome is not None else imprimir(uri), status='enviada')
                     except Exception as erro:
                         resultado = {'status': 'erro', 'mensagem': str(erro)}
                     registro.update(resultado)
+                    resultado.update(destino=nome, conteudo=pedido['pdf'])
                     REGISTRO.write_text(
                         json.dumps(registro), encoding='utf-8')
                     if len(RESULTADOS) >= 1000:
                         RESULTADOS.pop(next(iter(RESULTADOS)))
                     RESULTADOS[identificador] = resultado
-            self.responder(200 if resultado['status'] == 'enviada' else 500, resultado)
+            self.responder(200 if resultado['status'] == 'enviada' else 500,
+                {k:v for k,v in resultado.items() if k not in ('destino','conteudo')})
         except (ValueError, TypeError, KeyError, TimeoutError) as erro:
             self.responder(400, {'erro': str(erro)})
         except Exception:

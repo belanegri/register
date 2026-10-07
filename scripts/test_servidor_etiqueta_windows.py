@@ -35,10 +35,11 @@ class PonteTests(unittest.TestCase):
         self.registro.stop()
         self.pasta.cleanup()
 
-    def pedir(self, caminho='/imprimir', origem=next(iter(ponte.ORIGENS)), pdf=None):
+    def pedir(self, caminho='/imprimir', origem=next(iter(ponte.ORIGENS)), pdf=None, impressora=None):
         conn = HTTPConnection('127.0.0.1', self.server.server_port, timeout=5)
-        conn.request('POST', caminho, json.dumps({'pdf': self.pdf if pdf is None else pdf,
-                                               'pedido': 'teste-pedido-unico-20261004'}),
+        dados = {'pdf': self.pdf if pdf is None else pdf, 'pedido': 'teste-pedido-unico-20261004'}
+        if impressora is not None: dados['impressora'] = impressora
+        conn.request('POST', caminho, json.dumps(dados),
                      {'Host': '127.0.0.1:17857', 'Origin': origem, 'Content-Type': 'application/json'})
         response = conn.getresponse()
         resultado = response.status, json.loads(response.read()), response.getheader('Access-Control-Allow-Origin')
@@ -67,6 +68,26 @@ class PonteTests(unittest.TestCase):
             self.assertEqual(self.pedir(origem='https://outro.example')[0], 403)
             self.assertEqual(self.pedir(pdf='nao-e-um-pdf')[0], 400)
         impressao.assert_not_called()
+
+    def test_impressora_compartilhada_e_reenvio(self):
+        nome = r'\\NEGRI\REGISTER-Etiquetas'
+        with patch.object(ponte,'listar_impressoras',return_value=[nome]), patch.object(ponte,'imprimir',return_value={'impressora':nome,'trabalho':2}) as impressao:
+            primeiro=self.pedir(impressora=nome)
+            self.assertEqual(primeiro[0],200)
+            self.assertEqual(self.pedir(impressora=nome),primeiro)
+            self.assertEqual(impressao.call_args.args[1],nome)
+            impressao.assert_called_once()
+
+    def test_destino_desconhecido_nao_imprime(self):
+        with patch.object(ponte,'listar_impressoras',return_value=['POS-58']),patch.object(ponte,'imprimir') as impressao:
+            self.assertEqual(self.pedir(impressora=r'\\desconhecido\fila')[0],400)
+            impressao.assert_not_called()
+
+    def test_mesmo_pedido_nao_pode_trocar_impressora(self):
+        with patch.object(ponte,'listar_impressoras',return_value=['POS-58','POS-58 copia']),patch.object(ponte,'imprimir',return_value={'impressora':'POS-58','trabalho':3}) as impressao:
+            self.assertEqual(self.pedir(impressora='POS-58')[0],200)
+            self.assertEqual(self.pedir(impressora='POS-58 copia')[0],409)
+            impressao.assert_called_once()
 
 
 if __name__ == '__main__':

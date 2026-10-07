@@ -1,0 +1,28 @@
+REGISTER - Etiquetas 57 x 30 mm / POS-58
+
+Em cada computador Windows 64 bits:
+1. Extraia todo o ZIP em uma pasta.
+2. Abra Instalar-Etiquetas.cmd. Nao precisa instalar Python.
+3. Instale a impressora POS-58 no Windows (USB ou compartilhada).
+4. No REGISTER, abra uma etiqueta, clique em Atualizar impressoras,
+   permita o acesso ao computador quando o navegador solicitar e escolha a fila.
+5. Clique em Imprimir etiqueta. A escolha fica salva neste navegador/computador.
+
+Para usar a mesma impressora deste computador:
+- No computador conectado a ela, abra as Propriedades da impressora,
+  Compartilhamento, marque Compartilhar esta impressora e defina o nome.
+- Nos outros computadores da mesma rede, abra Configuracoes do Windows,
+  Impressoras e scanners, Adicionar dispositivo, Adicionar manualmente,
+  Selecione uma impressora compartilhada pelo nome.
+- Informe \\NOME-DO-COMPUTADOR\NOME-DO-COMPARTILHAMENTO.
+- O computador conectado a impressora deve estar ligado e acessivel na rede.
+- O Windows pode pedir permissao para instalar o driver e credenciais da rede.
+
+Para outra impressora POS-58, instale o driver dela no proprio computador
+e escolha a fila correspondente no REGISTER. Nao selecione impressoras A4.
+
+O assistente envia uma etiqueta de 30 mm por vez em ESC/POS RAW.
+Nao utiliza o formulario de 210 mm do driver, nem imprime pelo navegador.
+O assistente inicia junto com a sessao do Windows do usuario que o instalou.
+Compatibilidade deste pacote: Windows 10/11 de 64 bits, impressoras POS-58
+compativeis com ESC/POS e etiquetas de 57 x 30 mm.
