@@ -13,7 +13,7 @@ def pecas_filtradas(params):
     consulta = params.get("q", "").strip()[:200]
     status = params.get("status", "")
     pecas = Peca.objects.select_related("categoria", "veiculo_origem", "localizacao").prefetch_related("fotos")
-    campos = ["codigo", "nome", "categoria__nome", "marca", "aplicacao", "motor", "posicao",
+    campos = ["codigo", "nome", "categoria__nome", "marca", "aplicacao", "motor", "posicao", "compativel",
         "veiculo_origem__codigo", "veiculo_origem__marca", "veiculo_origem__modelo",
         "veiculo_origem__versao", "veiculo_origem__motor", "localizacao__codigo", "localizacao__nome"]
     for termo in consulta.split()[:12]:
@@ -37,6 +37,10 @@ def pecas_filtradas(params):
 @permission_required("estoque.view_peca", raise_exception=True)
 def etiqueta(request, pk):
     peca = get_object_or_404(Peca.objects.select_related("categoria", "localizacao"), pk=pk)
+    modelo = request.GET.get("modelo", "padrao")
+    if modelo not in {"padrao", "online"}:
+        from django.http import HttpResponseBadRequest
+        return HttpResponseBadRequest("Modelo de etiqueta inválido.")
     if request.GET.get("formato") != "pdf":
         from base64 import b64encode, urlsafe_b64encode
         from .codigo_barras import gerar_svg
@@ -44,14 +48,14 @@ def etiqueta(request, pk):
         barras = gerar_svg(peca.codigo).replace(
             'preserveAspectRatio="xMinYMin meet"', 'preserveAspectRatio="none"')
         response = render(request, "impressao/etiqueta.html", {
-            "peca": peca, "codigo_barras_etiqueta": b64encode(barras.encode()).decode(),
-            "etiqueta_direta": urlsafe_b64encode(gerar_etiqueta_pdf(peca)).decode().rstrip('='),
+            "peca": peca, "modelo_etiqueta": modelo, "codigo_barras_etiqueta": b64encode(barras.encode()).decode(),
+            "etiqueta_direta": urlsafe_b64encode(gerar_etiqueta_pdf(peca, modelo=modelo)).decode().rstrip('='),
         })
         response["Cache-Control"] = "private, no-store"
         return response
     from django.http import HttpResponse
     from .etiqueta_pdf import gerar_etiqueta_pdf
-    response = HttpResponse(gerar_etiqueta_pdf(peca), content_type="application/pdf")
+    response = HttpResponse(gerar_etiqueta_pdf(peca, modelo=modelo), content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="etiqueta.pdf"'
     response["Cache-Control"] = "private, no-store"
     return response

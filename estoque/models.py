@@ -87,6 +87,11 @@ class Peca(TimestampedModel):
     custo = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     preco_venda = models.DecimalField("preço de venda", max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     quantidade = models.PositiveIntegerField(default=1)
+    postada_online = models.BooleanField(
+        "Publicada para venda online", default=False,
+        help_text="Marque quando a peça estiver anunciada no Mercado Livre, Shopee, OLX ou outros canais.")
+    compativel = models.TextField("Compatível", blank=True,
+        help_text="Informe veículos, modelos ou outras aplicações compatíveis.")
     observacoes = models.TextField("observações", blank=True)
     status = models.CharField(max_length=20, choices=Status, default=Status.DISPONIVEL, db_index=True)
 

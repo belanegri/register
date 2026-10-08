@@ -1,4 +1,4 @@
-﻿import json
+import json
 
 from django import forms
 from veiculos.marcas import MARCAS, ALIASES, opcoes_marca
@@ -141,7 +141,7 @@ class PecaEdicaoForm(EstiloForm, PecaAdminForm):
     class Meta(PecaAdminForm.Meta):
         fields = ["quantidade", "status", "motivo", "nome", "marca", "aplicacao", "categoria",
             "veiculo_origem", "localizacao", "custo", "preco_venda", "ano_inicial", "ano_final",
-            "motor", "posicao", "condicao", "observacoes", "versao_estoque"]
+            "motor", "posicao", "compativel", "postada_online", "condicao", "observacoes", "versao_estoque"]
         labels = {"quantidade": "Quantidade total em estoque"}
         help_texts = {"quantidade": "Informe o total que vocÃª tem agora, nÃ£o apenas a quantidade que estÃ¡ entrando.",
             "status": "Para saldo zero, use Baixada / indisponÃ­vel. Ao repor uma peÃ§a vendida, selecione DisponÃ­vel."}

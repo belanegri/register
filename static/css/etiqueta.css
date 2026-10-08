@@ -238,3 +238,6 @@ body {
 .etiqueta-nome, .etiqueta-codigo { font-size: 7.5pt; line-height: 2.8mm; }
 .etiqueta-veiculo { font-size: 7pt; line-height: 2.8mm; }
 .etiqueta-barras { width: 47mm; height: 7mm; margin-top: .2mm; }
+
+.etiqueta { position: relative; }
+.etiqueta-online { position: absolute; top: 2.1mm; left: 4.5mm; width: 47mm; text-align: center; font-size: 6.5pt; line-height: 2.8mm; font-weight: 700; white-space: nowrap; }

@@ -73,8 +73,9 @@ class PecaAdmin(admin.ModelAdmin):
     inlines = [FotoPecaInline]
     fieldsets = [
         ("Identificação", {"fields": ["versao_estoque", "codigo_automatico", "codigo_barras", "nome", "marca", "aplicacao", "categoria", "veiculo_origem"]}),
-        ("Aplicação", {"fields": [("ano_inicial", "ano_final"), "motor", "posicao"]}),
+        ("Aplicação", {"fields": [("ano_inicial", "ano_final"), "motor", "posicao", "compativel"]}),
         ("Estoque e valores", {"fields": ["condicao", "localizacao", "custo", "preco_venda", "quantidade", "status"]}),
+        ("Venda online", {"fields": ["postada_online"]}),
         ("Informações adicionais", {"fields": ["observacoes", "identificador", "criado_em", "atualizado_em"]}),
     ]
 
@@ -91,7 +92,7 @@ class PecaAdmin(admin.ModelAdmin):
             reverse("estoque:etiqueta", args=[obj.pk]))
 
     def save_model(self, request, obj, form, change):
-        campos = ["nome", "preco_venda", "custo", "quantidade", "status", "marca", "aplicacao", "localizacao_id"]
+        campos = ["nome", "preco_venda", "custo", "quantidade", "status", "marca", "aplicacao", "localizacao_id", "postada_online", "compativel"]
         antigo = Peca.objects.get(pk=obj.pk) if change else None
         antes = {c: str(getattr(antigo, c)) for c in campos} if antigo else {}
         super().save_model(request, obj, form, change)

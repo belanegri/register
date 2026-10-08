@@ -23,12 +23,14 @@ def _abreviar(texto, largura, fonte, tamanho):
     return texto.rstrip() + "..."
 
 
-def gerar_etiqueta_pdf(peca):
+def gerar_etiqueta_pdf(peca, modelo="padrao"):
     """
     Gera exatamente uma etiqueta física de 57 x 30 mm
     para impressão direta na POS-58.
     """
 
+    if modelo not in {"padrao", "online"}:
+        raise ValueError("Modelo de etiqueta inválido.")
     arquivo = BytesIO()
 
     largura = 57 * mm
@@ -95,6 +97,10 @@ def gerar_etiqueta_pdf(peca):
         pdf.drawString(x, (22.4 - indice * 2.8) * mm,
                        _abreviar(texto, util, pdf.stringWidth, tamanho))
 
+    if modelo == "online":
+        pdf.setFont("Helvetica-Bold", 6.5)
+        pdf.drawCentredString(x + util / 2, 25.7 * mm,
+                             "NO CATÁLOGO DE VENDAS ONLINE")
     pdf.showPage()
     pdf.save()
     return arquivo.getvalue()

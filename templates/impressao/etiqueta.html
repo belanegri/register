@@ -12,11 +12,11 @@
 
     <link
         rel="stylesheet"
-        href="{% static 'css/etiqueta.css' %}?v=multi-computador-20261006"
+        href="{% static 'css/etiqueta.css' %}?v=modelos-20261008"
     >
 
     <script
-        src="{% static 'js/etiqueta.js' %}?v=multi-computador-20261006"
+        src="{% static 'js/etiqueta.js' %}?v=modelos-20261008"
         defer>
     </script>
 </head>
@@ -25,6 +25,7 @@
 
     <nav class="controles" aria-label="Impressão">
 
+        <p>Modelo: <strong>{% if modelo_etiqueta == 'online' %}Catálogo online{% else %}Padrão{% endif %}</strong> · <a href="{% url 'estoque:etiqueta' peca.pk %}?modelo=padrao">Padrão</a> · <a href="{% url 'estoque:etiqueta' peca.pk %}?modelo=online">Catálogo online</a></p>
         <label for="impressora-etiqueta">Impressora de etiquetas deste computador</label>
         <select id="impressora-etiqueta"><option value="">Atualize a lista para selecionar</option></select>
         <button type="button" id="atualizar-impressoras">Atualizar impressoras</button>
@@ -57,7 +58,7 @@
             <summary>Salvar etiqueta em PDF</summary>
 
             <a
-                href="{% url 'estoque:etiqueta' peca.pk %}?formato=pdf"
+                href="{% url 'estoque:etiqueta' peca.pk %}?formato=pdf&amp;modelo={{ modelo_etiqueta }}"
                 target="_blank"
                 rel="noopener">
                 Abrir PDF para salvar
@@ -68,6 +69,7 @@
 
 
     <main class="etiqueta" id="papel">
+        {% if modelo_etiqueta == 'online' %}<div class="etiqueta-online">NO CATÁLOGO DE VENDAS ONLINE</div>{% endif %}
 
         <div class="etiqueta-texto" id="etiqueta-texto">
 
