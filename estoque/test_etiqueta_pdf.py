@@ -71,5 +71,5 @@ class EtiquetaPDFTests(SimpleTestCase):
         impressao.drawString.assert_any_call(4.5 * mm, 22.4 * mm, 'Farol')
         chamadas = impressao.drawString.call_args_list
         self.assertEqual(len(chamadas), 4)
-        self.assertIn(' | Lado/posição:', chamadas[2].args[2])
+        self.assertIn(' | Lado:', chamadas[2].args[2])
         self.assertTrue(all(chamadas[i].args[1] - chamadas[i+1].args[1] > 7.5 for i in range(3)))
