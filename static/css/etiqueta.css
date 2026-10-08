@@ -240,4 +240,14 @@ body {
 .etiqueta-barras { width: 47mm; height: 7mm; margin-top: .2mm; }
 
 .etiqueta { position: relative; }
-.etiqueta-online { position: absolute; top: 2.1mm; left: 4.5mm; width: 47mm; text-align: center; font-size: 6.5pt; line-height: 2.8mm; font-weight: 700; white-space: nowrap; }
+.etiqueta-online { position: absolute; inset: 0 5.5mm 0 4.5mm; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 10pt; line-height: 4.5mm; font-weight: 700; text-align: center; white-space: nowrap; }
+
+.titulo-impressao { font-size: 22px; margin: 0 0 16px; color: #173e30; }
+.modelos-etiqueta { border: 0; padding: 0; margin: 0 0 20px; }
+.modelos-etiqueta legend { font-weight: 700; margin-bottom: 8px; }
+.modelos-opcoes { display: flex; gap: 10px; flex-wrap: wrap; }
+.controles .modelo-opcao { flex: 1 1 200px; margin: 0; padding: 12px; border: 1px solid #c5cec8; border-radius: 8px; background: #fff; text-decoration: none; }
+.modelo-opcao strong, .modelo-opcao span { display: block; }
+.modelo-opcao span { font-size: 12px; color: #53635a; margin-top: 4px; }
+.controles .modelo-opcao.selecionado { border: 2px solid #21654d; padding: 11px; background: #eef7f1; }
+.modelo-opcao:focus-visible { outline: 3px solid #21654d; outline-offset: 2px; }

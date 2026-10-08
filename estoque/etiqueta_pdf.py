@@ -64,6 +64,16 @@ def gerar_etiqueta_pdf(peca, modelo="padrao"):
     x = 4.5 * mm
     util = 47 * mm
 
+    if modelo == "online":
+        pdf.setFont("Helvetica-Bold", 10)
+        for texto, y in [("ESTA PEÇA ESTÁ NO", 19),
+                         ("CATÁLOGO DE", 14.5),
+                         ("VENDAS ONLINE", 10)]:
+            pdf.drawCentredString(x + util / 2, y * mm, texto)
+        pdf.showPage()
+        pdf.save()
+        return arquivo.getvalue()
+
     # Bloco de quatro linhas e barras centralizado na etiqueta.
     # Mantém a largura e a altura das barras já calibradas.
     barras = Code128(
@@ -97,10 +107,6 @@ def gerar_etiqueta_pdf(peca, modelo="padrao"):
         pdf.drawString(x, (22.4 - indice * 2.8) * mm,
                        _abreviar(texto, util, pdf.stringWidth, tamanho))
 
-    if modelo == "online":
-        pdf.setFont("Helvetica-Bold", 6.5)
-        pdf.drawCentredString(x + util / 2, 25.7 * mm,
-                             "NO CATÁLOGO DE VENDAS ONLINE")
     pdf.showPage()
     pdf.save()
     return arquivo.getvalue()

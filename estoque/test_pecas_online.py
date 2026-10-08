@@ -49,6 +49,16 @@ class PecasOnlineTests(TestCase):
             stream = re.search(rb"stream\r?\n(.*?)endstream", pdf, re.S)[1].strip()
             commands = zlib.decompress(base64.a85decode(stream, adobe=True))
             self.assertEqual(b"VENDAS ONLINE" in commands, modelo == "online")
+            if modelo == "online":
+                self.assertNotIn(self.peca.nome.encode(), commands)
+                self.assertNotIn(self.peca.codigo.encode(), commands)
+                self.assertNotIn(b"Marca:", commands)
+                self.assertNotContains(response, 'class="etiqueta-barras"')
+                self.assertNotContains(response, 'class="etiqueta-nome"')
+                self.assertContains(response, 'VENDAS ONLINE')
+            else:
+                self.assertIn(self.peca.codigo.encode(), commands)
+                self.assertContains(response, 'class="etiqueta-barras"')
             self.assertEqual(self.client.get(url, {"modelo": modelo, "formato": "pdf"}).status_code, 200)
         self.assertFalse(self.peca.postada_online)
         self.assertEqual(self.client.get(url, {"modelo": "desconhecido"}).status_code, 400)

@@ -6,6 +6,9 @@
     <td>{{ peca.marca }} {{ peca.aplicacao|default:'—' }}{% if peca.posicao %}<small class="d-block text-secondary">{{ peca.posicao }}</small>{% endif %}</td>
     <td>{{ peca.localizacao|default:'Não informada' }}</td><td>{{ peca.quantidade }}</td><td class="text-nowrap">R$ {{ peca.preco_venda|floatformat:2 }}</td>
     <td><span class="stock-badge status-{{ peca.status }}">{{ peca.get_status_display }}</span></td>
-    <td>{% if perms.estoque.change_peca %}<a class="btn btn-sm btn-outline-primary" href="{% url 'estoque:editar' peca.pk %}">Editar</a>{% endif %} <a class="btn btn-sm btn-outline-secondary py-0 px-2" href="{% url 'estoque:etiqueta' peca.pk %}" target="_blank" rel="noopener">Etiqueta</a> <a class="btn btn-sm btn-outline-secondary py-0 px-2" href="{% url 'estoque:etiqueta' peca.pk %}?modelo=online" target="_blank" rel="noopener" aria-label="Etiqueta de catálogo online de {{ peca.nome }}">Etiqueta online</a></td>
+    <td><div class="d-flex align-items-center gap-2 text-nowrap">
+      {% if perms.estoque.change_peca %}<a class="btn btn-sm btn-outline-primary" href="{% url 'estoque:editar' peca.pk %}">Editar</a>{% endif %}
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'estoque:etiqueta' peca.pk %}" target="_blank" rel="noopener">Etiqueta</a>
+    </div></td>
   </tr>{% endfor %}</tbody>
 </table></div>

@@ -12,11 +12,11 @@
 
     <link
         rel="stylesheet"
-        href="{% static 'css/etiqueta.css' %}?v=modelos-20261008"
+        href="{% static 'css/etiqueta.css' %}?v=aviso-online-20261009"
     >
 
     <script
-        src="{% static 'js/etiqueta.js' %}?v=modelos-20261008"
+        src="{% static 'js/etiqueta.js' %}?v=aviso-online-20261009"
         defer>
     </script>
 </head>
@@ -25,7 +25,14 @@
 
     <nav class="controles" aria-label="Impressão">
 
-        <p>Modelo: <strong>{% if modelo_etiqueta == 'online' %}Catálogo online{% else %}Padrão{% endif %}</strong> · <a href="{% url 'estoque:etiqueta' peca.pk %}?modelo=padrao">Padrão</a> · <a href="{% url 'estoque:etiqueta' peca.pk %}?modelo=online">Catálogo online</a></p>
+        <h1 class="titulo-impressao">Imprimir etiqueta</h1>
+        <fieldset class="modelos-etiqueta">
+            <legend>Escolha o modelo</legend>
+            <div class="modelos-opcoes">
+                <a class="modelo-opcao{% if modelo_etiqueta == 'padrao' %} selecionado{% endif %}" href="{% url 'estoque:etiqueta' peca.pk %}?modelo=padrao" {% if modelo_etiqueta == 'padrao' %}aria-current="page"{% endif %}><strong>Etiqueta da peça</strong><span>Dados da peça e código de barras</span></a>
+                <a class="modelo-opcao{% if modelo_etiqueta == 'online' %} selecionado{% endif %}" href="{% url 'estoque:etiqueta' peca.pk %}?modelo=online" {% if modelo_etiqueta == 'online' %}aria-current="page"{% endif %}><strong>Aviso de venda online</strong><span>Somente a mensagem de aviso</span></a>
+            </div>
+        </fieldset>
         <label for="impressora-etiqueta">Impressora de etiquetas deste computador</label>
         <select id="impressora-etiqueta"><option value="">Atualize a lista para selecionar</option></select>
         <button type="button" id="atualizar-impressoras">Atualizar impressoras</button>
@@ -69,7 +76,7 @@
 
 
     <main class="etiqueta" id="papel">
-        {% if modelo_etiqueta == 'online' %}<div class="etiqueta-online">NO CATÁLOGO DE VENDAS ONLINE</div>{% endif %}
+        {% if modelo_etiqueta == 'online' %}<div class="etiqueta-online"><span>ESTA PEÇA ESTÁ NO</span><span>CATÁLOGO DE</span><span>VENDAS ONLINE</span></div>{% else %}
 
         <div class="etiqueta-texto" id="etiqueta-texto">
 
@@ -147,6 +154,7 @@
             alt="Código de barras {{ peca.codigo }}"
         >
 
+        {% endif %}
     </main>
 
 </body>
