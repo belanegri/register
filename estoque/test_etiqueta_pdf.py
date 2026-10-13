@@ -41,6 +41,22 @@ class EtiquetaPaginaTests(SimpleTestCase):
 
 
 class EtiquetaPDFTests(SimpleTestCase):
+    def test_aviso_online_imprime_so_mensagem_sem_barras_ou_dados(self):
+        import base64
+        import re
+        import zlib
+        peca = SimpleNamespace(nome='Farol', codigo='REG000002')
+        with patch('estoque.etiqueta_pdf.Code128') as barras:
+            pdf = gerar_etiqueta_pdf(peca, modelo='online')
+        barras.assert_not_called()
+        self.assertIn(b'/Count 1', pdf)
+        stream = re.search(rb'stream\r?\n(.*?)endstream', pdf, re.S)[1].strip()
+        comandos = zlib.decompress(base64.a85decode(stream, adobe=True))
+        self.assertIn(b'VENDAS ONLINE', comandos)
+        self.assertNotIn(b'Farol', comandos)
+        self.assertNotIn(b'REG000002', comandos)
+        self.assertNotIn(b'Marca:', comandos)
+
     def test_bobina_58mm_avanca_uma_etiqueta_de_30mm(self):
         peca = SimpleNamespace(
             nome='Farol dianteiro', marca='Fiat', aplicacao='Tempra',
