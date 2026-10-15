@@ -9,9 +9,10 @@
   <title>{% block title %}Painel{% endblock %} · REGISTER</title>
   <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% if user.is_authenticated %}<link rel="stylesheet" href="{% static 'css/modulos.css' %}?v=20261015">{% endif %}
   {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% if user.is_authenticated %}app-shell{% if request.resolver_match.url_name != 'pdv' %} module-ui{% endif %}{% endif %}" data-module="{{ request.resolver_match.app_name }}" data-view="{{ request.resolver_match.url_name }}" data-document="{% firstof tipo doc.tipo %}">
 <a class="visually-hidden-focusable skip-link" href="#conteudo">Ir para o conteúdo</a>
 {% if user.is_authenticated %}
 <aside class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="menu" aria-labelledby="menu-title">
@@ -60,5 +61,6 @@
 <main id="conteudo">{% include 'components/messages.html' %}{% block public_content %}{% endblock %}</main>
 {% endif %}
 <script src="{% static 'vendor/bootstrap.bundle.min.js' %}" defer></script>
+{% if user.is_authenticated %}<script src="{% static 'js/modulos.js' %}?v=20261015" defer></script>{% endif %}
 </body>
 </html>

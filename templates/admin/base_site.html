@@ -1,2 +1,6 @@
 {% extends "admin/base.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin-register.css' %}?v=20261015">{% endblock %}
 {% block extrahead %}{{ block.super }}{% include 'components/site_icons.html' %}{% endblock %}
+
+{% block branding %}<h1 id="site-name"><a href="{% url 'admin:index' %}">REGISTER <small style="font-size:11px;opacity:.8;letter-spacing:.5px">CADASTROS E ADMINISTRAÇÃO</small></a></h1>{% endblock %}
