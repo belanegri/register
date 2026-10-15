@@ -17,6 +17,7 @@ with zipfile.ZipFile(arquivo,'w',zipfile.ZIP_DEFLATED) as pacote:
     for item in (pasta/'REGISTER-Etiquetas').rglob('*'):
         if item.is_file():pacote.write(item,item.relative_to(pasta))
     for origem,nome in [('instalar_assistente_etiquetas.ps1','instalar_assistente_etiquetas.ps1'),
+                         ('iniciar_assistente_etiquetas.ps1','iniciar_assistente_etiquetas.ps1'),
                          ('Instalar-Etiquetas.cmd','Instalar-Etiquetas.cmd'),('GUIA-ETIQUETAS.txt','GUIA-ETIQUETAS.txt')]:
         pacote.write(ROOT/'scripts'/origem,nome)
 print('PACOTE:',arquivo,'BYTES:',arquivo.stat().st_size)
