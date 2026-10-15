@@ -42,3 +42,55 @@
 .module-ui .financeiro-lista .table td[colspan]{position:static;grid-column:1/-1;padding:20px}
 .module-ui .financeiro-lista .table .text-nowrap{white-space:normal!important}
 }
+/* Celular: acoes e campos precisam caber sem comprimir o texto. */
+@media(max-width:575.98px){
+.app-shell .topbar{gap:12px}
+.app-shell .topbar>div:first-child{flex:0 0 auto}
+.app-shell .topbar>div:last-child{min-width:0;justify-content:flex-end;gap:10px!important}
+.app-shell .topbar .user-name{min-width:0;max-width:calc(100vw - 165px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-shell .topbar form{flex-shrink:0}
+.module-ui .page-heading>.d-flex{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important;width:100%}
+.module-ui .page-heading>.d-flex>.btn{display:flex;align-items:center;justify-content:center;min-width:0;min-height:44px;white-space:normal;overflow-wrap:anywhere}
+.module-ui .main-content .btn{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.module-ui .section-heading>.d-flex{flex-wrap:wrap;gap:8px!important;width:100%}
+.module-ui .section-heading>.d-flex>.btn{flex:1 1 150px}
+.module-ui .form-actions{flex-direction:column;align-items:stretch}
+.module-ui .form-control,.module-ui .form-select{min-width:0;max-width:100%}
+.module-ui input[type="date"],.module-ui input[type="datetime-local"]{min-width:0;width:100%;max-width:100%;box-sizing:border-box}
+.module-ui .contas-filtros .col-6,.module-ui .financeiro-lista>form .col-6{width:100%}
+.module-ui .contas-filtros>.d-flex{flex-wrap:wrap}
+.module-ui .contas-filtros>.d-flex>.btn{flex:1 1 150px}
+.module-ui .main-content p,.module-ui .section-heading h2,.module-ui .financial-total strong{overflow-wrap:anywhere}
+.pdv-workspace .pdv-total{flex-direction:column;align-items:flex-start;gap:10px}
+.pdv-workspace .pdv-total strong{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.pdv-workspace .cart-linha>.d-flex{flex-wrap:wrap}
+.pdv-workspace .cart-linha>.d-flex>form{min-width:0;max-width:100%}
+}
+@media(max-width:380px){
+.module-ui .page-heading>.d-flex{grid-template-columns:minmax(0,1fr)}
+.module-ui .financeiro-lista .table tr{grid-template-columns:minmax(0,1fr)}
+.module-ui .financeiro-lista .table td:first-child{padding-right:48px}
+}
+/* O retrato nao pode encolher e ocupar a coluna do nome. */
+.module-ui .peca-identidade>a{flex:0 0 auto}
+.module-ui .peca-identidade>div{flex:1;min-width:0;overflow-wrap:anywhere}
+@media(max-width:767.98px){
+.module-ui .pecas-responsive{overflow:visible}
+.module-ui .pecas-table,.module-ui .pecas-table tbody{display:block;width:100%}
+.module-ui .pecas-table thead{display:none}
+.module-ui .pecas-table tbody tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:18px;border-bottom:1px solid #dfe7ef}
+.module-ui .pecas-table tbody tr:last-child{border-bottom:0}
+.module-ui .pecas-table tbody td{display:block;min-width:0;padding:0;border:0;overflow-wrap:anywhere;line-height:1.6}
+.module-ui .pecas-table tbody tr:hover>td{background:transparent}
+.module-ui .pecas-table .peca-identificacao,.module-ui .pecas-table .peca-aplicacao,.module-ui .pecas-table .peca-localizacao,.module-ui .pecas-table .peca-acoes{grid-column:1/-1}
+.module-ui .peca-identidade{gap:12px!important;align-items:flex-start!important}
+.module-ui .pecas-table .peca-miniatura{width:56px;height:56px}
+.module-ui .peca-identidade strong{display:block;font-size:14px;margin-bottom:4px}
+.module-ui .peca-identidade strong a{text-decoration:none}
+.module-ui .peca-identidade small{font-size:11px;line-height:1.7}
+.module-ui .pecas-table td[data-label]:before{content:attr(data-label);display:block;font-size:10px;font-weight:700;color:#71818d;margin-bottom:4px}
+.module-ui .pecas-table .peca-preco{font-weight:750;color:var(--module-dark);white-space:normal!important}
+.module-ui .pecas-table .peca-acoes{padding-top:12px;border-top:1px solid #edf1f5}
+.module-ui .peca-acoes>.d-flex{flex-wrap:wrap;white-space:normal!important}
+.module-ui .peca-acoes .btn{flex:1 1 100px;min-height:42px;text-align:center}
+}
