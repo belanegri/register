@@ -40,6 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (campos) campos.hidden = !promissoria && !campos.querySelector(".errorlist");
     document.getElementById("total-previa").textContent = Number.isFinite(total) ? formatar(total) : "Confira os valores";
     const aviso = document.getElementById("pagamento-previa");
+    const aPrazo = form.querySelector("[name=a_prazo]")?.checked;
+    const vencimentoConta = document.getElementById("pdv-vencimento");
+    if (vencimentoConta) vencimentoConta.hidden = !aPrazo && !vencimentoConta.querySelector(".errorlist");
+    const invalido = !Number.isFinite(total + cobertura) || total < 0;
+    const excedente = cobertura > total && cobertura - total >= dinheiro;
+    const estado = aPrazo ? "info" : invalido || excedente ? "danger" : cobertura < total ? "warning" : "success";
+    ["info", "danger", "warning", "success"].forEach(cor => aviso.classList.toggle(`alert-${cor}`, cor === estado));
     if (form.querySelector("[name=a_prazo]")?.checked) aviso.textContent = `A receber: ${formatar(total)}. Nenhum pagamento imediato será registrado.`;
     else if (!Number.isFinite(total + cobertura) || total < 0) aviso.textContent = "Confira os valores informados.";
     else if (cobertura < total) aviso.textContent = `Falta informar: ${formatar(total - cobertura)}`;
