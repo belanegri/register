@@ -34,7 +34,9 @@ def acesso(view):
         if not settings.MERCADOLIVRE_ENABLED:
             return render(request, "mercadolivre/desabilitada.html", status=403)
         response = view(request, *args, **kwargs)
-        response["Referrer-Policy"] = "no-referrer"
+        # Formulários HTTPS precisam preservar a origem para a proteção CSRF.
+        # Os redirects OAuth continuam sem referência, pois podem conter códigos.
+        response["Referrer-Policy"] = "no-referrer" if view.__name__ in {"callback", "autorizar"} else "same-origin"
         return response
     return login_required(permission_required("mercadolivre.gerenciar_integracao", raise_exception=True)(never_cache(habilitada)))
 

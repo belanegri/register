@@ -296,6 +296,26 @@ class IntegracaoTests(TestCase):
         self.assertNotContains(resposta, "access-secreto")
         self.assertNotContains(resposta, "refresh-secreto")
         self.assertIn("no-store", resposta["Cache-Control"])
+        self.assertEqual(resposta["Referrer-Policy"], "same-origin")
+
+    @patch("mercadolivre.views.importar_lote", return_value=(0, True))
+    def test_formulario_https_preserva_referencia_e_csrf(self, importar_mock):
+        cliente = TestClient(enforce_csrf_checks=True)
+        cliente.force_login(self.admin)
+        painel = reverse("mercadolivre:painel")
+        resposta = cliente.get(painel, secure=True)
+        self.assertEqual(resposta["Referrer-Policy"], "same-origin")
+        token = cliente.cookies["csrftoken"].value
+        dados = {"csrfmiddlewaretoken": token}
+        url = reverse("mercadolivre:importar")
+        # Sem Origin/Referer, o Django deve continuar recusando o POST HTTPS.
+        self.assertEqual(cliente.post(url, dados, secure=True).status_code, 403)
+        importar_mock.assert_not_called()
+        resposta = cliente.post(url, dados, secure=True, HTTP_REFERER="https://testserver" + painel)
+        self.assertEqual(resposta.status_code, 302)
+        importar_mock.assert_called_once()
+        parametros = self.iniciar_oauth()
+        resposta = self.client.get(reverse("mercadolivre:callback"), {"state": parametros["state"][0], "error": "access_denied"})
         self.assertEqual(resposta["Referrer-Policy"], "no-referrer")
 
     def test_funcionalidade_oculta_quando_desabilitada(self):

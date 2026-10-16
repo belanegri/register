@@ -15,7 +15,7 @@ Implementação local; não executar deploy/push para a branch de produção sem
 - Opção “Anunciar no Mercado Livre” na tabela e detalhe de cada peça. Abre uma tela que permite apenas selecionar/remover uma intenção local individual. Não existe seleção em massa, endpoint de publicação ou autorização implícita para escrita futura.
 - Interface `/mercado-livre/`: conexão, desconexão local, importação, busca paginada, vínculos e até 50 seleções recentes. As demais seleções podem ser consultadas no detalhe de cada peça.
 - Permissão `mercadolivre.gerenciar_integracao`; a seleção/vinculação também exige permissões de consulta/alteração da peça. O comando existente `configurar_operacao` concede o acesso apenas ao grupo Administrador. Superusuários já têm acesso. Nenhuma permissão nova é dada automaticamente a Gerente, Caixa ou Vendedor.
-- Auditoria sem credenciais para conexão, desconexão, importação, vínculos e seleções. Formulários protegidos por CSRF e ações por POST. Páginas da integração sem cache e com política de referência `no-referrer`.
+- Auditoria sem credenciais para conexão, desconexão, importação, vínculos e seleções. Formulários protegidos por CSRF e ações por POST. Páginas da integração sem cache. Formulários usam `same-origin` para preservar a verificação CSRF em HTTPS; os redirects OAuth usam `no-referrer` para não encaminhar códigos de autorização.
 
 ## O que fica para a próxima etapa
 
@@ -80,6 +80,8 @@ Resultado local em 16/10/2026: `check` sem problemas, `makemigrations --check --
 - `contas.tests.ContasTests.test_pix_copia_cola_salvo_e_exibido`: conteúdo PIX de teste recusado pela validação atual.
 
 Essas falhas preexistentes não foram alteradas como parte da integração.
+
+Validação adicional em 16/10/2026: 24 testes da integração aprovados após corrigir a política de referência dos formulários HTTPS. O caso novo confirma o POST com token e referência válidos, a recusa sem referência e a preservação de `no-referrer` no callback OAuth.
 
 ## Documentação oficial consultada em 16/10/2026
 
