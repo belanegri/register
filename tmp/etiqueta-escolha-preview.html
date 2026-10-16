@@ -1,0 +1,92 @@
+
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Etiqueta REG000001 · 57 × 30 mm</title>
+
+    
+<link rel="icon" type="image/png" sizes="32x32" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-180.png">
+<link rel="manifest" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="REGISTER">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+
+    <link
+        rel="stylesheet"
+        href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/etiqueta.css?v=aviso-online-20261009"
+    >
+
+    <script
+        src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/js/etiqueta.js?v=aviso-online-20261009"
+        defer>
+    </script>
+</head>
+
+<body>
+
+    <nav class="controles" aria-label="Impressão">
+
+        <h1 class="titulo-impressao">Imprimir etiqueta</h1>
+        <fieldset class="modelos-etiqueta">
+            <legend>Escolha o modelo</legend>
+            <div class="modelos-opcoes">
+                <a class="modelo-opcao" href="/estoque/1/etiqueta/?modelo=padrao" ><strong>Etiqueta da peça</strong><span>Dados da peça e código de barras</span></a>
+                <a class="modelo-opcao selecionado" href="/estoque/1/etiqueta/?modelo=online" aria-current="page"><strong>Aviso de venda online</strong><span>Somente a mensagem de aviso</span></a>
+            </div>
+        </fieldset>
+        <label for="impressora-etiqueta">Impressora de etiquetas deste computador</label>
+        <select id="impressora-etiqueta"><option value="">Atualize a lista para selecionar</option></select>
+        <button type="button" id="atualizar-impressoras">Atualizar impressoras</button>
+
+        <button
+            type="button"
+            id="imprimir"
+            data-etiqueta="teste">
+            Imprimir etiqueta — POS-58
+        </button>
+
+        <a href="/estoque/">
+            Voltar ao estoque
+        </a>
+
+        <p
+            id="impressao-status"
+            role="status"
+            aria-live="polite">
+            Envio direto · 1 etiqueta de 57 × 30 mm.
+        </p>
+
+        <details>
+            <summary>Usar em outro computador ou impressora compartilhada</summary>
+            <p>Instale o assistente REGISTER em cada computador Windows. A impressora pode ser USB ou compartilhada pelo Windows na mesma rede. Para usar a compartilhada, adicione-a primeiro nas Impressoras e scanners do Windows.</p>
+            <a href="/estoque/assistente-etiquetas/">Baixar assistente Windows 64 bits</a>
+            <p>Extraia o ZIP completo e abra <strong>Instalar-Etiquetas.cmd</strong>. Depois atualize a lista e escolha a impressora POS-58. O computador que compartilha a impressora deve estar ligado.</p>
+        </details>
+        <details>
+            <summary>Salvar etiqueta em PDF</summary>
+
+            <a
+                href="/estoque/1/etiqueta/?formato=pdf&amp;modelo=online"
+                target="_blank"
+                rel="noopener">
+                Abrir PDF para salvar
+            </a>
+        </details>
+
+    </nav>
+
+
+    <main class="etiqueta" id="papel">
+        <div class="etiqueta-online"><span>ESTA PEÇA ESTÁ NO</span><span>CATÁLOGO DE</span><span>VENDAS ONLINE</span></div>
+    </main>
+
+</body>
+</html>

@@ -1,5 +1,9 @@
 # Fiscal REGISTER
 
+Etapa atual SEFAZ-SP: NF-e/NFC-e estão restritas a endpoints oficiais de **homologação**, inclusive quando flags de produção estiverem configuradas. Os demais módulos comerciais e o gerador de documento auxiliar não foram alterados nesta etapa.
+
+Em **Configurações fiscais / Testar conexão SEFAZ**, selecione NF-e ou NFC-e após salvar UF SP, ambiente homologação e A1. A ação exige permissão de configuração e POST com CSRF. Pode ser usada com a emissão desativada: envia apenas `consStatServ` 4.00 (`tpAmb=2`, `cUF=35`, `xServ=STATUS`) por SOAP 1.2 e autenticação mTLS, conforme MOC 7.0 §5.5. Não assina o XML de status, não emite notas, não reserva série/número e não grava documentos/eventos. O resultado conectado exige `cStat=107`, ambiente/UF/versão e campos obrigatórios compatíveis. Os endereços são fixados no código a partir dos portais oficiais citados ao final; overrides diferentes são recusados. Não foram criados esquemas XML próprios.
+
 Módulo aditivo: mantém seus próprios modelos, migrations, permissões, configurações, sequências e auditoria. Não há sinais de emissão automática nem alterações nos serviços comerciais. Venda/OS finalizada pode originar documentos separados de mercadorias e serviços. Venda convertida de OS compartilha a mesma solicitação. Rejeição, cancelamento fiscal e falha de comunicação não modificam venda, estoque, caixa ou financeiro.
 
 ## Instalação e homologação

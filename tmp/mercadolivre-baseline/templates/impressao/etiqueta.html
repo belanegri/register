@@ -1,0 +1,161 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Etiqueta {{ peca.codigo }} · 57 × 30 mm</title>
+
+    {% include 'components/site_icons.html' %}
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/etiqueta.css' %}?v=configuracao-restaurada-20261015"
+    >
+
+    <script
+        src="{% static 'js/etiqueta.js' %}?v=configuracao-restaurada-20261015"
+        defer>
+    </script>
+</head>
+
+<body>
+
+    <nav class="controles" aria-label="Impressão">
+
+        <h1 class="titulo-impressao">Imprimir etiqueta</h1>
+        <fieldset class="modelos-etiqueta">
+            <legend>Escolha o modelo</legend>
+            <div class="modelos-opcoes">
+                <a class="modelo-opcao{% if modelo_etiqueta == 'padrao' %} selecionado{% endif %}" href="{% url 'estoque:etiqueta' peca.pk %}?modelo=padrao" {% if modelo_etiqueta == 'padrao' %}aria-current="page"{% endif %}><strong>Etiqueta da peça</strong><span>Dados da peça e código de barras</span></a>
+                <a class="modelo-opcao{% if modelo_etiqueta == 'online' %} selecionado{% endif %}" href="{% url 'estoque:etiqueta' peca.pk %}?modelo=online" {% if modelo_etiqueta == 'online' %}aria-current="page"{% endif %}><strong>Aviso de venda online</strong><span>Somente a mensagem de aviso</span></a>
+            </div>
+        </fieldset>
+        <label for="impressora-etiqueta">Impressora de etiquetas deste computador</label>
+        <select id="impressora-etiqueta"><option value="">Atualize a lista para selecionar</option></select>
+        <button type="button" id="atualizar-impressoras">Atualizar impressoras</button>
+
+        <button
+            type="button"
+            id="imprimir"
+            data-etiqueta="{{ etiqueta_direta }}">
+            Imprimir etiqueta — POS-58
+        </button>
+
+        <a href="{% url 'estoque:lista' %}">
+            Voltar ao estoque
+        </a>
+
+        <p
+            id="impressao-status"
+            role="status"
+            aria-live="polite">
+            Envio direto · 1 etiqueta de 57 × 30 mm.
+        </p>
+
+        <details>
+            <summary>Usar em outro computador ou impressora compartilhada</summary>
+            <p>Instale o assistente REGISTER em cada computador Windows. A impressora pode ser USB ou compartilhada pelo Windows na mesma rede. Para usar a compartilhada, adicione-a primeiro nas Impressoras e scanners do Windows.</p>
+            <a href="{% url 'estoque:assistente_etiquetas' %}">Baixar assistente Windows 64 bits</a>
+            <p>Extraia o ZIP completo e abra <strong>Instalar-Etiquetas.cmd</strong>. Depois atualize a lista e escolha a impressora POS-58. O computador que compartilha a impressora deve estar ligado.</p>
+        </details>
+        <details>
+            <summary>Salvar etiqueta em PDF</summary>
+
+            <a
+                href="{% url 'estoque:etiqueta' peca.pk %}?formato=pdf&amp;modelo={{ modelo_etiqueta }}"
+                target="_blank"
+                rel="noopener">
+                Abrir PDF para salvar
+            </a>
+        </details>
+
+    </nav>
+
+
+    <main class="etiqueta" id="papel">
+        {% if modelo_etiqueta == 'online' %}<div class="etiqueta-online"><span>ESTA PEÇA ESTÁ NO</span><span>CATÁLOGO DE</span><span>VENDAS ONLINE</span></div>{% else %}
+
+        <div class="etiqueta-texto" id="etiqueta-texto">
+
+            <div id="etiqueta-conteudo">
+
+                <!-- NOME DA PEÇA -->
+                <div class="etiqueta-nome">
+                    {{ peca.nome }}
+                </div>
+
+
+                <!-- MARCA + MODELO NA MESMA LINHA -->
+                <div class="etiqueta-veiculo">
+                    <strong>Marca:</strong>
+                    {{ peca.marca|default:'-' }}
+
+                    <span> | </span>
+
+                    <strong>Modelo:</strong>
+                    {{ peca.aplicacao|default:'-' }}
+                </div>
+
+
+                <!-- ANO + LADO/POSIÇÃO -->
+                <div class="etiqueta-veiculo">
+
+                    <strong>Ano:</strong>
+
+                    {% if peca.ano_inicial and peca.ano_final %}
+
+                        {{ peca.ano_inicial }}
+
+                        {% if peca.ano_final != peca.ano_inicial %}
+                            a {{ peca.ano_final }}
+                        {% endif %}
+
+                    {% elif peca.ano_inicial %}
+
+                        {{ peca.ano_inicial }}+
+
+                    {% elif peca.ano_final %}
+
+                        Até {{ peca.ano_final }}
+
+                    {% else %}
+
+                        -
+
+                    {% endif %}
+
+
+                    <span> | </span>
+
+                    <strong>Lado:</strong>
+                    {{ peca.posicao|default:'-' }}
+
+                </div>
+
+
+                <!-- CÓDIGO DA PEÇA -->
+                <div class="etiqueta-codigo">
+                    <strong>Cód.:</strong>
+                    {{ peca.codigo }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CÓDIGO DE BARRAS -->
+        <img
+            class="etiqueta-barras"
+            src="data:image/svg+xml;base64,{{ codigo_barras_etiqueta }}"
+            alt="Código de barras {{ peca.codigo }}"
+        >
+
+        {% endif %}
+    </main>
+
+</body>
+</html>

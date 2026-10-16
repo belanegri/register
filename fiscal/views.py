@@ -138,6 +138,18 @@ def configuracao(request):
 
 @login_required
 @permission_required('fiscal.configurar_fiscal',raise_exception=True)
+@require_POST
+def testar_conexao_sefaz(request):
+    from .sefaz_sp import testar_conexao
+    config=ConfiguracaoFiscal.objects.filter(pk=1).first()
+    resultado=testar_conexao(config,request.POST.get('modelo','55'))
+    nivel=messages.SUCCESS if resultado.status=='conectado' else messages.ERROR
+    messages.add_message(request,nivel,resultado.mensagem)
+    return redirect('fiscal:configuracao')
+
+
+@login_required
+@permission_required('fiscal.configurar_fiscal',raise_exception=True)
 def parametros(request,tipo,pk=None):
     if tipo not in ('produtos','servicos'):raise Http404
     model,form_class=(ParametroProduto,ProdutoForm) if tipo=='produtos' else (ParametroServico,ServicoForm)

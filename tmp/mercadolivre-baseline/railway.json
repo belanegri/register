@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {"builder": "DOCKERFILE"},
+  "deploy": {
+    "preDeployCommand": "python manage.py migrate --noinput && python manage.py configurar_operacao",
+    "startCommand": "gunicorn pontocar.wsgi:application --config gunicorn.conf.py",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3,
+    "numReplicas": 1
+  }
+}

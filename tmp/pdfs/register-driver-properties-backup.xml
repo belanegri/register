@@ -1,0 +1,278 @@
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>Microsoft.Management.Infrastructure.CimInstance#ROOT/StandardCimv2/MSFT_PrinterProperty</T>
+      <T>Microsoft.Management.Infrastructure.CimInstance#ROOT/StandardCimv2/CIM_ManagedElement</T>
+      <T>Microsoft.Management.Infrastructure.CimInstance#MSFT_PrinterProperty</T>
+      <T>Microsoft.Management.Infrastructure.CimInstance#CIM_ManagedElement</T>
+      <T>Microsoft.Management.Infrastructure.CimInstance</T>
+      <T>System.Object</T>
+    </TN>
+    <ToString>MSFT_PrinterProperty (ComputerName = "", PrinterName = "REGISTER - Etiquetas 57x30", PropertyName = "Config:BeeperSetting", Type = 2)</ToString>
+    <Props>
+      <Nil N="Caption" />
+      <Nil N="Description" />
+      <Nil N="ElementName" />
+      <Nil N="InstanceID" />
+      <S N="ComputerName"></S>
+      <S N="PrinterName">REGISTER - Etiquetas 57x30</S>
+      <S N="PropertyName">Config:BeeperSetting</S>
+      <U32 N="Type">2</U32>
+      <S N="Value">zjBeepBeforePage</S>
+      <Nil N="PSComputerName" />
+    </Props>
+    <MS>
+      <Obj N="__ClassMetadata" RefId="1">
+        <TN RefId="1">
+          <T>System.Collections.ArrayList</T>
+          <T>System.Object</T>
+        </TN>
+        <LST>
+          <Obj RefId="2">
+            <MS>
+              <S N="ClassName">CIM_ManagedElement</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946931437</I32>
+              <S N="MiXml">&lt;CLASS NAME="CIM_ManagedElement"&gt;&lt;QUALIFIER NAME="Abstract" TYPE="boolean" TOSUBCLASS="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="locale" TYPE="sint32" TOSUBCLASS="false"&gt;&lt;VALUE&gt;1033&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="UMLPackagePath" TYPE="string"&gt;&lt;VALUE&gt;CIM::Core::CoreElements&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;PROPERTY NAME="Caption" TYPE="string"&gt;&lt;QUALIFIER NAME="MaxLen" TYPE="sint32"&gt;&lt;VALUE&gt;64&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME="Description" TYPE="string"&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME="ElementName" TYPE="string"&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME="InstanceID" TYPE="string"&gt;&lt;/PROPERTY&gt;&lt;/CLASS&gt;</S>
+            </MS>
+          </Obj>
+          <Obj RefId="3">
+            <MS>
+              <S N="ClassName">MSFT_PrinterProperty</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946938397</I32>
+              <S N="MiXml">&lt;CLASS NAME="MSFT_PrinterProperty" SUPERCLASS="CIM_ManagedElement"&gt;&lt;QUALIFIER NAME="UMLPackagePath" TYPE="string"&gt;&lt;VALUE&gt;CIM::Core::CoreElements&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="dynamic" TYPE="boolean"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="locale" TYPE="sint32" TOSUBCLASS="false"&gt;&lt;VALUE&gt;1033&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="provider" TYPE="string"&gt;&lt;VALUE&gt;MSFT_Printer&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;PROPERTY NAME="ComputerName" TYPE="string"&gt;&lt;QUALIFIER NAME="key" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="read" TYPE="boolean"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME="PrinterName" TYPE="string"&gt;&lt;QUALIFIER NAME="key" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="read" TYPE="boolean"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME="PropertyName" TYPE="string"&gt;&lt;QUALIFIER NAME="key" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="read" TYPE="boolean"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME="Type" TYPE="uint32"&gt;&lt;QUALIFIER NAME="key" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="MappingStrings" TYPE="string"&gt;&lt;VALUE.ARRAY&gt;&lt;VALUE&gt;Boolean&lt;/VALUE&gt;&lt;VALUE&gt;Integer&lt;/VALUE&gt;&lt;VALUE&gt;String&lt;/VALUE&gt;&lt;/VALUE.ARRAY&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="read" TYPE="boolean"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME="Value" TYPE="string"&gt;&lt;/PROPERTY&gt;&lt;METHOD NAME="SetByPrinterName" TYPE="uint32"&gt;&lt;QUALIFIER NAME="implemented" TYPE="boolean" TOSUBCLASS="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="static" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;PARAMETER NAME="ComputerName" TYPE="string"&gt;&lt;QUALIFIER NAME="ID" TYPE="sint32" OVERRIDABLE="false"&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="In" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PARAMETER&gt;&lt;PARAMETER NAME="PrinterName" TYPE="string"&gt;&lt;QUALIFIER NAME="ID" TYPE="sint32" OVERRIDABLE="false"&gt;&lt;VALUE&gt;1&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="In" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PARAMETER&gt;&lt;PARAMETER NAME="PropertyName" TYPE="string"&gt;&lt;QUALIFIER NAME="ID" TYPE="sint32" OVERRIDABLE="false"&gt;&lt;VALUE&gt;2&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="In" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PARAMETER&gt;&lt;PARAMETER NAME="Value" TYPE="string"&gt;&lt;QUALIFIER NAME="ID" TYPE="sint32" OVERRIDABLE="false"&gt;&lt;VALUE&gt;3&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="In" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PARAMETER&gt;&lt;/METHOD&gt;&lt;METHOD NAME="SetByPrinterPropertyObject" TYPE="uint32"&gt;&lt;QUALIFIER NAME="implemented" TYPE="boolean" TOSUBCLASS="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="static" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;PARAMETER NAME="InputObject" TYPE="string"&gt;&lt;QUALIFIER NAME="EmbeddedInstance" TYPE="string"&gt;&lt;VALUE&gt;MSFT_PrinterProperty&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="ID" TYPE="sint32" OVERRIDABLE="false"&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="In" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PARAMETER&gt;&lt;/METHOD&gt;&lt;METHOD NAME="SetByPrinterObject" TYPE="uint32"&gt;&lt;QUALIFIER NAME="implemented" TYPE="boolean" TOSUBCLASS="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="static" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;PARAMETER NAME="PrinterObject" TYPE="string"&gt;&lt;QUALIFIER NAME="EmbeddedInstance" TYPE="string"&gt;&lt;VALUE&gt;MSFT_Printer&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="ID" TYPE="sint32" OVERRIDABLE="false"&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="In" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PARAMETER&gt;&lt;PARAMETER NAME="PropertyName" TYPE="string"&gt;&lt;QUALIFIER NAME="ID" TYPE="sint32" OVERRIDABLE="false"&gt;&lt;VALUE&gt;1&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="In" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PARAMETER&gt;&lt;PARAMETER NAME="Value" TYPE="string"&gt;&lt;QUALIFIER NAME="ID" TYPE="sint32" OVERRIDABLE="false"&gt;&lt;VALUE&gt;2&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;QUALIFIER NAME="In" TYPE="boolean" OVERRIDABLE="false"&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/QUALIFIER&gt;&lt;/PARAMETER&gt;&lt;/METHOD&gt;&lt;/CLASS&gt;</S>
+            </MS>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="Type">String</S>
+    </MS>
+  </Obj>
+  <Obj RefId="4">
+    <TNRef RefId="0" />
+    <ToString>MSFT_PrinterProperty (ComputerName = "", PrinterName = "REGISTER - Etiquetas 57x30", PropertyName = "Config:ITEM4", Type = 2)</ToString>
+    <Props>
+      <Nil N="Caption" />
+      <Nil N="Description" />
+      <Nil N="ElementName" />
+      <Nil N="InstanceID" />
+      <S N="ComputerName"></S>
+      <S N="PrinterName">REGISTER - Etiquetas 57x30</S>
+      <S N="PropertyName">Config:ITEM4</S>
+      <U32 N="Type">2</U32>
+      <S N="Value">ITEM5</S>
+      <Nil N="PSComputerName" />
+    </Props>
+    <MS>
+      <Obj N="__ClassMetadata" RefId="5">
+        <TNRef RefId="1" />
+        <LST>
+          <Obj RefId="6">
+            <MS>
+              <S N="ClassName">MSFT_PrinterProperty</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946938397</I32>
+            </MS>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="Type">String</S>
+    </MS>
+  </Obj>
+  <Obj RefId="7">
+    <TNRef RefId="0" />
+    <ToString>MSFT_PrinterProperty (ComputerName = "", PrinterName = "REGISTER - Etiquetas 57x30", PropertyName = "Config:PrintNVLogo", Type = 2)</ToString>
+    <Props>
+      <Nil N="Caption" />
+      <Nil N="Description" />
+      <Nil N="ElementName" />
+      <Nil N="InstanceID" />
+      <S N="ComputerName"></S>
+      <S N="PrinterName">REGISTER - Etiquetas 57x30</S>
+      <S N="PropertyName">Config:PrintNVLogo</S>
+      <U32 N="Type">2</U32>
+      <S N="Value">Option1</S>
+      <Nil N="PSComputerName" />
+    </Props>
+    <MS>
+      <Obj N="__ClassMetadata" RefId="8">
+        <TNRef RefId="1" />
+        <LST>
+          <Obj RefId="9">
+            <MS>
+              <S N="ClassName">MSFT_PrinterProperty</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946938397</I32>
+            </MS>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="Type">String</S>
+    </MS>
+  </Obj>
+  <Obj RefId="10">
+    <TNRef RefId="0" />
+    <ToString>MSFT_PrinterProperty (ComputerName = "", PrinterName = "REGISTER - Etiquetas 57x30", PropertyName = "Config:zjCashDrawer", Type = 2)</ToString>
+    <Props>
+      <Nil N="Caption" />
+      <Nil N="Description" />
+      <Nil N="ElementName" />
+      <Nil N="InstanceID" />
+      <S N="ComputerName"></S>
+      <S N="PrinterName">REGISTER - Etiquetas 57x30</S>
+      <S N="PropertyName">Config:zjCashDrawer</S>
+      <U32 N="Type">2</U32>
+      <S N="Value">zjEjectBeforePrint</S>
+      <Nil N="PSComputerName" />
+    </Props>
+    <MS>
+      <Obj N="__ClassMetadata" RefId="11">
+        <TNRef RefId="1" />
+        <LST>
+          <Obj RefId="12">
+            <MS>
+              <S N="ClassName">MSFT_PrinterProperty</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946938397</I32>
+            </MS>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="Type">String</S>
+    </MS>
+  </Obj>
+  <Obj RefId="13">
+    <TNRef RefId="0" />
+    <ToString>MSFT_PrinterProperty (ComputerName = "", PrinterName = "REGISTER - Etiquetas 57x30", PropertyName = "Config:zjPrintMode", Type = 2)</ToString>
+    <Props>
+      <Nil N="Caption" />
+      <Nil N="Description" />
+      <Nil N="ElementName" />
+      <Nil N="InstanceID" />
+      <S N="ComputerName"></S>
+      <S N="PrinterName">REGISTER - Etiquetas 57x30</S>
+      <S N="PropertyName">Config:zjPrintMode</S>
+      <U32 N="Type">2</U32>
+      <S N="Value">zjGraphMode</S>
+      <Nil N="PSComputerName" />
+    </Props>
+    <MS>
+      <Obj N="__ClassMetadata" RefId="14">
+        <TNRef RefId="1" />
+        <LST>
+          <Obj RefId="15">
+            <MS>
+              <S N="ClassName">MSFT_PrinterProperty</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946938397</I32>
+            </MS>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="Type">String</S>
+    </MS>
+  </Obj>
+  <Obj RefId="16">
+    <TNRef RefId="0" />
+    <ToString>MSFT_PrinterProperty (ComputerName = "", PrinterName = "REGISTER - Etiquetas 57x30", PropertyName = "Config:zjPrintSpeed", Type = 2)</ToString>
+    <Props>
+      <Nil N="Caption" />
+      <Nil N="Description" />
+      <Nil N="ElementName" />
+      <Nil N="InstanceID" />
+      <S N="ComputerName"></S>
+      <S N="PrinterName">REGISTER - Etiquetas 57x30</S>
+      <S N="PropertyName">Config:zjPrintSpeed</S>
+      <U32 N="Type">2</U32>
+      <S N="Value">zjPrintFastSpeed</S>
+      <Nil N="PSComputerName" />
+    </Props>
+    <MS>
+      <Obj N="__ClassMetadata" RefId="17">
+        <TNRef RefId="1" />
+        <LST>
+          <Obj RefId="18">
+            <MS>
+              <S N="ClassName">MSFT_PrinterProperty</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946938397</I32>
+            </MS>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="Type">String</S>
+    </MS>
+  </Obj>
+  <Obj RefId="19">
+    <TNRef RefId="0" />
+    <ToString>MSFT_PrinterProperty (ComputerName = "", PrinterName = "REGISTER - Etiquetas 57x30", PropertyName = "Config:zjPrintTrailingMarginOrNot", Type = 2)</ToString>
+    <Props>
+      <Nil N="Caption" />
+      <Nil N="Description" />
+      <Nil N="ElementName" />
+      <Nil N="InstanceID" />
+      <S N="ComputerName"></S>
+      <S N="PrinterName">REGISTER - Etiquetas 57x30</S>
+      <S N="PropertyName">Config:zjPrintTrailingMarginOrNot</S>
+      <U32 N="Type">2</U32>
+      <S N="Value">zjNotPrintTrailingMargin</S>
+      <Nil N="PSComputerName" />
+    </Props>
+    <MS>
+      <Obj N="__ClassMetadata" RefId="20">
+        <TNRef RefId="1" />
+        <LST>
+          <Obj RefId="21">
+            <MS>
+              <S N="ClassName">MSFT_PrinterProperty</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946938397</I32>
+            </MS>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="Type">String</S>
+    </MS>
+  </Obj>
+  <Obj RefId="22">
+    <TNRef RefId="0" />
+    <ToString>MSFT_PrinterProperty (ComputerName = "", PrinterName = "REGISTER - Etiquetas 57x30", PropertyName = "Config:zjTrailingMargin", Type = 2)</ToString>
+    <Props>
+      <Nil N="Caption" />
+      <Nil N="Description" />
+      <Nil N="ElementName" />
+      <Nil N="InstanceID" />
+      <S N="ComputerName"></S>
+      <S N="PrinterName">REGISTER - Etiquetas 57x30</S>
+      <S N="PropertyName">Config:zjTrailingMargin</S>
+      <U32 N="Type">2</U32>
+      <S N="Value">zj12mm</S>
+      <Nil N="PSComputerName" />
+    </Props>
+    <MS>
+      <Obj N="__ClassMetadata" RefId="23">
+        <TNRef RefId="1" />
+        <LST>
+          <Obj RefId="24">
+            <MS>
+              <S N="ClassName">MSFT_PrinterProperty</S>
+              <S N="Namespace">ROOT/StandardCimv2</S>
+              <S N="ServerName">NEGRI</S>
+              <I32 N="Hash">-1946938397</I32>
+            </MS>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="Type">String</S>
+    </MS>
+  </Obj>
+</Objs>

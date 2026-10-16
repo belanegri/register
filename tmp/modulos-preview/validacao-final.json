@@ -1,0 +1,12 @@
+{
+  "paginas": 32,
+  "larguras": [
+    1440,
+    1024,
+    390
+  ],
+  "combinacoes": 96,
+  "menus": "sem recortes",
+  "modais": "ok",
+  "erros": []
+}

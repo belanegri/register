@@ -3,14 +3,16 @@ import base64
 import gzip
 import io
 import json
+import ssl
 from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
 from urllib.request import HTTPSHandler, HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 from lxml import etree
 from django.utils import timezone
+from django.views.decorators.debug import sensitive_variables
 
-from .seguranca import ErroFiscal, contexto_tls, validar_url, xml_seguro
+from .seguranca import ErroFiscal, ErroCertificadoFiscal, contexto_tls, validar_url, xml_seguro
 from .xml import NFE, NFSE, UFS, el, campos, validar_schema, assinatura_xml
 
 
@@ -31,6 +33,7 @@ class SemRedirecionamento(HTTPRedirectHandler):
         raise ErroFiscal('O serviço fiscal retornou um redirecionamento não permitido.')
 
 
+@sensitive_variables()
 def requisitar(config, ambiente, url, dados=None, content_type='application/json', metodo=None, binario=False):
     validar_url(url, ambiente)
     try:
@@ -49,7 +52,15 @@ def requisitar(config, ambiente, url, dados=None, content_type='application/json
             if len(conteudo)>5*1024*1024:
                 raise ErroFiscal('Resposta fiscal excede o limite permitido.')
             return conteudo if binario else conteudo.decode('utf-8-sig')
-    except (URLError, OSError, UnicodeError):
+    except (URLError, ssl.SSLError) as erro:
+        causa = erro.reason if isinstance(erro, URLError) else erro
+        if isinstance(causa, ssl.SSLError) and getattr(causa, 'reason', '') in (
+                'SSLV3_ALERT_BAD_CERTIFICATE', 'SSLV3_ALERT_CERTIFICATE_EXPIRED',
+                'SSLV3_ALERT_CERTIFICATE_REVOKED', 'SSLV3_ALERT_CERTIFICATE_UNKNOWN',
+                'TLSV1_ALERT_UNKNOWN_CA', 'TLSV13_ALERT_CERTIFICATE_REQUIRED'):
+            raise ErroCertificadoFiscal('Certificado A1 recusado pela SEFAZ na autenticação TLS.') from None
+        raise ErroFiscal('Falha de comunicação fiscal. Consulte a situação antes de retransmitir.') from None
+    except (OSError, UnicodeError):
         raise ErroFiscal('Falha de comunicação fiscal. Consulte a situação antes de retransmitir.') from None
 
 
@@ -66,14 +77,8 @@ class SefazDireta:
                 'inutilizar':('NFeInutilizacao4','nfeInutilizacaoNF')}
 
     def endpoint(self, config, doc, operacao):
-        custom = config.endpoints.get(doc.ambiente, {}).get(doc.modelo, {}).get(operacao)
-        if custom:
-            return validar_url(custom, doc.ambiente)
-        if config.uf != 'SP':
-            raise ErroFiscal('Configure os serviços oficiais da UF/autorizador desta instalação.')
-        sub = 'nfce' if doc.modelo=='65' else 'nfe'
-        host = ('homologacao.' if doc.ambiente=='homologacao' else '') + sub+'.fazenda.sp.gov.br'
-        return f'https://{host}/ws/{self.SERVICOS[operacao][0]}.asmx'
+        from .sefaz_sp import endpoint
+        return endpoint(config, doc.modelo, operacao, doc.ambiente)
 
     def enviar(self, config, doc, operacao, payload):
         servico, metodo = self.SERVICOS[operacao]

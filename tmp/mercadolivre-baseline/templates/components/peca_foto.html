@@ -1,0 +1,1 @@
+{% with foto=peca.fotos.all.0 %}{% if foto %}<img class="peca-miniatura" src="{{ foto.imagem.url }}" alt="{{ foto.legenda|default:peca.nome }}" width="72" height="72" loading="lazy">{% else %}<span class="peca-miniatura peca-sem-foto">Sem foto</span>{% endif %}{% endwith %}

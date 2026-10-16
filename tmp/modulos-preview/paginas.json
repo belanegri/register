@@ -1,0 +1,162 @@
+[
+  {
+    "nome": "painel",
+    "rota": "dashboard:index",
+    "status": 200
+  },
+  {
+    "nome": "estoque",
+    "rota": "estoque:lista",
+    "status": 200
+  },
+  {
+    "nome": "peca",
+    "rota": "estoque:detalhe",
+    "status": 200
+  },
+  {
+    "nome": "editar-peca",
+    "rota": "estoque:editar",
+    "status": 200
+  },
+  {
+    "nome": "clientes",
+    "rota": "clientes:lista",
+    "status": 200
+  },
+  {
+    "nome": "cliente",
+    "rota": "clientes:detalhe",
+    "status": 200
+  },
+  {
+    "nome": "novo-cliente",
+    "rota": "clientes:novo",
+    "status": 200
+  },
+  {
+    "nome": "orcamentos",
+    "rota": "comercial:documentos",
+    "status": 200
+  },
+  {
+    "nome": "ordens",
+    "rota": "comercial:documentos",
+    "status": 200
+  },
+  {
+    "nome": "orcamento",
+    "rota": "comercial:detalhe",
+    "status": 200
+  },
+  {
+    "nome": "ordem",
+    "rota": "comercial:detalhe",
+    "status": 200
+  },
+  {
+    "nome": "novo-orcamento",
+    "rota": "comercial:novo",
+    "status": 200
+  },
+  {
+    "nome": "nova-ordem",
+    "rota": "comercial:novo",
+    "status": 200
+  },
+  {
+    "nome": "servicos",
+    "rota": "comercial:servicos",
+    "status": 200
+  },
+  {
+    "nome": "novo-servico",
+    "rota": "comercial:servico_novo",
+    "status": 200
+  },
+  {
+    "nome": "vendas",
+    "rota": "vendas:lista",
+    "status": 200
+  },
+  {
+    "nome": "venda",
+    "rota": "vendas:detalhe",
+    "status": 200
+  },
+  {
+    "nome": "relatorios",
+    "rota": "vendas:relatorios",
+    "status": 200
+  },
+  {
+    "nome": "caixa",
+    "rota": "caixa:painel",
+    "status": 200
+  },
+  {
+    "nome": "movimentos",
+    "rota": "caixa:detalhe",
+    "status": 200
+  },
+  {
+    "nome": "receber",
+    "rota": "comercial:contas",
+    "status": 200
+  },
+  {
+    "nome": "cobranca",
+    "rota": "comercial:conta",
+    "status": 200
+  },
+  {
+    "nome": "nova-cobranca",
+    "rota": "comercial:conta_nova",
+    "status": 200
+  },
+  {
+    "nome": "pagar",
+    "rota": "contas:lista",
+    "status": 200
+  },
+  {
+    "nome": "conta-pagar",
+    "rota": "contas:detalhe",
+    "status": 200
+  },
+  {
+    "nome": "nova-despesa",
+    "rota": "contas:nova",
+    "status": 200
+  },
+  {
+    "nome": "fiscal",
+    "rota": "fiscal:lista",
+    "status": 200
+  },
+  {
+    "nome": "empresa",
+    "rota": "core:configuracao_empresa",
+    "status": 200
+  },
+  {
+    "nome": "administracao",
+    "rota": "admin:index",
+    "status": 200
+  },
+  {
+    "nome": "veiculos",
+    "rota": "admin:veiculos_veiculo_changelist",
+    "status": 200
+  },
+  {
+    "nome": "cadastro-veiculo",
+    "rota": "admin:veiculos_veiculo_add",
+    "status": 200
+  },
+  {
+    "nome": "pdv",
+    "rota": "vendas:pdv",
+    "status": 200
+  }
+]

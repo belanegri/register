@@ -1,0 +1,607 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+<link rel="icon" type="image/png" sizes="32x32" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-180.png">
+<link rel="manifest" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="REGISTER">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <meta name="theme-color" content="#152723">
+  <title>Frente de caixa · REGISTER</title>
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/app.css">
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/modulos.css?v=20261015-mobile2">
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/pdv.css?v=20261015">
+</head>
+<body class="app-shell" data-module="vendas" data-view="pdv" data-document="">
+<a class="visually-hidden-focusable skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+<aside class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="menu" aria-labelledby="menu-title">
+  <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu REGISTER</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
+  <div class="offcanvas-body d-flex flex-column">
+    <a class="brand" href="/">REGISTER<span>GESTÃO DO SEU NEGÓCIO</span></a>
+    <nav aria-label="Menu principal" class="nav flex-column sidebar-nav">
+<div class="nav-label">ATENDIMENTO</div>
+<a class="nav-link " href="/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Visão geral</span></a>
+<a class="nav-link active" href="/vendas/pdv/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+<path d="M3 3h2l2 12h12l2-9H6M9 20h.01M18 20h.01"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Frente de caixa</span></a>
+<a class="nav-link " href="/comercial/documentos/orcamento/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Orçamentos</span></a>
+<a class="nav-link " href="/comercial/documentos/os/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+<rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4V2h6v2M8 12l2 2 5-5M8 18h8"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Ordens de serviço</span></a>
+<a class="nav-link " href="/vendas/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+<path d="M5 3h14v19l-4-2-3 2-3-2-4 2zM8 7h8M8 11h8M8 15h5"/>
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Vendas</span></a>
+<div class="nav-label">CADASTROS</div>
+<a class="nav-link " href="/estoque/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+<path d="m3 7 9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10M7 5l10 4"/>
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Peças</span></a>
+<a class="nav-link " href="/comercial/servicos/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+<path d="M14 6a5 5 0 0 0-6 6l-5 5a2 2 0 0 0 3 3l5-5a5 5 0 0 0 7-6l-3 3-3-3 3-3z"/>
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Serviços</span></a>
+<a class="nav-link " href="/clientes/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+<circle cx="9" cy="7" r="4"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M17 3a4 4 0 0 1 0 8M18 14a6 6 0 0 1 4 6"/>
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Clientes</span></a>
+<a class="nav-link" href="/admin/veiculos/veiculo/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+<path d="m3 11 2-7h14l2 7v9h-3v-3H6v3H3zM3 11h18M7 14h1M16 14h1"/>
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Veículos de origem</span></a>
+<a class="nav-link" href="/admin/estoque/categoria/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+
+
+
+
+
+
+
+</svg><span class="nav-text">Categorias</span></a>
+<a class="nav-link" href="/admin/estoque/localizacao/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/>
+
+
+
+
+
+
+</svg><span class="nav-text">Localizações</span></a>
+
+<div class="nav-label">FISCAL</div>
+
+<a class="nav-link " href="/fiscal/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+<path d="M5 3h14v19l-4-2-3 2-3-2-4 2zM8 7h8M8 11h8M8 15h5"/>
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Notas fiscais</span></a>
+<a class="nav-link " href="/fiscal/nfe/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">NF-e</span></a>
+<a class="nav-link " href="/fiscal/nfce/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">NFC-e</span></a>
+<a class="nav-link " href="/fiscal/nfse/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+<path d="M14 6a5 5 0 0 0-6 6l-5 5a2 2 0 0 0 3 3l5-5a5 5 0 0 0 7-6l-3 3-3-3 3-3z"/>
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">NFS-e</span></a>
+<a class="nav-link " href="/fiscal/pendentes/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Pendentes/Rejeitadas</span></a>
+<a class="nav-link " href="/fiscal/eventos/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Eventos/Cancelamentos</span></a>
+<a class="nav-link " href="/fiscal/documentos/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">XML/Documentos</span></a>
+
+<a class="nav-link" href="/fiscal/configuracao/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<circle cx="12" cy="12" r="3"/><path d="m9 3 1-2h4l1 2 3 2h3l1 4-2 2v2l2 2-1 4h-3l-3 2-1 2h-4l-1-2-3-2H3l-1-4 2-2v-2L2 9l1-4h3z"/>
+</svg><span class="nav-text">Configurações fiscais</span></a>
+
+
+<div class="nav-label">FINANCEIRO</div>
+<a class="nav-link " href="/caixa/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+<path d="M20 7V3H5a3 3 0 0 0 0 6h16v12H5a3 3 0 0 1-3-3V6M21 12h-5v5h5"/>
+
+
+
+
+
+</svg><span class="nav-text">Meu caixa</span></a>
+<a class="nav-link " href="/comercial/receber/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 6v12m-5-5 5 5 5-5"/>
+
+
+
+
+</svg><span class="nav-text">Contas a receber</span></a>
+<a class="nav-link " href="/contas-a-pagar/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 18V6m-5 5 5-5 5 5"/>
+
+
+
+</svg><span class="nav-text">Contas a pagar</span></a>
+<a class="nav-link " href="/vendas/relatorios/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<path d="M3 3v18h18M7 17v-5M12 17V8M17 17V5"/>
+
+
+</svg><span class="nav-text">Relatórios</span></a>
+<div class="nav-label">SISTEMA</div>
+<a class="nav-link " href="/configuracoes/empresa/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<path d="M4 21V3h12v18M16 9h4v12M1 21h22M8 7h4M8 11h4M8 15h4"/>
+
+</svg><span class="nav-text">Minha empresa</span></a>
+<a class="nav-link" href="/admin/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<circle cx="12" cy="12" r="3"/><path d="m9 3 1-2h4l1 2 3 2h3l1 4-2 2v2l2 2-1 4h-3l-3 2-1 2h-4l-1-2-3-2H3l-1-4 2-2v-2L2 9l1-4h3z"/>
+</svg><span class="nav-text">Administração</span></a>
+</nav>
+    <div class="sidebar-note mt-auto"><span class="status-dot"></span> Seu estoque, organizado.<small>Da origem da peça ao balcão.</small></div>
+  </div>
+</aside>
+<div class="workspace">
+  <header class="topbar">
+    <div class="d-flex align-items-center gap-3"><button class="btn btn-outline-secondary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu" aria-label="Abrir menu">☰</button><span class="topbar-label">Gestão de estoque</span></div>
+    <div class="d-flex align-items-center gap-3"><a class="user-name" href="/conta/senha/">operador_preview</a><form method="post" action="/conta/sair/"><input type="hidden" name="csrfmiddlewaretoken" value="TucD4cb7WzwrFvUA45axCyWQ02GuRGjByJltOtKH3YvaMoskyC3PDEVtJLZMX2y8"><button class="btn btn-sm btn-outline-secondary" type="submit">Sair</button></form></div>
+  </header>
+  <main id="conteudo" class="main-content">
+    
+
+    <div class="pdv-workspace">
+<div class="page-heading"><div><div class="eyebrow">PONTO DE VENDA</div><h1>Frente de caixa</h1><p>Encontre a peça, adicione ao carrinho e finalize o atendimento.</p></div><a class="pdv-caixa pdv-caixa-aberto" href="/caixa/"><span aria-hidden="true">●</span> CX-000001 aberto</a></div>
+
+<form method="post" action="/vendas/carrinho/" class="pdv-scanner" id="leitor-codigo">
+<input type="hidden" name="csrfmiddlewaretoken" value="TucD4cb7WzwrFvUA45axCyWQ02GuRGjByJltOtKH3YvaMoskyC3PDEVtJLZMX2y8"><input type="hidden" name="acao" value="codigo"><label for="codigo-leitor" class="form-label">Adicionar pelo código de barras</label><div class="d-flex gap-2"><input id="codigo-leitor" name="codigo" class="form-control" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Escaneie ou digite o código e pressione Enter" required autofocus><button type="submit" class="btn btn-primary">Adicionar</button></div><small class="text-secondary">Leitor USB em modo teclado com Enter ao final. Cada leitura adiciona uma unidade.</small></form>
+<div class="pdv-columns"><section class="pdv-catalogo" aria-labelledby="catalogo-titulo"><div class="pdv-panel-heading"><span class="pdv-step">1</span><div><h2 id="catalogo-titulo">Escolha os itens</h2><p>Busque no estoque ou adicione um serviço.</p></div></div><form method="get" class="search-form pdv-busca mb-3"><label for="q" class="visually-hidden">Buscar peças e serviços</label><input id="q" name="q" value="" placeholder="Código, peça, marca, modelo, ano..." class="form-control"><button class="btn btn-primary">Buscar</button></form><div class="surface pdv-pecas"><div class="section-heading"><h2>Peças disponíveis</h2><span class="pdv-contagem">1 resultado · até 40</span></div>
+<div class="pdv-produto"><div class="d-flex align-items-center gap-2"><a href="/estoque/1/" aria-label="Ver Farol dianteiro esquerdo"><span class="peca-miniatura peca-sem-foto">Sem foto</span></a><div><strong>Farol dianteiro esquerdo</strong><small class="d-block text-secondary">REG000001 · Fiat Palio 2012 </small><div class="pdv-produto-meta"><span class="pdv-saldo">3 em estoque</span><small>Sem localização</small></div></div></div><form method="post" action="/vendas/carrinho/"><input type="hidden" name="csrfmiddlewaretoken" value="TucD4cb7WzwrFvUA45axCyWQ02GuRGjByJltOtKH3YvaMoskyC3PDEVtJLZMX2y8"><input type="hidden" name="acao" value="adicionar"><input type="hidden" name="peca" value="1"><div class="pdv-preco">R$ 250,00</div><button class="btn pdv-adicionar" aria-label="Adicionar Farol dianteiro esquerdo">+ Adicionar</button></form></div></div><div class="surface pdv-servicos mt-3"><div class="section-heading"><h2>Serviços</h2><span class="pdv-contagem">Mão de obra</span></div><div class="pdv-servicos-lista"><form method="post" action="/vendas/carrinho/" class="d-flex justify-content-between py-2"><input type="hidden" name="csrfmiddlewaretoken" value="TucD4cb7WzwrFvUA45axCyWQ02GuRGjByJltOtKH3YvaMoskyC3PDEVtJLZMX2y8"><input type="hidden" name="acao" value="adicionar"><input type="hidden" name="peca" value="s:1"><span>Instalação de peça</span><div><strong class="pdv-preco">R$ 80,00</strong><button class="btn pdv-adicionar" aria-label="Adicionar serviço Instalação de peça">+ Adicionar</button></div></form></div></div></section>
+<section class="pdv-atendimento" aria-label="Carrinho e pagamento"><div class="surface pdv-carrinho"><div class="pdv-panel-heading"><span class="pdv-step">2</span><div><h2>Seu carrinho <span class="pdv-contagem">0</span></h2><p>Confira os itens deste atendimento.</p></div></div>
+<div class="pdv-carrinho-vazio"><span aria-hidden="true"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+<path d="M3 3h2l2 12h12l2-9H6M9 20h.01M18 20h.01"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg></span><strong>Seu atendimento começa aqui</strong><p>Adicione peças ou serviços para montar a venda.</p></div>
+<div class="pdv-subtotal"><strong>Subtotal</strong><strong>R$ 0,00</strong></div>
+</div><div class="surface pdv-pagamento"><div class="pdv-panel-heading"><span class="pdv-step">3</span><div><h2>Pagamento</h2><p>Identifique o cliente e confira o recebimento.</p></div></div><form method="post" action="/vendas/finalizar/" id="checkout" data-subtotal="0.00"><input type="hidden" name="csrfmiddlewaretoken" value="TucD4cb7WzwrFvUA45axCyWQ02GuRGjByJltOtKH3YvaMoskyC3PDEVtJLZMX2y8"><input type="hidden" name="chave" value="04d6c184-2320-48fb-9db9-25c0d23de306" id="id_chave"><p><label for="id_cliente">Cliente:</label><select name="cliente" class="form-select" id="id_cliente">
+  <option value="" selected>Consumidor não identificado</option>
+
+  <option value="1">Oficina Exemplo</option>
+
+</select></p><a href="/clientes/novo/" class="small">Cadastrar cliente</a><div class="mt-3"><label for="id_desconto">Desconto total (R$):</label><input type="text" name="desconto" value="0" class="form-control" required id="id_desconto"></div>
+<div class="pdv-total"><span>Total da venda<small>Valor com desconto aplicado</small></span><strong id="total-previa">R$ 0,00</strong></div><p><input type="checkbox" name="a_prazo" class="form-check-input" id="id_a_prazo"> <label for="id_a_prazo">Venda a prazo (gerar conta a receber):</label></p><p id="pdv-vencimento"><label for="id_vencimento_conta">Vencimento da conta:</label><input type="date" name="vencimento_conta" class="form-control" id="id_vencimento_conta"></p><h3 class="fs-6 mt-4">Como o cliente vai pagar?</h3><p class="small text-secondary">Preencha os meios utilizados. Deixe as demais linhas vazias. Troco somente em dinheiro.</p><input type="hidden" name="pag-TOTAL_FORMS" value="4" id="id_pag-TOTAL_FORMS"><input type="hidden" name="pag-INITIAL_FORMS" value="0" id="id_pag-INITIAL_FORMS"><input type="hidden" name="pag-MIN_NUM_FORMS" value="1" id="id_pag-MIN_NUM_FORMS"><input type="hidden" name="pag-MAX_NUM_FORMS" value="8" id="id_pag-MAX_NUM_FORMS"><div class="row g-2 mb-3 pagamento-linha" data-erros="0"><div class="col-7"><label for="id_pag-0-forma">Forma:</label><select name="pag-0-forma" class="form-select" id="id_pag-0-forma">
+  <option value="" selected>---------</option>
+
+  <option value="1" data-dinheiro="1" data-promissoria="0">Dinheiro</option>
+
+  <option value="2" data-dinheiro="0" data-promissoria="0">PIX</option>
+
+</select></div><div class="col-5"><label for="id_pag-0-valor">Valor (R$):</label><input type="text" name="pag-0-valor" class="form-control" id="id_pag-0-valor"></div></div><div class="row g-2 mb-3 pagamento-linha" data-erros="0"><div class="col-7"><label for="id_pag-1-forma">Forma:</label><select name="pag-1-forma" class="form-select" id="id_pag-1-forma">
+  <option value="" selected>---------</option>
+
+  <option value="1" data-dinheiro="1" data-promissoria="0">Dinheiro</option>
+
+  <option value="2" data-dinheiro="0" data-promissoria="0">PIX</option>
+
+</select></div><div class="col-5"><label for="id_pag-1-valor">Valor (R$):</label><input type="text" name="pag-1-valor" class="form-control" id="id_pag-1-valor"></div></div><div class="row g-2 mb-3 pagamento-linha" data-erros="0"><div class="col-7"><label for="id_pag-2-forma">Forma:</label><select name="pag-2-forma" class="form-select" id="id_pag-2-forma">
+  <option value="" selected>---------</option>
+
+  <option value="1" data-dinheiro="1" data-promissoria="0">Dinheiro</option>
+
+  <option value="2" data-dinheiro="0" data-promissoria="0">PIX</option>
+
+</select></div><div class="col-5"><label for="id_pag-2-valor">Valor (R$):</label><input type="text" name="pag-2-valor" class="form-control" id="id_pag-2-valor"></div></div><div class="row g-2 mb-3 pagamento-linha" data-erros="0"><div class="col-7"><label for="id_pag-3-forma">Forma:</label><select name="pag-3-forma" class="form-select" id="id_pag-3-forma">
+  <option value="" selected>---------</option>
+
+  <option value="1" data-dinheiro="1" data-promissoria="0">Dinheiro</option>
+
+  <option value="2" data-dinheiro="0" data-promissoria="0">PIX</option>
+
+</select></div><div class="col-5"><label for="id_pag-3-valor">Valor (R$):</label><input type="text" name="pag-3-valor" class="form-control" id="id_pag-3-valor"></div></div>
+<button type="button" id="dividir-pagamento" class="btn btn-sm btn-outline-secondary mb-3">+ Dividir pagamento</button><p id="pagamento-previa" class="alert alert-info fw-bold pdv-pagamento-previa" aria-live="polite" role="status"></p><fieldset id="dados-promissoria" class="border rounded p-3 mb-3"><legend class="fs-6">Dados da nota promissória</legend><p class="small">Selecione um cliente com CPF/CNPJ cadastrado. Informe os dados para emissão e assinatura da nota.</p>
+<p><label for="id_vencimento">Vencimento da promissória:</label><input type="date" name="vencimento" class="form-control" id="id_vencimento"></p>
+<p><label for="id_beneficiario">Beneficiário (nome / razão social):</label><input type="text" name="beneficiario" maxlength="160" class="form-control" id="id_beneficiario"></p>
+<p><label for="id_documento_beneficiario">CPF/CNPJ do beneficiário:</label><input type="text" name="documento_beneficiario" maxlength="20" class="form-control" id="id_documento_beneficiario"></p>
+<p><label for="id_local_emissao">Local de emissão (cidade/UF):</label><input type="text" name="local_emissao" maxlength="160" class="form-control" id="id_local_emissao"></p>
+<p><label for="id_local_pagamento">Local de pagamento (endereço/cidade):</label><input type="text" name="local_pagamento" maxlength="200" class="form-control" id="id_local_pagamento"></p></fieldset>
+<button type="submit" class="btn btn-primary w-100 pdv-finalizar" disabled>Finalizar venda</button><p class="pdv-bloqueio">Adicione um item para liberar a finalização.</p><small class="d-block text-secondary mt-2">Confirme o recebimento antes de finalizar. Este sistema registra pagamentos; não cobra cartões nem confirma PIX automaticamente.</small></form></div></section></div>
+</div><script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/js/pdv.js?v=20261015" defer></script><script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/js/credito.js" defer></script>
+    <footer class="page-footer">REGISTER <span>Organização que move o seu negócio.</span></footer>
+  </main>
+</div>
+
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/vendor/bootstrap.bundle.min.js" defer></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/js/modulos.js?v=20261015" defer></script>
+</body>
+</html>

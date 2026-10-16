@@ -1,0 +1,368 @@
+(() => {
+  const form = document.getElementById('conta-form');
+  if (!form) return;
+
+  const el = name => document.getElementById('id_' + name);
+
+  const output = (id, value) => {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.textContent = value;
+  };
+
+  const currency = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+
+  const money = cents =>
+    Number.isFinite(cents)
+      ? currency.format(cents / 100)
+      : 'Confira os valores';
+
+  const cents = value => {
+    let text = String(value || '0').trim();
+
+    if (text.includes(',')) {
+      text = text
+        .replaceAll('.', '')
+        .replace(',', '.');
+    }
+
+    return /^\d+(\.\d{1,2})?$/.test(text)
+      ? Math.round(Number(text) * 100)
+      : NaN;
+  };
+
+  const dividir = (value, count, index) =>
+    Math.floor(value / count) +
+    (index < value % count ? 1 : 0);
+
+  function dataParcela(value, index, frequency) {
+    const [year, month, day] = value
+      .split('-')
+      .map(Number);
+
+    if (!year || !month || !day) return '';
+
+    let date;
+
+    if (['semanal', 'quinzenal', 'dias'].includes(frequency)) {
+      date = new Date(
+        Date.UTC(
+          year,
+          month - 1,
+          day + index * (frequency === 'semanal' ? 7 : frequency === 'quinzenal' ? 15 : Number(el('intervalo_dias')?.value || 30))
+        )
+      );
+    } else {
+      const step = {
+        mensal: 1,
+        bimestral: 2,
+        trimestral: 3,
+        semestral: 6,
+        anual: 12
+      }[frequency] || 1;
+
+      const base = new Date(
+        Date.UTC(
+          year,
+          month - 1 + index * step,
+          1
+        )
+      );
+
+      const last = new Date(
+        Date.UTC(
+          base.getUTCFullYear(),
+          base.getUTCMonth() + 1,
+          0
+        )
+      ).getUTCDate();
+
+      date = new Date(
+        Date.UTC(
+          base.getUTCFullYear(),
+          base.getUTCMonth(),
+          Math.min(day, last)
+        )
+      );
+    }
+
+    return new Intl.DateTimeFormat(
+      'pt-BR',
+      { timeZone: 'UTC' }
+    ).format(date);
+  }
+
+  function atualizar() {
+    const camposValores = [
+      'valor_original',
+      'desconto',
+      'juros',
+      'multa',
+      'acrescimos'
+    ];
+
+    const values = camposValores.map(name => {
+      const campo = el(name);
+      return campo ? cents(campo.value) : 0;
+    });
+
+    const [
+      original,
+      discount,
+      interest,
+      penalty,
+      extras
+    ] = values;
+
+    const total =
+      original -
+      discount +
+      interest +
+      penalty +
+      extras;
+
+    const editing =
+      form.dataset.editando === '1';
+
+    const modoCampo = el('modo');
+    const quantidadeCampo =
+      el('quantidade_lancamentos');
+    const frequenciaCampo =
+      el('frequencia');
+
+    const mode =
+      modoCampo ? modoCampo.value : 'unica';
+
+    const count =
+      quantidadeCampo
+        ? Number(quantidadeCampo.value)
+        : 0;
+
+    const series =
+      mode !== 'unica' && !editing;
+
+    const campoFrequencia = form.querySelector(
+      '[data-campo="frequencia"]'
+    );
+
+    const campoQuantidade = form.querySelector(
+      '[data-campo="quantidade_lancamentos"]'
+    );
+
+    if (campoFrequencia) {
+      campoFrequencia.hidden =
+        mode === 'unica';
+    }
+
+    if (campoQuantidade) {
+      campoQuantidade.hidden =
+        mode === 'unica';
+    }
+
+    if (quantidadeCampo) {
+      quantidadeCampo.required = series;
+    }
+
+    if (frequenciaCampo) {
+      frequenciaCampo.required =
+        mode === 'recorrente' && !editing;
+    }
+
+    const formaCampo = el('forma_prevista');
+
+    const forma =
+      formaCampo?.selectedOptions[0]
+        ?.textContent || '';
+
+    const pixCampo = el('pix_copia_cola');
+
+    const containerPix = form.querySelector(
+      '[data-campo="pix_copia_cola"]'
+    );
+
+    if (containerPix && pixCampo) {
+      containerPix.hidden =
+        !/pix/i.test(forma) &&
+        !pixCampo.value;
+    }
+
+    output(
+      'conta-total',
+      money(total)
+    );
+
+    output(
+      'resumo-original',
+      money(original)
+    );
+
+    output(
+      'resumo-desconto',
+      money(discount)
+    );
+
+    output(
+      'resumo-acrescimos',
+      money(
+        interest +
+        penalty +
+        extras
+      )
+    );
+
+    if (editing) {
+      output(
+        'resumo-saldo',
+        money(
+          total -
+          cents(form.dataset.pago)
+        )
+      );
+    }
+
+    output(
+      'resumo-titulo',
+      mode === 'recorrente' &&
+      !editing
+        ? 'Valor de cada lançamento'
+        : 'Valor total'
+    );
+
+    output(
+      'resumo-legenda',
+      'Original − desconto + juros + multa + acréscimos.'
+    );
+
+    const info =
+      document.getElementById('serie-info');
+
+    if (info) {
+      info.hidden = !series;
+
+      info.textContent =
+        mode === 'parcelada'
+          ? 'O valor informado será dividido em parcelas na frequência escolhida. A data de vencimento acima será a da primeira parcela.'
+          : 'O mesmo valor será repetido na frequência escolhida. Serão gerados somente os lançamentos informados, sem renovação automática.';
+    }
+
+    const preview =
+      document.getElementById('serie-previa');
+
+    const vencimentoCampo =
+      el('vencimento');
+
+    if (preview) {
+      preview.hidden =
+        Boolean(el('entrada')?.value || el('plano_personalizado')?.value) ||
+        !series ||
+        count < 2 ||
+        count > 120 ||
+        !Number.isInteger(count) ||
+        !Number.isFinite(total) ||
+        total <= 0 ||
+        !vencimentoCampo?.value ||
+        (
+          mode === 'recorrente' &&
+          !frequenciaCampo?.value
+        );
+    }
+
+    const tbody =
+      document.getElementById('serie-linhas');
+
+    if (tbody) {
+      tbody.replaceChildren();
+    }
+
+    if (
+      preview &&
+      !preview.hidden &&
+      tbody
+    ) {
+      for (
+        let i = 0;
+        i < Math.min(count, 12);
+        i++
+      ) {
+        const amount =
+          mode === 'parcelada'
+            ? values.reduce(
+                (sum, value, j) =>
+                  sum +
+                  (j === 1 ? -1 : 1) *
+                    dividir(
+                      value,
+                      count,
+                      i
+                    ),
+                0
+              )
+            : total;
+
+        const row =
+          document.createElement('tr');
+
+        [
+          String(i + 1) +
+            ' de ' +
+            count,
+
+          dataParcela(
+            vencimentoCampo.value,
+            i,
+            frequenciaCampo.value || 'mensal'
+          ),
+
+          money(amount)
+        ].forEach((text, index) => {
+          const cell =
+            document.createElement('td');
+
+          cell.textContent = text;
+
+          if (index === 2) {
+            cell.className =
+              'text-end';
+          }
+
+          row.append(cell);
+        });
+
+        tbody.append(row);
+      }
+
+      output(
+        'serie-limite',
+        (
+          count > 12
+            ? 'Mostrando os 12 primeiros. '
+            : ''
+        ) +
+        count +
+        ' lançamentos · soma ' +
+        money(
+          mode === 'recorrente'
+            ? total * count
+            : total
+        )
+      );
+    }
+  }
+
+
+  form.addEventListener('conta:atualizar', atualizar);
+
+  form.addEventListener(
+    'input',
+    atualizar
+  );
+
+  form.addEventListener(
+    'change',
+    atualizar
+  );
+
+  atualizar();
+})();

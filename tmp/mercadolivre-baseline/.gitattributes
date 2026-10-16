@@ -1,0 +1,2 @@
+# Preserve os bytes dos esquemas fiscais publicados e seus hashes de origem.
+fiscal/schemas/**/*.xsd -text

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+
+<html lang="pt-br" dir="ltr">
+<head>
+<title></title>
+<link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/base.css">
+
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/dark_mode.css">
+  <script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/theme.js"></script>
+
+
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/nav_sidebar.css">
+  <script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/nav_sidebar.js" defer></script>
+
+
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/admin-register.css?v=20261015">
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/changelists.css">
+  
+  
+    <script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/tmp/modulos-preview/jsi18n.js"></script>
+  
+  
+  
+
+
+
+
+<link rel="icon" type="image/png" sizes="32x32" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-180.png">
+<link rel="manifest" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="REGISTER">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/vendor/jquery/jquery.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/jquery.init.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/core.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/admin/RelatedObjectLookups.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/actions.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/urlify.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/prepopulate.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/vendor/xregexp/xregexp.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/filters.js" defer></script>
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/responsive.css">
+    
+
+<meta name="robots" content="NONE,NOARCHIVE">
+</head>
+
+<body class=" app-veiculos model-veiculo change-list"
+  data-admin-utc-offset="-10800">
+<a href="#content-start" class="skip-to-content-link">Ir para o conteúdo principal</a>
+<!-- Container -->
+<div id="container">
+
+    
+    <!-- Header -->
+    
+      <header id="header">
+        <div id="branding">
+        <h1 id="site-name"><a href="/admin/">REGISTER <small style="font-size:11px;opacity:.8;letter-spacing:.5px">CADASTROS E ADMINISTRAÇÃO</small></a></h1>
+        </div>
+        
+        
+        <div id="user-tools">
+            
+                Bem-vindo(a),
+                <strong>operador_preview</strong>.
+            
+            
+                
+                    <a href="/">Ver o site</a> /
+                
+                
+                    
+                    
+                
+                
+                <a href="/admin/password_change/">Alterar senha</a> /
+                
+                <form id="logout-form" method="post" action="/admin/logout/">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="oJa6iyjlMqdAHdPaYreKoBSOFRNhw4zG3YjW2PSVTPcjO6nUsY72pHRroA6zCqOd">
+                    <button type="submit">Encerrar sessão</button>
+                </form>
+                
+<button class="theme-toggle">
+  <span class="visually-hidden theme-label-when-auto">Alternar tema (tema atual: automático)</span>
+  <span class="visually-hidden theme-label-when-light">Alternar tema (tema atual: claro)</span>
+  <span class="visually-hidden theme-label-when-dark">Alternar tema (tema atual: escuro)</span>
+  <svg aria-hidden="true" class="theme-icon-when-auto">
+    <use xlink:href="#icon-auto" />
+  </svg>
+  <svg aria-hidden="true" class="theme-icon-when-dark">
+    <use xlink:href="#icon-moon" />
+  </svg>
+  <svg aria-hidden="true" class="theme-icon-when-light">
+    <use xlink:href="#icon-sun" />
+  </svg>
+</button>
+
+            
+        </div>
+        
+        
+        
+      </header>
+    
+    <!-- END Header -->
+    
+      <nav aria-label="Marcas de navegação">
+        
+<div class="breadcrumbs">
+<a href="/admin/">Início</a>
+&rsaquo; <a href="/admin/veiculos/">Veiculos</a>
+&rsaquo; Veículos de origem
+</div>
+
+      </nav>
+    
+    
+
+    <div class="main" id="main">
+      
+        
+          
+<button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar" aria-label="Alternar navegação"></button>
+<nav class="sticky" id="nav-sidebar" aria-label="Barra Lateral">
+  <input type="search" id="nav-filter"
+         placeholder="Comece a digitar para filtrar…"
+         aria-label="Filtrar itens de navegação">
+  
+
+
+  
+    <div class="app-accounts module">
+      <table>
+        <caption>
+          <a href="/admin/accounts/" class="section" title="Modelos na aplicação Accounts">Accounts</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-user">
+              <th scope="row" id="accounts-user">
+                
+                  <a href="/admin/accounts/user/">Usuários</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/accounts/user/add/" class="addlink" aria-describedby="accounts-user">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-auth module">
+      <table>
+        <caption>
+          <a href="/admin/auth/" class="section" title="Modelos na aplicação Autenticação e Autorização">Autenticação e Autorização</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-group">
+              <th scope="row" id="auth-group">
+                
+                  <a href="/admin/auth/group/">Grupos</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/auth/group/add/" class="addlink" aria-describedby="auth-group">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-caixa module">
+      <table>
+        <caption>
+          <a href="/admin/caixa/" class="section" title="Modelos na aplicação Caixa">Caixa</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-movimentocaixa">
+              <th scope="row" id="caixa-movimentocaixa">
+                
+                  <a href="/admin/caixa/movimentocaixa/">Movimentações de caixa</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-sessaocaixa">
+              <th scope="row" id="caixa-sessaocaixa">
+                
+                  <a href="/admin/caixa/sessaocaixa/">Sessões de caixa</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-clientes module">
+      <table>
+        <caption>
+          <a href="/admin/clientes/" class="section" title="Modelos na aplicação Clientes">Clientes</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-cliente">
+              <th scope="row" id="clientes-cliente">
+                
+                  <a href="/admin/clientes/cliente/">Clientes</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/clientes/cliente/add/" class="addlink" aria-describedby="clientes-cliente">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-core module">
+      <table>
+        <caption>
+          <a href="/admin/core/" class="section" title="Modelos na aplicação Core">Core</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-evento">
+              <th scope="row" id="core-evento">
+                
+                  <a href="/admin/core/evento/">Auditoria</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-estoque module">
+      <table>
+        <caption>
+          <a href="/admin/estoque/" class="section" title="Modelos na aplicação Estoque">Estoque</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-categoria">
+              <th scope="row" id="estoque-categoria">
+                
+                  <a href="/admin/estoque/categoria/">Categorias</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/estoque/categoria/add/" class="addlink" aria-describedby="estoque-categoria">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-localizacao">
+              <th scope="row" id="estoque-localizacao">
+                
+                  <a href="/admin/estoque/localizacao/">Localizações</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/estoque/localizacao/add/" class="addlink" aria-describedby="estoque-localizacao">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-peca">
+              <th scope="row" id="estoque-peca">
+                
+                  <a href="/admin/estoque/peca/">Peças</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/estoque/peca/add/" class="addlink" aria-describedby="estoque-peca">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-veiculos module current-app">
+      <table>
+        <caption>
+          <a href="/admin/veiculos/" class="section" title="Modelos na aplicação Veiculos">Veiculos</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-modeloveiculo">
+              <th scope="row" id="veiculos-modeloveiculo">
+                
+                  <a href="/admin/veiculos/modeloveiculo/">Marcas e modelos de veículos</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/veiculos/modeloveiculo/add/" class="addlink" aria-describedby="veiculos-modeloveiculo">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-veiculo current-model">
+              <th scope="row" id="veiculos-veiculo">
+                
+                  <a href="/admin/veiculos/veiculo/" aria-current="page">Veículos de origem</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/veiculos/veiculo/add/" class="addlink" aria-describedby="veiculos-veiculo">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-vendas module">
+      <table>
+        <caption>
+          <a href="/admin/vendas/" class="section" title="Modelos na aplicação Vendas">Vendas</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-devolucao">
+              <th scope="row" id="vendas-devolucao">
+                
+                  <a href="/admin/vendas/devolucao/">Devoluções</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-formapagamento">
+              <th scope="row" id="vendas-formapagamento">
+                
+                  <a href="/admin/vendas/formapagamento/">Formas de pagamento</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/vendas/formapagamento/add/" class="addlink" aria-describedby="vendas-formapagamento">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-itemvenda">
+              <th scope="row" id="vendas-itemvenda">
+                
+                  <a href="/admin/vendas/itemvenda/">Item vendas</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-movimentopromissoria">
+              <th scope="row" id="vendas-movimentopromissoria">
+                
+                  <a href="/admin/vendas/movimentopromissoria/">Movimento promissorias</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-notapromissoria">
+              <th scope="row" id="vendas-notapromissoria">
+                
+                  <a href="/admin/vendas/notapromissoria/">Notas promissórias</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-pagamento">
+              <th scope="row" id="vendas-pagamento">
+                
+                  <a href="/admin/vendas/pagamento/">Pagamentos</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-venda">
+              <th scope="row" id="vendas-venda">
+                
+                  <a href="/admin/vendas/venda/">Vendas</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+
+
+</nav>
+
+        
+      
+      <main id="content-start" class="content" tabindex="-1">
+        
+          
+        
+        <!-- Content -->
+        <div id="content" class="">
+          
+          <h1>Selecione veículo de origem para modificar</h1>
+          
+          
+  <div id="content-main">
+    
+        <ul class="object-tools">
+          
+            
+
+
+  
+  <li>
+    
+    <a href="/admin/veiculos/veiculo/add/" class="addlink">
+      Adicionar veículo de origem
+    </a>
+  </li>
+  
+
+
+          
+        </ul>
+    
+    
+    <div class="module filtered" id="changelist">
+      <div class="changelist-form-container">
+        
+
+<div id="toolbar"><form id="changelist-search" method="get" role="search">
+<div><!-- DIV needed for valid HTML -->
+<label for="searchbar"><img src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/img/search.svg" alt="Search"></label>
+<input type="text" size="40" name="q" value="" id="searchbar">
+<input type="submit" value="Pesquisar">
+
+
+</div>
+
+</form></div>
+
+
+        
+<nav class="toplinks">
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+        <form id="changelist-form" method="post" novalidate><input type="hidden" name="csrfmiddlewaretoken" value="oJa6iyjlMqdAHdPaYreKoBSOFRNhw4zG3YjW2PSVTPcjO6nUsY72pHRroA6zCqOd">
+        
+
+        
+          
+          
+
+
+
+          
+        
+        
+
+<p class="paginator">
+
+0 veículos de origem
+
+
+</p>
+
+        </form>
+      </div>
+      
+        
+          <nav id="changelist-filter" aria-labelledby="changelist-filter-header">
+            <h2 id="changelist-filter-header">Filtro</h2>
+            <div id="changelist-filter-extra-actions">
+              <h3>
+                <a href="?_facets=True" class="viewlink">Mostrar contagem</a>
+              </h3>
+              
+            </div>
+            
+<details data-filter-title="situação" open>
+  <summary>
+    Por situação 
+  </summary>
+  <ul>
+  
+    <li class="selected">
+    <a href="?">Todos</a></li>
+  
+    <li>
+    <a href="?situacao__exact=recebido">Recebido</a></li>
+  
+    <li>
+    <a href="?situacao__exact=desmontagem">Em desmontagem</a></li>
+  
+    <li>
+    <a href="?situacao__exact=desmontado">Desmontado</a></li>
+  
+    <li>
+    <a href="?situacao__exact=inativo">Inativo</a></li>
+  
+  </ul>
+</details>
+
+<details data-filter-title="marca" open>
+  <summary>
+    Por marca 
+  </summary>
+  <ul>
+  
+    <li class="selected">
+    <a href="?">Todos</a></li>
+  
+  </ul>
+</details>
+
+<details data-filter-title="combustível" open>
+  <summary>
+    Por combustível 
+  </summary>
+  <ul>
+  
+    <li class="selected">
+    <a href="?">Todos</a></li>
+  
+  </ul>
+</details>
+
+          </nav>
+        
+      
+    </div>
+  </div>
+
+          
+          <br class="clear">
+        </div>
+        <!-- END Content -->
+      </main>
+    </div>
+    <footer id="footer"></footer>
+</div>
+<!-- END Container -->
+
+<!-- SVGs -->
+<svg xmlns="http://www.w3.org/2000/svg" class="base-svgs">
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-auto"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2V4a8 8 0 1 0 0 16z"/></symbol>
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-moon"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol>
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-sun"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol>
+</svg>
+<!-- END SVGs -->
+
+</body>
+</html>

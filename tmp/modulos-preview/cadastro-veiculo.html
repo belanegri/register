@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+
+<html lang="pt-br" dir="ltr">
+<head>
+<title></title>
+<link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/base.css">
+
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/dark_mode.css">
+  <script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/theme.js"></script>
+
+
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/nav_sidebar.css">
+  <script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/nav_sidebar.js" defer></script>
+
+<link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/admin-register.css?v=20261015"><link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/forms.css">
+
+
+<link rel="icon" type="image/png" sizes="32x32" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-180.png">
+<link rel="manifest" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="REGISTER">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/tmp/modulos-preview/jsi18n.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/vendor/jquery/jquery.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/calendar.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/js/veiculo-form.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/jquery.init.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/admin/DateTimeShortcuts.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/core.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/admin/RelatedObjectLookups.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/actions.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/urlify.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/prepopulate.js"></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/vendor/xregexp/xregexp.js"></script>
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/css/responsive.css">
+    
+
+<meta name="robots" content="NONE,NOARCHIVE">
+</head>
+
+<body class=" app-veiculos model-veiculo change-form"
+  data-admin-utc-offset="-10800">
+<a href="#content-start" class="skip-to-content-link">Ir para o conteúdo principal</a>
+<!-- Container -->
+<div id="container">
+
+    
+    <!-- Header -->
+    
+      <header id="header">
+        <div id="branding">
+        <h1 id="site-name"><a href="/admin/">REGISTER <small style="font-size:11px;opacity:.8;letter-spacing:.5px">CADASTROS E ADMINISTRAÇÃO</small></a></h1>
+        </div>
+        
+        
+        <div id="user-tools">
+            
+                Bem-vindo(a),
+                <strong>operador_preview</strong>.
+            
+            
+                
+                    <a href="/">Ver o site</a> /
+                
+                
+                    
+                    
+                
+                
+                <a href="/admin/password_change/">Alterar senha</a> /
+                
+                <form id="logout-form" method="post" action="/admin/logout/">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="h9EEcUuS3I485ZIiYRNJGeUhAKtytx23WoNuWb3sa73RcSg2soG1HkTUjtMQzThA">
+                    <button type="submit">Encerrar sessão</button>
+                </form>
+                
+<button class="theme-toggle">
+  <span class="visually-hidden theme-label-when-auto">Alternar tema (tema atual: automático)</span>
+  <span class="visually-hidden theme-label-when-light">Alternar tema (tema atual: claro)</span>
+  <span class="visually-hidden theme-label-when-dark">Alternar tema (tema atual: escuro)</span>
+  <svg aria-hidden="true" class="theme-icon-when-auto">
+    <use xlink:href="#icon-auto" />
+  </svg>
+  <svg aria-hidden="true" class="theme-icon-when-dark">
+    <use xlink:href="#icon-moon" />
+  </svg>
+  <svg aria-hidden="true" class="theme-icon-when-light">
+    <use xlink:href="#icon-sun" />
+  </svg>
+</button>
+
+            
+        </div>
+        
+        
+        
+      </header>
+    
+    <!-- END Header -->
+    
+      <nav aria-label="Marcas de navegação">
+        
+<div class="breadcrumbs">
+<a href="/admin/">Início</a>
+&rsaquo; <a href="/admin/veiculos/">Veiculos</a>
+&rsaquo; <a href="/admin/veiculos/veiculo/">Veículos de origem</a>
+&rsaquo; Adicionar veículo de origem
+</div>
+
+      </nav>
+    
+    
+
+    <div class="main" id="main">
+      
+        
+          
+<button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar" aria-label="Alternar navegação"></button>
+<nav class="sticky" id="nav-sidebar" aria-label="Barra Lateral">
+  <input type="search" id="nav-filter"
+         placeholder="Comece a digitar para filtrar…"
+         aria-label="Filtrar itens de navegação">
+  
+
+
+  
+    <div class="app-accounts module">
+      <table>
+        <caption>
+          <a href="/admin/accounts/" class="section" title="Modelos na aplicação Accounts">Accounts</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-user">
+              <th scope="row" id="accounts-user">
+                
+                  <a href="/admin/accounts/user/">Usuários</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/accounts/user/add/" class="addlink" aria-describedby="accounts-user">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-auth module">
+      <table>
+        <caption>
+          <a href="/admin/auth/" class="section" title="Modelos na aplicação Autenticação e Autorização">Autenticação e Autorização</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-group">
+              <th scope="row" id="auth-group">
+                
+                  <a href="/admin/auth/group/">Grupos</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/auth/group/add/" class="addlink" aria-describedby="auth-group">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-caixa module">
+      <table>
+        <caption>
+          <a href="/admin/caixa/" class="section" title="Modelos na aplicação Caixa">Caixa</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-movimentocaixa">
+              <th scope="row" id="caixa-movimentocaixa">
+                
+                  <a href="/admin/caixa/movimentocaixa/">Movimentações de caixa</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-sessaocaixa">
+              <th scope="row" id="caixa-sessaocaixa">
+                
+                  <a href="/admin/caixa/sessaocaixa/">Sessões de caixa</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-clientes module">
+      <table>
+        <caption>
+          <a href="/admin/clientes/" class="section" title="Modelos na aplicação Clientes">Clientes</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-cliente">
+              <th scope="row" id="clientes-cliente">
+                
+                  <a href="/admin/clientes/cliente/">Clientes</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/clientes/cliente/add/" class="addlink" aria-describedby="clientes-cliente">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-core module">
+      <table>
+        <caption>
+          <a href="/admin/core/" class="section" title="Modelos na aplicação Core">Core</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-evento">
+              <th scope="row" id="core-evento">
+                
+                  <a href="/admin/core/evento/">Auditoria</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-estoque module">
+      <table>
+        <caption>
+          <a href="/admin/estoque/" class="section" title="Modelos na aplicação Estoque">Estoque</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-categoria">
+              <th scope="row" id="estoque-categoria">
+                
+                  <a href="/admin/estoque/categoria/">Categorias</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/estoque/categoria/add/" class="addlink" aria-describedby="estoque-categoria">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-localizacao">
+              <th scope="row" id="estoque-localizacao">
+                
+                  <a href="/admin/estoque/localizacao/">Localizações</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/estoque/localizacao/add/" class="addlink" aria-describedby="estoque-localizacao">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-peca">
+              <th scope="row" id="estoque-peca">
+                
+                  <a href="/admin/estoque/peca/">Peças</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/estoque/peca/add/" class="addlink" aria-describedby="estoque-peca">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-veiculos module current-app">
+      <table>
+        <caption>
+          <a href="/admin/veiculos/" class="section" title="Modelos na aplicação Veiculos">Veiculos</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-modeloveiculo">
+              <th scope="row" id="veiculos-modeloveiculo">
+                
+                  <a href="/admin/veiculos/modeloveiculo/">Marcas e modelos de veículos</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/veiculos/modeloveiculo/add/" class="addlink" aria-describedby="veiculos-modeloveiculo">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-veiculo current-model">
+              <th scope="row" id="veiculos-veiculo">
+                
+                  <a href="/admin/veiculos/veiculo/" aria-current="page">Veículos de origem</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/veiculos/veiculo/add/" class="addlink" aria-describedby="veiculos-veiculo">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-vendas module">
+      <table>
+        <caption>
+          <a href="/admin/vendas/" class="section" title="Modelos na aplicação Vendas">Vendas</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Nome do modelo</th>
+            <th scope="col">Adicionar link</th>
+            <th scope="col">Alterar ou ver link de lista</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-devolucao">
+              <th scope="row" id="vendas-devolucao">
+                
+                  <a href="/admin/vendas/devolucao/">Devoluções</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-formapagamento">
+              <th scope="row" id="vendas-formapagamento">
+                
+                  <a href="/admin/vendas/formapagamento/">Formas de pagamento</a>
+                
+              </th>
+
+              
+                <td><a href="/admin/vendas/formapagamento/add/" class="addlink" aria-describedby="vendas-formapagamento">Adicionar</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-itemvenda">
+              <th scope="row" id="vendas-itemvenda">
+                
+                  <a href="/admin/vendas/itemvenda/">Item vendas</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-movimentopromissoria">
+              <th scope="row" id="vendas-movimentopromissoria">
+                
+                  <a href="/admin/vendas/movimentopromissoria/">Movimento promissorias</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-notapromissoria">
+              <th scope="row" id="vendas-notapromissoria">
+                
+                  <a href="/admin/vendas/notapromissoria/">Notas promissórias</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-pagamento">
+              <th scope="row" id="vendas-pagamento">
+                
+                  <a href="/admin/vendas/pagamento/">Pagamentos</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-venda">
+              <th scope="row" id="vendas-venda">
+                
+                  <a href="/admin/vendas/venda/">Vendas</a>
+                
+              </th>
+
+              
+                <td></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+
+
+</nav>
+
+        
+      
+      <main id="content-start" class="content" tabindex="-1">
+        
+          
+        
+        <!-- Content -->
+        <div id="content" class="colM">
+          
+          <h1>Adicionar veículo de origem</h1>
+          
+          <div id="content-main">
+
+
+
+<form method="post" id="veiculo_form" novalidate><input type="hidden" name="csrfmiddlewaretoken" value="h9EEcUuS3I485ZIiYRNJGeUhAKtytx23WoNuWb3sa73RcSg2soG1HkTUjtMQzThA">
+<div>
+
+
+
+
+
+
+
+  <fieldset class="module aligned ">
+    
+    
+    
+        <div class="form-row field-codigo_automatico">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label>Código interno:</label>
+                                
+                                    <div class="readonly">Gerado automaticamente ao salvar</div>
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-marca">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label class="required" for="id_marca">Marca:</label>
+                                
+                                    <select name="marca" data-modelos="{&quot;Abarth&quot;: [], &quot;Alfa Romeo&quot;: [], &quot;Audi&quot;: [], &quot;BMW&quot;: [], &quot;BYD&quot;: [], &quot;Cadillac&quot;: [], &quot;CAOA Chery&quot;: [], &quot;Chevrolet&quot;: [], &quot;Chrysler&quot;: [], &quot;Citroën&quot;: [], &quot;Daewoo&quot;: [], &quot;Daihatsu&quot;: [], &quot;Dodge&quot;: [], &quot;Ferrari&quot;: [], &quot;Fiat&quot;: [], &quot;Ford&quot;: [], &quot;GAC&quot;: [], &quot;Geely&quot;: [], &quot;GWM&quot;: [], &quot;Honda&quot;: [], &quot;Hyundai&quot;: [], &quot;Infiniti&quot;: [], &quot;Isuzu&quot;: [], &quot;JAC Motors&quot;: [], &quot;Jaecoo&quot;: [], &quot;Jaguar&quot;: [], &quot;Jeep&quot;: [], &quot;Kia&quot;: [], &quot;Lada&quot;: [], &quot;Lamborghini&quot;: [], &quot;Land Rover&quot;: [], &quot;Lexus&quot;: [], &quot;Maserati&quot;: [], &quot;Mazda&quot;: [], &quot;Mercedes-Benz&quot;: [], &quot;Mercury&quot;: [], &quot;MG&quot;: [], &quot;MINI&quot;: [], &quot;Mitsubishi&quot;: [], &quot;Nissan&quot;: [], &quot;Omoda&quot;: [], &quot;Peugeot&quot;: [], &quot;Porsche&quot;: [], &quot;RAM&quot;: [], &quot;Renault&quot;: [], &quot;Seat&quot;: [], &quot;Smart&quot;: [], &quot;SsangYong / KGM&quot;: [], &quot;Subaru&quot;: [], &quot;Suzuki&quot;: [], &quot;Tesla&quot;: [], &quot;Toyota&quot;: [], &quot;Troller&quot;: [], &quot;Volkswagen&quot;: [], &quot;Volvo&quot;: [], &quot;Outra marca&quot;: []}" required id="id_marca">
+  <option value="" selected>Selecione a marca</option>
+
+  <option value="Abarth">Abarth</option>
+
+  <option value="Alfa Romeo">Alfa Romeo</option>
+
+  <option value="Audi">Audi</option>
+
+  <option value="BMW">BMW</option>
+
+  <option value="BYD">BYD</option>
+
+  <option value="Cadillac">Cadillac</option>
+
+  <option value="CAOA Chery">CAOA Chery</option>
+
+  <option value="Chevrolet">Chevrolet</option>
+
+  <option value="Chrysler">Chrysler</option>
+
+  <option value="Citroën">Citroën</option>
+
+  <option value="Daewoo">Daewoo</option>
+
+  <option value="Daihatsu">Daihatsu</option>
+
+  <option value="Dodge">Dodge</option>
+
+  <option value="Ferrari">Ferrari</option>
+
+  <option value="Fiat">Fiat</option>
+
+  <option value="Ford">Ford</option>
+
+  <option value="GAC">GAC</option>
+
+  <option value="Geely">Geely</option>
+
+  <option value="GWM">GWM</option>
+
+  <option value="Honda">Honda</option>
+
+  <option value="Hyundai">Hyundai</option>
+
+  <option value="Infiniti">Infiniti</option>
+
+  <option value="Isuzu">Isuzu</option>
+
+  <option value="JAC Motors">JAC Motors</option>
+
+  <option value="Jaecoo">Jaecoo</option>
+
+  <option value="Jaguar">Jaguar</option>
+
+  <option value="Jeep">Jeep</option>
+
+  <option value="Kia">Kia</option>
+
+  <option value="Lada">Lada</option>
+
+  <option value="Lamborghini">Lamborghini</option>
+
+  <option value="Land Rover">Land Rover</option>
+
+  <option value="Lexus">Lexus</option>
+
+  <option value="Maserati">Maserati</option>
+
+  <option value="Mazda">Mazda</option>
+
+  <option value="Mercedes-Benz">Mercedes-Benz</option>
+
+  <option value="Mercury">Mercury</option>
+
+  <option value="MG">MG</option>
+
+  <option value="MINI">MINI</option>
+
+  <option value="Mitsubishi">Mitsubishi</option>
+
+  <option value="Nissan">Nissan</option>
+
+  <option value="Omoda">Omoda</option>
+
+  <option value="Outra marca">Outra marca</option>
+
+  <option value="Peugeot">Peugeot</option>
+
+  <option value="Porsche">Porsche</option>
+
+  <option value="RAM">RAM</option>
+
+  <option value="Renault">Renault</option>
+
+  <option value="Seat">Seat</option>
+
+  <option value="Smart">Smart</option>
+
+  <option value="SsangYong / KGM">SsangYong / KGM</option>
+
+  <option value="Subaru">Subaru</option>
+
+  <option value="Suzuki">Suzuki</option>
+
+  <option value="Tesla">Tesla</option>
+
+  <option value="Toyota">Toyota</option>
+
+  <option value="Troller">Troller</option>
+
+  <option value="Volkswagen">Volkswagen</option>
+
+  <option value="Volvo">Volvo</option>
+
+</select>
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-modelo">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label class="required" for="id_modelo">Modelo:</label>
+                                
+                                    <select name="modelo" maxlength="120" required aria-describedby="id_modelo_helptext" id="id_modelo">
+  <option value="" selected>Selecione o modelo</option>
+
+  <optgroup label="Abarth">
+  </optgroup>
+  <optgroup label="Alfa Romeo">
+  </optgroup>
+  <optgroup label="Audi">
+  </optgroup>
+  <optgroup label="BMW">
+  </optgroup>
+  <optgroup label="BYD">
+  </optgroup>
+  <optgroup label="Cadillac">
+  </optgroup>
+  <optgroup label="CAOA Chery">
+  </optgroup>
+  <optgroup label="Chevrolet">
+  </optgroup>
+  <optgroup label="Chrysler">
+  </optgroup>
+  <optgroup label="Citroën">
+  </optgroup>
+  <optgroup label="Daewoo">
+  </optgroup>
+  <optgroup label="Daihatsu">
+  </optgroup>
+  <optgroup label="Dodge">
+  </optgroup>
+  <optgroup label="Ferrari">
+  </optgroup>
+  <optgroup label="Fiat">
+  </optgroup>
+  <optgroup label="Ford">
+  </optgroup>
+  <optgroup label="GAC">
+  </optgroup>
+  <optgroup label="Geely">
+  </optgroup>
+  <optgroup label="GWM">
+  </optgroup>
+  <optgroup label="Honda">
+  </optgroup>
+  <optgroup label="Hyundai">
+  </optgroup>
+  <optgroup label="Infiniti">
+  </optgroup>
+  <optgroup label="Isuzu">
+  </optgroup>
+  <optgroup label="JAC Motors">
+  </optgroup>
+  <optgroup label="Jaecoo">
+  </optgroup>
+  <optgroup label="Jaguar">
+  </optgroup>
+  <optgroup label="Jeep">
+  </optgroup>
+  <optgroup label="Kia">
+  </optgroup>
+  <optgroup label="Lada">
+  </optgroup>
+  <optgroup label="Lamborghini">
+  </optgroup>
+  <optgroup label="Land Rover">
+  </optgroup>
+  <optgroup label="Lexus">
+  </optgroup>
+  <optgroup label="Maserati">
+  </optgroup>
+  <optgroup label="Mazda">
+  </optgroup>
+  <optgroup label="Mercedes-Benz">
+  </optgroup>
+  <optgroup label="Mercury">
+  </optgroup>
+  <optgroup label="MG">
+  </optgroup>
+  <optgroup label="MINI">
+  </optgroup>
+  <optgroup label="Mitsubishi">
+  </optgroup>
+  <optgroup label="Nissan">
+  </optgroup>
+  <optgroup label="Omoda">
+  </optgroup>
+  <optgroup label="Peugeot">
+  </optgroup>
+  <optgroup label="Porsche">
+  </optgroup>
+  <optgroup label="RAM">
+  </optgroup>
+  <optgroup label="Renault">
+  </optgroup>
+  <optgroup label="Seat">
+  </optgroup>
+  <optgroup label="Smart">
+  </optgroup>
+  <optgroup label="SsangYong / KGM">
+  </optgroup>
+  <optgroup label="Subaru">
+  </optgroup>
+  <optgroup label="Suzuki">
+  </optgroup>
+  <optgroup label="Tesla">
+  </optgroup>
+  <optgroup label="Toyota">
+  </optgroup>
+  <optgroup label="Troller">
+  </optgroup>
+  <optgroup label="Volkswagen">
+  </optgroup>
+  <optgroup label="Volvo">
+  </optgroup>
+  <optgroup label="Outra marca">
+  </optgroup>
+</select>
+                                
+                            
+                        </div>
+                    
+                        <div class="help" id="id_modelo_helptext">
+                            <div>Escolha o modelo. Para marcas sem catálogo, informe o nome do modelo.</div>
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-versao">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_versao">Versão:</label>
+                                
+                                    <input type="text" name="versao" class="vTextField" maxlength="120" id="id_versao">
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-ano_fabricacao">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_ano_fabricacao">Ano de fabricação:</label>
+                                
+                                    <input type="number" name="ano_fabricacao" class="vIntegerField" min="0" id="id_ano_fabricacao">
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-ano_modelo">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_ano_modelo">Ano modelo:</label>
+                                
+                                    <input type="number" name="ano_modelo" class="vIntegerField" min="0" id="id_ano_modelo">
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-motor">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_motor">Motor:</label>
+                                
+                                    <input type="text" name="motor" class="vTextField" maxlength="80" id="id_motor">
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-combustivel">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_combustivel">Combustível:</label>
+                                
+                                    <input type="text" name="combustivel" class="vTextField" maxlength="40" id="id_combustivel">
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-cambio">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_cambio">Câmbio:</label>
+                                
+                                    <input type="text" name="cambio" class="vTextField" maxlength="60" id="id_cambio">
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-cor">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_cor">Cor:</label>
+                                
+                                    <input type="text" name="cor" class="vTextField" maxlength="50" id="id_cor">
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-data_entrada">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label class="required" for="id_data_entrada">Data de entrada:</label>
+                                
+                                    <p class="date">
+  <input type="text" name="data_entrada" class="vDateField" size="10" required id="id_data_entrada">
+
+
+</p>
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-observacoes">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_observacoes">Observações:</label>
+                                
+                                    <textarea name="observacoes" cols="40" rows="10" class="vLargeTextField" id="id_observacoes">
+</textarea>
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-situacao">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label class="required" for="id_situacao">Situação:</label>
+                                
+                                    <select name="situacao" id="id_situacao">
+  <option value="recebido" selected>Recebido</option>
+
+  <option value="desmontagem">Em desmontagem</option>
+
+  <option value="desmontado">Desmontado</option>
+
+  <option value="inativo">Inativo</option>
+
+</select>
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-criado_em">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label>Criado em:</label>
+                                
+                                    <div class="readonly">-</div>
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+        <div class="form-row field-atualizado_em">
+            
+            
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label>Atualizado em:</label>
+                                
+                                    <div class="readonly">-</div>
+                                
+                            
+                        </div>
+                    
+                </div>
+            
+            
+        </div>
+    
+    
+</fieldset>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="submit-row">
+
+<input type="submit" value="Salvar" class="default" name="_save">
+
+<input type="submit" value="Salvar e adicionar outro(a)" name="_addanother">
+<input type="submit" value="Salvar e continuar editando" name="_continue">
+
+
+
+</div>
+
+
+
+    <script id="django-admin-form-add-constants"
+            src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/change_form.js"
+            
+                data-model-name="veiculo"
+            
+            async>
+    </script>
+
+
+
+
+<script id="django-admin-prepopulated-fields-constants"
+        src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/.venv/Lib/site-packages/django/contrib/admin/static/admin/js/prepopulate_init.js"
+        data-prepopulated-fields="[]">
+</script>
+
+
+</div>
+</form></div>
+
+          
+          <br class="clear">
+        </div>
+        <!-- END Content -->
+      </main>
+    </div>
+    <footer id="footer"></footer>
+</div>
+<!-- END Container -->
+
+<!-- SVGs -->
+<svg xmlns="http://www.w3.org/2000/svg" class="base-svgs">
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-auto"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2V4a8 8 0 1 0 0 16z"/></symbol>
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-moon"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol>
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-sun"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol>
+</svg>
+<!-- END SVGs -->
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}{{ cliente.nome }}{% endblock %}
+{% block content %}<div class="page-heading"><div><h1>{{ cliente.nome }}</h1><p>{{ cliente.documento|default:'Sem documento informado' }}</p></div>{% if perms.clientes.change_cliente %}<a class="btn btn-primary" href="{% url 'clientes:editar' cliente.pk %}">Editar cliente</a>{% endif %}</div>
+<div class="surface p-4 mb-4"><p><strong>Telefone:</strong> {{ cliente.telefone|default:'—' }} · <strong>E-mail:</strong> {{ cliente.email|default:'—' }}</p><p>{{ cliente.endereco|linebreaksbr }}</p><p>{{ cliente.observacoes|linebreaksbr }}</p><span>{{ cliente.ativo|yesno:'Ativo,Inativo' }}</span></div>
+<div class="surface"><div class="section-heading"><h2>Histórico de compras</h2></div>{% include 'vendas/tabela.html' %}</div>{% endblock %}

@@ -1,0 +1,17 @@
+{
+  "resultados": [
+    {
+      "pagina": "pagar",
+      "largura": 1024,
+      "problema": "overflow",
+      "nodes": []
+    }
+  ],
+  "erros": [],
+  "paginas": 32,
+  "larguras": [
+    1440,
+    1024,
+    390
+  ]
+}

@@ -1,0 +1,81 @@
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from django.contrib.admin.sites import site
+from django.db import IntegrityError, transaction
+from .models import Peca, Categoria
+from .codigo_barras import gerar_svg
+
+
+class CodigoBarrasTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_superuser("barcode_admin")
+        cls.peca = Peca.objects.create(nome="Farol", categoria=Categoria.objects.first(), preco_venda=25)
+
+    def test_sequencia_preserva_legado_e_unicidade(self):
+        nova = Peca.objects.create(nome="Lanterna", categoria=self.peca.categoria, preco_venda=20)
+        self.assertEqual(int(nova.codigo[3:]), int(self.peca.codigo[3:]) + 1)
+        antiga = Peca.objects.create(codigo="PC-000123", nome="Legado", categoria=self.peca.categoria, preco_venda=10)
+        antiga.save()
+        self.assertEqual(antiga.codigo, "PC-000123")
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Peca.objects.create(codigo=nova.codigo, nome="Duplicada", categoria=self.peca.categoria, preco_venda=1)
+
+    def test_codigo_svg_e_permissoes(self):
+        url = reverse("estoque:codigo_barras", args=[self.peca.pk])
+        self.assertEqual(self.client.get(url).status_code, 302)
+        sem_permissao = get_user_model().objects.create_user("sem_barcode")
+        self.client.force_login(sem_permissao)
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.force_login(self.user)
+        resposta = self.client.get(url)
+        self.assertEqual(resposta["Content-Type"], "image/svg+xml")
+        self.assertIn(b"<svg", resposta.content)
+        self.assertIn(b"<rect", resposta.content)
+        self.assertEqual(self.client.get(reverse("estoque:codigo_barras",args=[999999])).status_code,404)
+
+    def test_exibicao_e_etiqueta(self):
+        self.client.force_login(self.user)
+        for rota in ["detalhe", "editar"]:
+            resposta = self.client.get(reverse("estoque:"+rota,args=[self.peca.pk]))
+            self.assertContains(resposta, reverse("estoque:codigo_barras",args=[self.peca.pk]))
+        resposta = self.client.get(reverse("estoque:etiqueta",args=[self.peca.pk]))
+        self.assertContains(resposta, 'id="imprimir"')
+        resposta = self.client.get(reverse("estoque:etiqueta",args=[self.peca.pk]), {"formato": "pdf"})
+        self.assertEqual(resposta["Content-Type"], "application/pdf")
+        self.assertTrue(resposta.content.startswith(b"%PDF-"))
+        admin = site._registry[Peca]
+        self.assertIn("Disponível após salvar",admin.codigo_barras(None))
+        self.assertIn("codigo-barras.svg",admin.codigo_barras(self.peca))
+
+    def test_code128_rejeita_unicode_nao_representavel(self):
+        with self.assertRaises(ValueError):
+            gerar_svg("PEÇA")
+        self.assertIn("<svg", gerar_svg("PC-000123"))
+
+    def test_fotos_opcionais_no_cadastro_e_remocao_da_ultima(self):
+        from django.test import RequestFactory
+        from .admin import FotoPecaInline
+        from .models import FotoPeca
+        request = RequestFactory().get("/")
+        request.user = self.user
+        inline = FotoPecaInline(Peca, site)
+        FormSet = inline.get_formset(request)
+        prefix = FormSet.get_default_prefix()
+        dados = {f"{prefix}-TOTAL_FORMS": "1", f"{prefix}-INITIAL_FORMS": "0", f"{prefix}-0-ordem": "0"}
+        novo = FormSet(dados, instance=Peca())
+        self.assertTrue(novo.is_valid(), novo.errors)
+        from io import BytesIO
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        arquivo = BytesIO()
+        Image.new("RGB", (10, 10)).save(arquivo, format="JPEG")
+        foto = FotoPeca.objects.create(peca=self.peca, imagem=SimpleUploadedFile(
+            "exemplo.jpg", arquivo.getvalue(), content_type="image/jpeg"))
+        dados.update({f"{prefix}-INITIAL_FORMS": "1", f"{prefix}-0-id": str(foto.pk),
+                      f"{prefix}-0-DELETE": "on"})
+        editar = FormSet(dados, instance=self.peca)
+        self.assertTrue(editar.is_valid(), editar.errors)
+        editar.save()
+        self.assertFalse(self.peca.fotos.exists())

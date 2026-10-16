@@ -1,0 +1,17 @@
+*{box-sizing:border-box}
+body{margin:0;background:#edf0ec;color:#000;font-family:Arial,sans-serif}
+.controles{max-width:600px;padding:16px;font-size:14px;line-height:1.5}
+.controles button{padding:12px 18px;background:#21654d;color:#fff;border:0;border-radius:5px;cursor:pointer}
+.controles a{color:#21654d;margin-left:10px}
+.etiqueta{width:57mm;height:30mm;padding:1mm 5.5mm 1mm 4.5mm;background:#fff;margin:0;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
+.etiqueta-texto{height:23.5mm;font-size:8.5pt;line-height:9pt;font-weight:bold}
+#etiqueta-conteudo>div:not(.etiqueta-nome){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etiqueta-nome{height:7.5mm;font-size:10pt;line-height:10.5pt;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#etiqueta-conteudo>.etiqueta-codigo{font-size:9pt;text-overflow:clip}
+.etiqueta-barras{display:block;width:47mm;height:4.5mm;object-fit:fill;margin:0}
+@page{size:57mm 30mm;margin:0}
+@media print{
+ html,body{width:57mm;height:30mm;margin:0!important;padding:0!important;background:#fff}
+ .controles{display:none!important}
+ .etiqueta{position:absolute;top:0;left:0;margin:0!important;transform:rotate(180deg);transform-origin:center}
+}

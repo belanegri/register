@@ -11,6 +11,7 @@ urlpatterns=[
     path('documentos/',views.lista,{'secao':'documentos'},name='documentos'),
     path('solicitar/',views.solicitar,name='solicitar'),
     path('configuracao/',views.configuracao,name='configuracao'),
+    path('configuracao/testar-conexao-sefaz/',views.testar_conexao_sefaz,name='testar_conexao_sefaz'),
     path('configuracao/sequencia/',views.sequencia,name='sequencia'),
     path('parametros/<str:tipo>/',views.parametros,name='parametros'),
     path('parametros/<str:tipo>/<int:pk>/',views.parametros,name='parametro_editar'),

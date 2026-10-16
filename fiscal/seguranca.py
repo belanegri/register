@@ -25,6 +25,10 @@ class ErroFiscal(Exception):
     """Mensagem sanitizada, apropriada para interface e histórico fiscal."""
 
 
+class ErroCertificadoFiscal(ErroFiscal):
+    """Falha de autenticação TLS, sem conteúdo do certificado ou senha."""
+
+
 def cifrador():
     try:
         return Fernet(settings.FISCAL_SECRET_KEY.encode('ascii'))
@@ -103,7 +107,7 @@ def validar_endpoints(endpoints):
                 if modelo not in ('55', '65', 'nfse') or not isinstance(operacoes, dict):
                     raise ErroFiscal("Modelo de endpoint inválido.")
                 for operacao, url in operacoes.items():
-                    if operacao not in ('emitir', 'consultar', 'recibo', 'cancelar', 'inutilizar', 'qr_code', 'consulta_publica', 'danfse'):
+                    if operacao not in ('emitir', 'consultar', 'recibo', 'cancelar', 'inutilizar', 'qr_code', 'consulta_publica', 'danfse', 'status'):
                         raise ErroFiscal("Operação de endpoint inválida.")
                     validar_url(url, ambiente)
     except (ErroFiscal, ValueError, TypeError):

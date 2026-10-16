@@ -1,0 +1,5 @@
+<div class="{{ col|default:'col-md-6' }}">
+{{ field.label_tag }}{{ field }}
+{% if field.help_text %}<small class="d-block text-secondary mt-1">{{ field.help_text }}</small>{% endif %}
+{{ field.errors }}
+</div>

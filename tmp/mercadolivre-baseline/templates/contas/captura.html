@@ -1,0 +1,30 @@
+<section class="surface conta-card captura-card" aria-labelledby="captura-titulo">
+  <header><h2 id="captura-titulo">Preencher a partir da cobrança</h2>
+    <p>Leia boleto, conta de consumo ou PIX. Confira os dados encontrados antes de aplicar.</p></header>
+  <label for="captura-codigo">Código de barras, linha digitável ou PIX Copia e Cola</label>
+  <textarea id="captura-codigo" class="form-control" rows="2" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="Cole o código completo ou use o leitor USB"></textarea>
+  <div class="captura-acoes">
+    <button type="button" class="btn btn-outline-primary" id="captura-ler-codigo">Ler código</button>
+    <span class="conta-ajuda">Boletos: 44/47 dígitos · Contas de consumo: 44/48 · PIX Copia e Cola</span>
+  </div>
+  <label for="captura-arquivo">Ou selecione um PDF ou foto da cobrança</label>
+  <input id="captura-arquivo" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+  <div class="captura-acoes">
+    <button type="button" class="btn btn-outline-primary" id="captura-ler-arquivo">Ler documento</button>
+    <button type="button" class="btn btn-outline-secondary" id="captura-cancelar" hidden>Cancelar leitura</button>
+  </div>
+  <p class="conta-ajuda">Até 10 MB e 3 páginas. A leitura da imagem ocorre neste dispositivo. O texto é analisado pelo REGISTER; nenhum serviço externo recebe o documento.</p>
+  <p id="captura-status" role="status" aria-live="polite"></p>
+  <div id="captura-resultado" hidden>
+    <label for="captura-opcao">Cobrança encontrada</label>
+    <select id="captura-opcao" class="form-select"></select>
+    <ul id="captura-avisos" class="captura-avisos"></ul>
+    <p class="conta-ajuda">Campos já preenchidos ficam desmarcados. Selecione-os somente se quiser substituir o valor atual.</p>
+    <div id="captura-campos"></div>
+    <details><summary>Outras informações identificadas</summary><dl id="captura-informacoes"></dl></details>
+    <label class="captura-check"><input type="checkbox" id="captura-observacoes"> Acrescentar outras informações às observações</label>
+    <label class="captura-check" id="captura-anexar-label" hidden><input type="checkbox" id="captura-anexar" checked> Anexar este documento à cobrança ao salvar</label>
+    <button type="button" class="btn btn-primary" id="captura-aplicar">Aplicar campos selecionados</button>
+    <p class="conta-ajuda mt-2">A captura não cadastra nem paga a conta. Use Salvar após conferir o formulário.</p>
+  </div>
+</section>

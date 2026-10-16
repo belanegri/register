@@ -1,0 +1,13 @@
+{
+  "paginas": {
+    "comercial:contas": 200,
+    "comercial:conta_nova": 200,
+    "contas:lista": 200,
+    "contas:nova": 200
+  },
+  "migrations": "aplicadas",
+  "arquivos_confirmados": 33,
+  "parcelamento": "validado",
+  "contas_receber": 0,
+  "contas_pagar": 0
+}

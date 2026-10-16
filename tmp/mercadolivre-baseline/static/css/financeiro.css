@@ -1,0 +1,25 @@
+.financeiro-lista .table td {vertical-align:middle}
+.financeiro-lista .table-responsive {overflow:visible}
+.financeiro-lista .dropdown-menu {min-width:13rem}
+.financeiro-lista .acoes-conta {min-width:2.75rem;min-height:2.75rem;font-size:1.4rem;line-height:1}
+.financeiro-lista .metric-card strong {font-size:clamp(1.2rem,2.3vw,2rem);line-height:1.5;overflow-wrap:anywhere}
+.financeiro-lista .metric-card {padding:1rem}
+.financeiro-lista .modal-body dl {display:grid;grid-template-columns:1fr 2fr;gap:.6rem}
+.financeiro-lista .modal-body dd {overflow-wrap:anywhere;margin:0}
+.financeiro-form {max-width:1050px;margin:auto}
+.financeiro-form .form-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2rem}
+.financeiro-form textarea {min-height:100px}
+.financeiro-form .errorlist {color:#b42318;margin:.4rem 0;padding-left:1.2rem}
+.financeiro-form .campo-largo {grid-column:1/-1}
+@media(max-width:767px){
+ .financeiro-lista .table, .financeiro-lista tbody {display:block;width:100%}
+ .financeiro-lista thead {display:none}
+ .financeiro-lista tr {display:grid;grid-template-columns:1fr 1fr;padding:1rem;border-bottom:1px solid #ddd;position:relative;gap:.65rem}
+ .financeiro-lista td {display:block;padding:0;border:0;overflow-wrap:anywhere}
+ .financeiro-lista td:first-child {grid-column:1/-1;padding-right:3rem}
+ .financeiro-lista td[data-label]::before {content:attr(data-label);display:block;font-size:.75rem;color:#64748b}
+ .financeiro-lista td:last-child {position:absolute;right:.5rem;top:.5rem}
+ .financeiro-lista td[colspan] {position:static;grid-column:1/-1}
+ .financeiro-lista .modal-body dl {grid-template-columns:1fr}
+ .financeiro-form .form-grid {grid-template-columns:1fr}
+}

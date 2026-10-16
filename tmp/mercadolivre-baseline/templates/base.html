@@ -1,0 +1,66 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include 'components/site_icons.html' %}
+  <meta name="theme-color" content="#152723">
+  <title>{% block title %}Painel{% endblock %} · REGISTER</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% if user.is_authenticated %}<link rel="stylesheet" href="{% static 'css/modulos.css' %}?v=20261016-acoes">{% endif %}
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if user.is_authenticated %}app-shell{% if request.resolver_match.url_name != 'pdv' %} module-ui{% endif %}{% endif %}" data-module="{{ request.resolver_match.app_name }}" data-view="{{ request.resolver_match.url_name }}" data-document="{% firstof tipo doc.tipo %}">
+<a class="visually-hidden-focusable skip-link" href="#conteudo">Ir para o conteúdo</a>
+{% if user.is_authenticated %}
+<aside class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="menu" aria-labelledby="menu-title">
+  <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu REGISTER</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
+  <div class="offcanvas-body d-flex flex-column">
+    <a class="brand" href="{% url 'dashboard:index' %}">REGISTER<span>GESTÃO DO SEU NEGÓCIO</span></a>
+    <nav aria-label="Menu principal" class="nav flex-column sidebar-nav">
+<div class="nav-label">ATENDIMENTO</div>
+<a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}">{% include 'components/nav_icon.html' with name='home' %}<span class="nav-text">Visão geral</span></a>
+{% if perms.vendas.usar_pdv %}<a class="nav-link {% if request.resolver_match.url_name == 'pdv' %}active{% endif %}" href="{% url 'vendas:pdv' %}">{% include 'components/nav_icon.html' with name='cart' %}<span class="nav-text">Frente de caixa</span></a>{% endif %}
+{% if perms.comercial.view_documento %}<a class="nav-link {% if tipo == 'orcamento' or doc.tipo == 'orcamento' %}active{% endif %}" href="{% url 'comercial:documentos' 'orcamento' %}">{% include 'components/nav_icon.html' with name='quote' %}<span class="nav-text">Orçamentos</span></a>{% endif %}
+{% if perms.comercial.view_documento %}<a class="nav-link {% if tipo == 'os' or doc.tipo == 'os' %}active{% endif %}" href="{% url 'comercial:documentos' 'os' %}">{% include 'components/nav_icon.html' with name='os' %}<span class="nav-text">Ordens de serviço</span></a>{% endif %}
+{% if perms.vendas.view_venda %}<a class="nav-link {% if request.resolver_match.app_name == 'vendas' and request.resolver_match.url_name != 'pdv' and request.resolver_match.url_name != 'relatorios' %}active{% endif %}" href="{% url 'vendas:lista' %}">{% include 'components/nav_icon.html' with name='sale' %}<span class="nav-text">Vendas</span></a>{% endif %}
+<div class="nav-label">CADASTROS</div>
+{% if perms.estoque.view_peca %}<a class="nav-link {% if request.resolver_match.app_name == 'estoque' %}active{% endif %}" href="{% url 'estoque:lista' %}">{% include 'components/nav_icon.html' with name='box' %}<span class="nav-text">Peças</span></a>{% endif %}
+{% if perms.comercial.view_servico %}<a class="nav-link {% if request.resolver_match.url_name == 'servicos' or request.resolver_match.url_name == 'servico_novo' or request.resolver_match.url_name == 'servico_editar' %}active{% endif %}" href="{% url 'comercial:servicos' %}">{% include 'components/nav_icon.html' with name='service' %}<span class="nav-text">Serviços</span></a>{% endif %}
+{% if perms.clientes.view_cliente %}<a class="nav-link {% if request.resolver_match.app_name == 'clientes' %}active{% endif %}" href="{% url 'clientes:lista' %}">{% include 'components/nav_icon.html' with name='users' %}<span class="nav-text">Clientes</span></a>{% endif %}
+{% if user.is_staff and perms.veiculos.view_veiculo %}<a class="nav-link" href="{% url 'admin:veiculos_veiculo_changelist' %}">{% include 'components/nav_icon.html' with name='car' %}<span class="nav-text">Veículos de origem</span></a>{% endif %}
+{% if user.is_staff and perms.estoque.view_categoria %}<a class="nav-link" href="{% url 'admin:estoque_categoria_changelist' %}">{% include 'components/nav_icon.html' with name='grid' %}<span class="nav-text">Categorias</span></a>{% endif %}
+{% if user.is_staff and perms.estoque.view_localizacao %}<a class="nav-link" href="{% url 'admin:estoque_localizacao_changelist' %}">{% include 'components/nav_icon.html' with name='pin' %}<span class="nav-text">Localizações</span></a>{% endif %}
+{% include 'fiscal/menu.html' %}
+<div class="nav-label">FINANCEIRO</div>
+{% if perms.caixa.operar_caixa %}<a class="nav-link {% if request.resolver_match.app_name == 'caixa' %}active{% endif %}" href="{% url 'caixa:painel' %}">{% include 'components/nav_icon.html' with name='wallet' %}<span class="nav-text">Meu caixa</span></a>{% endif %}
+{% if perms.comercial.view_contareceber %}<a class="nav-link {% if request.resolver_match.url_name == 'contas' or request.resolver_match.url_name == 'conta' or request.resolver_match.url_name == 'conta_nova' %}active{% endif %}" href="{% url 'comercial:contas' %}">{% include 'components/nav_icon.html' with name='income' %}<span class="nav-text">Contas a receber</span></a>{% endif %}
+{% if perms.contas.view_contapagar %}<a class="nav-link {% if request.resolver_match.app_name == 'contas' %}active{% endif %}" href="{% url 'contas:lista' %}">{% include 'components/nav_icon.html' with name='expense' %}<span class="nav-text">Contas a pagar</span></a>{% endif %}
+{% if perms.vendas.ver_relatorios %}<a class="nav-link {% if request.resolver_match.url_name == 'relatorios' %}active{% endif %}" href="{% url 'vendas:relatorios' %}">{% include 'components/nav_icon.html' with name='chart' %}<span class="nav-text">Relatórios</span></a>{% endif %}
+{% if perms.core.change_configuracaoempresa or user.is_staff %}<div class="nav-label">SISTEMA</div>{% endif %}
+{% if perms.core.change_configuracaoempresa %}<a class="nav-link {% if request.resolver_match.app_name == 'core' %}active{% endif %}" href="{% url 'core:configuracao_empresa' %}">{% include 'components/nav_icon.html' with name='company' %}<span class="nav-text">Minha empresa</span></a>{% endif %}
+{% if user.is_staff %}<a class="nav-link" href="{% url 'admin:index' %}">{% include 'components/nav_icon.html' with name='settings' %}<span class="nav-text">Administração</span></a>{% endif %}
+</nav>
+    <div class="sidebar-note mt-auto"><span class="status-dot"></span> Seu estoque, organizado.<small>Da origem da peça ao balcão.</small></div>
+  </div>
+</aside>
+<div class="workspace">
+  <header class="topbar">
+    <div class="d-flex align-items-center gap-3"><button class="btn btn-outline-secondary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu" aria-label="Abrir menu">☰</button><span class="topbar-label">{% if empresa_nome %}Empresa: {{ empresa_nome }}{% else %}Gestão de estoque{% endif %}</span></div>
+    <div class="d-flex align-items-center gap-3"><a class="user-name" href="{% url 'accounts:password_change' %}">{{ user.get_short_name|default:user.username }}</a><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Sair</button></form></div>
+  </header>
+  <main id="conteudo" class="main-content">
+    {% include 'components/messages.html' %}
+    {% block content %}{% endblock %}
+    <footer class="page-footer">REGISTER <span>Organização que move o seu negócio.</span></footer>
+  </main>
+</div>
+{% else %}
+<main id="conteudo">{% include 'components/messages.html' %}{% block public_content %}{% endblock %}</main>
+{% endif %}
+<script src="{% static 'vendor/bootstrap.bundle.min.js' %}" defer></script>
+{% if user.is_authenticated %}<script src="{% static 'js/modulos.js' %}?v=20261015" defer></script>{% endif %}
+</body>
+</html>

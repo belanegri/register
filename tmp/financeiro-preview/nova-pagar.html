@@ -1,0 +1,2278 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+<link rel="icon" type="image/png" sizes="32x32" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/img/register-symbol-clear-180.png">
+<link rel="manifest" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="REGISTER">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <meta name="theme-color" content="#152723">
+  <title>Nova conta a pagar · REGISTER</title>
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/app.css">
+</head>
+<body>
+<a class="visually-hidden-focusable skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+<aside class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="menu" aria-labelledby="menu-title">
+  <div class="offcanvas-header"><h2 class="offcanvas-title fs-5" id="menu-title">Menu REGISTER</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#menu" aria-label="Fechar menu"></button></div>
+  <div class="offcanvas-body d-flex flex-column">
+    <a class="brand" href="/">REGISTER<span>GESTÃO DO SEU NEGÓCIO</span></a>
+    <nav aria-label="Menu principal" class="nav flex-column sidebar-nav">
+<div class="nav-label">ATENDIMENTO</div>
+<a class="nav-link " href="/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Visão geral</span></a>
+<a class="nav-link " href="/vendas/pdv/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+<path d="M3 3h2l2 12h12l2-9H6M9 20h.01M18 20h.01"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Frente de caixa</span></a>
+<a class="nav-link " href="/comercial/documentos/orcamento/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Orçamentos</span></a>
+<a class="nav-link " href="/comercial/documentos/os/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+<rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4V2h6v2M8 12l2 2 5-5M8 18h8"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Ordens de serviço</span></a>
+<a class="nav-link " href="/vendas/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+<path d="M5 3h14v19l-4-2-3 2-3-2-4 2zM8 7h8M8 11h8M8 15h5"/>
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Vendas</span></a>
+<div class="nav-label">CADASTROS</div>
+<a class="nav-link " href="/estoque/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+<path d="m3 7 9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10M7 5l10 4"/>
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Peças</span></a>
+<a class="nav-link " href="/comercial/servicos/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+<path d="M14 6a5 5 0 0 0-6 6l-5 5a2 2 0 0 0 3 3l5-5a5 5 0 0 0 7-6l-3 3-3-3 3-3z"/>
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Serviços</span></a>
+<a class="nav-link " href="/clientes/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+<circle cx="9" cy="7" r="4"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M17 3a4 4 0 0 1 0 8M18 14a6 6 0 0 1 4 6"/>
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Clientes</span></a>
+<a class="nav-link" href="/admin/veiculos/veiculo/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+<path d="m3 11 2-7h14l2 7v9h-3v-3H6v3H3zM3 11h18M7 14h1M16 14h1"/>
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Veículos de origem</span></a>
+<a class="nav-link" href="/admin/estoque/categoria/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+
+
+
+
+
+
+
+</svg><span class="nav-text">Categorias</span></a>
+<a class="nav-link" href="/admin/estoque/localizacao/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/>
+
+
+
+
+
+
+</svg><span class="nav-text">Localizações</span></a>
+
+<div class="nav-label">FISCAL</div>
+
+<a class="nav-link " href="/fiscal/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+<path d="M5 3h14v19l-4-2-3 2-3-2-4 2zM8 7h8M8 11h8M8 15h5"/>
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Notas fiscais</span></a>
+<a class="nav-link" href="/fiscal/nfe/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">NF-e</span></a>
+<a class="nav-link" href="/fiscal/nfce/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">NFC-e</span></a>
+<a class="nav-link" href="/fiscal/nfse/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+<path d="M14 6a5 5 0 0 0-6 6l-5 5a2 2 0 0 0 3 3l5-5a5 5 0 0 0 7-6l-3 3-3-3 3-3z"/>
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">NFS-e</span></a>
+<a class="nav-link" href="/fiscal/pendentes/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Pendentes/Rejeitadas</span></a>
+<a class="nav-link" href="/fiscal/eventos/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">Eventos/Cancelamentos</span></a>
+<a class="nav-link" href="/fiscal/documentos/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg><span class="nav-text">XML/Documentos</span></a>
+
+<a class="nav-link" href="/fiscal/configuracao/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<circle cx="12" cy="12" r="3"/><path d="m9 3 1-2h4l1 2 3 2h3l1 4-2 2v2l2 2-1 4h-3l-3 2-1 2h-4l-1-2-3-2H3l-1-4 2-2v-2L2 9l1-4h3z"/>
+</svg><span class="nav-text">Configurações fiscais</span></a>
+
+
+<div class="nav-label">FINANCEIRO</div>
+<a class="nav-link " href="/caixa/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+<path d="M20 7V3H5a3 3 0 0 0 0 6h16v12H5a3 3 0 0 1-3-3V6M21 12h-5v5h5"/>
+
+
+
+
+
+</svg><span class="nav-text">Meu caixa</span></a>
+<a class="nav-link " href="/comercial/receber/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 6v12m-5-5 5 5 5-5"/>
+
+
+
+
+</svg><span class="nav-text">Contas a receber</span></a>
+<a class="nav-link active" href="/contas-a-pagar/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 18V6m-5 5 5-5 5 5"/>
+
+
+
+</svg><span class="nav-text">Contas a pagar</span></a>
+<a class="nav-link " href="/vendas/relatorios/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<path d="M3 3v18h18M7 17v-5M12 17V8M17 17V5"/>
+
+
+</svg><span class="nav-text">Relatórios</span></a>
+<div class="nav-label">SISTEMA</div>
+<a class="nav-link " href="/configuracoes/empresa/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<path d="M4 21V3h12v18M16 9h4v12M1 21h22M8 7h4M8 11h4M8 15h4"/>
+
+</svg><span class="nav-text">Minha empresa</span></a>
+<a class="nav-link" href="/admin/"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<circle cx="12" cy="12" r="3"/><path d="m9 3 1-2h4l1 2 3 2h3l1 4-2 2v2l2 2-1 4h-3l-3 2-1 2h-4l-1-2-3-2H3l-1-4 2-2v-2L2 9l1-4h3z"/>
+</svg><span class="nav-text">Administração</span></a>
+</nav>
+    <div class="sidebar-note mt-auto"><span class="status-dot"></span> Seu estoque, organizado.<small>Da origem da peça ao balcão.</small></div>
+  </div>
+</aside>
+<div class="workspace">
+  <header class="topbar">
+    <div class="d-flex align-items-center gap-3"><button class="btn btn-outline-secondary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu" aria-label="Abrir menu">☰</button><span class="topbar-label">Gestão de estoque</span></div>
+    <div class="d-flex align-items-center gap-3"><a class="user-name" href="/conta/senha/">preview-financeiro-a0a51f67</a><form method="post" action="/conta/sair/"><input type="hidden" name="csrfmiddlewaretoken" value="GVl1NrtA0utmHWNqtzT56q9IG0e141AKlCaIXVUDaU2Hmb2kKLawPv9LizOYtmoK"><button class="btn btn-sm btn-outline-secondary" type="submit">Sair</button></form></div>
+  </header>
+  <main id="conteudo" class="main-content">
+    
+
+    
+<link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/conta-formulario.css">
+<link rel="stylesheet" href="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/css/conta-captura.css">
+
+<div class="conta-editor">
+
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">FINANCEIRO / CONTAS A PAGAR</div>
+      <h1>Nova conta a pagar</h1>
+      <p>
+        Organize a despesa agora. Registre o pagamento quando ele acontecer.
+      </p>
+    </div>
+
+    <a
+      class="btn btn-outline-secondary"
+      href="/contas-a-pagar/"
+    >
+      Voltar às contas
+    </a>
+  </div>
+
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    id="conta-form"
+    data-captura-url="/contas-a-pagar/capturar-cobranca/"
+    data-captura-assets="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/vendor/captura-v1/"
+    data-boleto-url="/contas-a-pagar/ler-boleto/"
+    data-editando="0"
+    data-pago="0"
+  >
+
+    <input type="hidden" name="csrfmiddlewaretoken" value="GVl1NrtA0utmHWNqtzT56q9IG0e141AKlCaIXVUDaU2Hmb2kKLawPv9LizOYtmoK">
+    <input type="hidden" name="chave" value="da134790-dc2c-44d7-b7df-07c20f5537a0" id="id_chave">
+
+    
+
+    
+
+    
+
+    <div class="conta-layout">
+
+      <div class="conta-secoes">
+
+        <section class="surface conta-card captura-card" aria-labelledby="captura-titulo">
+  <header><h2 id="captura-titulo">Preencher a partir da cobrança</h2>
+    <p>Leia boleto, conta de consumo ou PIX. Confira os dados encontrados antes de aplicar.</p></header>
+  <label for="captura-codigo">Código de barras, linha digitável ou PIX Copia e Cola</label>
+  <textarea id="captura-codigo" class="form-control" rows="2" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="Cole o código completo ou use o leitor USB"></textarea>
+  <div class="captura-acoes">
+    <button type="button" class="btn btn-outline-primary" id="captura-ler-codigo">Ler código</button>
+    <span class="conta-ajuda">Boletos: 44/47 dígitos · Contas de consumo: 44/48 · PIX Copia e Cola</span>
+  </div>
+  <label for="captura-arquivo">Ou selecione um PDF ou foto da cobrança</label>
+  <input id="captura-arquivo" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+  <div class="captura-acoes">
+    <button type="button" class="btn btn-outline-primary" id="captura-ler-arquivo">Ler documento</button>
+    <button type="button" class="btn btn-outline-secondary" id="captura-cancelar" hidden>Cancelar leitura</button>
+  </div>
+  <p class="conta-ajuda">Até 10 MB e 3 páginas. A leitura da imagem ocorre neste dispositivo. O texto é analisado pelo REGISTER; nenhum serviço externo recebe o documento.</p>
+  <p id="captura-status" role="status" aria-live="polite"></p>
+  <div id="captura-resultado" hidden>
+    <label for="captura-opcao">Cobrança encontrada</label>
+    <select id="captura-opcao" class="form-select"></select>
+    <ul id="captura-avisos" class="captura-avisos"></ul>
+    <p class="conta-ajuda">Campos já preenchidos ficam desmarcados. Selecione-os somente se quiser substituir o valor atual.</p>
+    <div id="captura-campos"></div>
+    <details><summary>Outras informações identificadas</summary><dl id="captura-informacoes"></dl></details>
+    <label class="captura-check"><input type="checkbox" id="captura-observacoes"> Acrescentar outras informações às observações</label>
+    <label class="captura-check" id="captura-anexar-label" hidden><input type="checkbox" id="captura-anexar" checked> Anexar este documento à cobrança ao salvar</label>
+    <button type="button" class="btn btn-primary" id="captura-aplicar">Aplicar campos selecionados</button>
+    <p class="conta-ajuda mt-2">A captura não cadastra nem paga a conta. Use Salvar após conferir o formulário.</p>
+  </div>
+</section>
+
+        
+
+          <section
+            class="surface conta-card"
+            id="secao-identificacao"
+            aria-labelledby="titulo-identificacao"
+          >
+
+            <header class="conta-card-header">
+
+              <span
+                class="conta-card-icon"
+                aria-hidden="true"
+              >
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 18V6m-5 5 5-5 5 5"/>
+
+
+
+</svg>
+              </span>
+
+              <div>
+                <h2 id="titulo-identificacao">
+                  Identificação
+                </h2>
+
+                <p>
+                  Dados para localizar e organizar esta despesa.
+                </p>
+              </div>
+
+            </header>
+
+            <div class="conta-campos">
+
+              
+
+                <div
+                  class="conta-campo
+                  
+                    conta-campo-largo
+                  "
+                  data-campo="descricao"
+                >
+
+                  <label for="id_descricao">
+                    Descrição
+
+                    
+                      <span
+                        class="campo-obrigatorio"
+                        aria-label="obrigatório"
+                      >
+                        *
+                      </span>
+                    
+                  </label>
+
+                  <input type="text" name="descricao" maxlength="200" class="form-control" required id="id_descricao">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="fornecedor"
+                >
+
+                  <label for="id_fornecedor">
+                    Fornecedor / favorecido
+
+                    
+                      <span
+                        class="campo-obrigatorio"
+                        aria-label="obrigatório"
+                      >
+                        *
+                      </span>
+                    
+                  </label>
+
+                  <input type="text" name="fornecedor" maxlength="160" class="form-control" required id="id_fornecedor">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="categoria"
+                >
+
+                  <label for="id_categoria">
+                    Categoria
+
+                    
+                      <span
+                        class="campo-obrigatorio"
+                        aria-label="obrigatório"
+                      >
+                        *
+                      </span>
+                    
+                  </label>
+
+                  <select name="categoria" class="form-select" required id="id_categoria">
+  <option value="" selected>---------</option>
+
+  <option value="Academia e Atividades Físicas">Academia e Atividades Físicas</option>
+
+  <option value="Água e Saneamento">Água e Saneamento</option>
+
+  <option value="Alimentação">Alimentação</option>
+
+  <option value="Aluguel">Aluguel</option>
+
+  <option value="Animais de Estimação">Animais de Estimação</option>
+
+  <option value="Assinaturas e Mensalidades">Assinaturas e Mensalidades</option>
+
+  <option value="Babá e Cuidador">Babá e Cuidador</option>
+
+  <option value="Benefícios de Funcionários">Benefícios de Funcionários</option>
+
+  <option value="Cartão de Crédito">Cartão de Crédito</option>
+
+  <option value="Cartório e Autenticações">Cartório e Autenticações</option>
+
+  <option value="Combustível">Combustível</option>
+
+  <option value="Comissões">Comissões</option>
+
+  <option value="Compras de Mercadorias">Compras de Mercadorias</option>
+
+  <option value="Condomínio">Condomínio</option>
+
+  <option value="Consórcio">Consórcio</option>
+
+  <option value="Consultoria">Consultoria</option>
+
+  <option value="Contabilidade">Contabilidade</option>
+
+  <option value="Cursos e Treinamentos">Cursos e Treinamentos</option>
+
+  <option value="Decoração">Decoração</option>
+
+  <option value="Despesas Administrativas">Despesas Administrativas</option>
+
+  <option value="Despesas Bancárias">Despesas Bancárias</option>
+
+  <option value="Despesas Escolares">Despesas Escolares</option>
+
+  <option value="Despesas com Funcionários">Despesas com Funcionários</option>
+
+  <option value="Despesas Jurídicas">Despesas Jurídicas</option>
+
+  <option value="Doações e Contribuições">Doações e Contribuições</option>
+
+  <option value="Educação">Educação</option>
+
+  <option value="Eletrodomésticos">Eletrodomésticos</option>
+
+  <option value="Empréstimos">Empréstimos</option>
+
+  <option value="Energia Elétrica">Energia Elétrica</option>
+
+  <option value="Equipamentos">Equipamentos</option>
+
+  <option value="Estacionamento">Estacionamento</option>
+
+  <option value="Eventos">Eventos</option>
+
+  <option value="Farmácia e Medicamentos">Farmácia e Medicamentos</option>
+
+  <option value="Financiamento de Imóvel">Financiamento de Imóvel</option>
+
+  <option value="Financiamento de Veículo">Financiamento de Veículo</option>
+
+  <option value="Financiamentos">Financiamentos</option>
+
+  <option value="Fornecedores">Fornecedores</option>
+
+  <option value="Fretes e Entregas">Fretes e Entregas</option>
+
+  <option value="Gás">Gás</option>
+
+  <option value="Higiene Pessoal">Higiene Pessoal</option>
+
+  <option value="Hospedagem">Hospedagem</option>
+
+  <option value="Impostos e Tributos">Impostos e Tributos</option>
+
+  <option value="Internet">Internet</option>
+
+  <option value="IPTU">IPTU</option>
+
+  <option value="IPVA">IPVA</option>
+
+  <option value="Jardinagem">Jardinagem</option>
+
+  <option value="Lazer e Entretenimento">Lazer e Entretenimento</option>
+
+  <option value="Licenças e Alvarás">Licenças e Alvarás</option>
+
+  <option value="Limpeza e Conservação">Limpeza e Conservação</option>
+
+  <option value="Manutenção de Computadores">Manutenção de Computadores</option>
+
+  <option value="Manutenção de Equipamentos">Manutenção de Equipamentos</option>
+
+  <option value="Manutenção de Imóveis">Manutenção de Imóveis</option>
+
+  <option value="Manutenção Residencial">Manutenção Residencial</option>
+
+  <option value="Manutenção de Veículos">Manutenção de Veículos</option>
+
+  <option value="Marketing">Marketing</option>
+
+  <option value="Material de Construção">Material de Construção</option>
+
+  <option value="Material de Escritório">Material de Escritório</option>
+
+  <option value="Material de Limpeza">Material de Limpeza</option>
+
+  <option value="Materiais de Consumo">Materiais de Consumo</option>
+
+  <option value="Móveis">Móveis</option>
+
+  <option value="Obras e Reformas">Obras e Reformas</option>
+
+  <option value="Parcelamentos">Parcelamentos</option>
+
+  <option value="Pedágios">Pedágios</option>
+
+  <option value="Pensão Alimentícia">Pensão Alimentícia</option>
+
+  <option value="Plano de Saúde">Plano de Saúde</option>
+
+  <option value="Presentes">Presentes</option>
+
+  <option value="Prestadores de Serviços">Prestadores de Serviços</option>
+
+  <option value="Produtos de Limpeza">Produtos de Limpeza</option>
+
+  <option value="Publicidade e Propaganda">Publicidade e Propaganda</option>
+
+  <option value="Refeições">Refeições</option>
+
+  <option value="Roupas e Calçados">Roupas e Calçados</option>
+
+  <option value="Salários">Salários</option>
+
+  <option value="Saúde">Saúde</option>
+
+  <option value="Segurança">Segurança</option>
+
+  <option value="Seguros">Seguros</option>
+
+  <option value="Seguro Residencial">Seguro Residencial</option>
+
+  <option value="Seguro de Veículo">Seguro de Veículo</option>
+
+  <option value="Serviços Domésticos">Serviços Domésticos</option>
+
+  <option value="Serviços de Terceiros">Serviços de Terceiros</option>
+
+  <option value="Software e Sistemas">Software e Sistemas</option>
+
+  <option value="Streaming">Streaming</option>
+
+  <option value="Supermercado">Supermercado</option>
+
+  <option value="Taxas Bancárias">Taxas Bancárias</option>
+
+  <option value="Taxas e Tarifas">Taxas e Tarifas</option>
+
+  <option value="Telefonia">Telefonia</option>
+
+  <option value="Transporte">Transporte</option>
+
+  <option value="TV por Assinatura">TV por Assinatura</option>
+
+  <option value="Uniformes e EPIs">Uniformes e EPIs</option>
+
+  <option value="Utensílios Domésticos">Utensílios Domésticos</option>
+
+  <option value="Veículos">Veículos</option>
+
+  <option value="Viagens">Viagens</option>
+
+  <option value="Outros">Outros</option>
+
+</select>
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="subcategoria"
+                >
+
+                  <label for="id_subcategoria">
+                    Subcategoria
+
+                    
+                  </label>
+
+                  <input type="text" name="subcategoria" maxlength="100" class="form-control" id="id_subcategoria">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="tipo_conta"
+                >
+
+                  <label for="id_tipo_conta">
+                    Tipo de conta
+
+                    
+                      <span
+                        class="campo-obrigatorio"
+                        aria-label="obrigatório"
+                      >
+                        *
+                      </span>
+                    
+                  </label>
+
+                  <select name="tipo_conta" class="form-select" required id="id_tipo_conta">
+  <option value="" selected>---------</option>
+
+  <option value="residencial">Residencial</option>
+
+  <option value="empresa">Empresa</option>
+
+</select>
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="centro_custo"
+                >
+
+                  <label for="id_centro_custo">
+                    Centro de custo
+
+                    
+                  </label>
+
+                  <input type="text" name="centro_custo" maxlength="100" class="form-control" id="id_centro_custo">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="numero_documento"
+                >
+
+                  <label for="id_numero_documento">
+                    Número do documento
+
+                    
+                  </label>
+
+                  <input type="text" name="numero_documento" maxlength="100" class="form-control" id="id_numero_documento">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="competencia"
+                >
+
+                  <label for="id_competencia">
+                    Competência (mês/ano)
+
+                    
+                  </label>
+
+                  <input type="month" name="competencia" class="form-control" id="id_competencia">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+            </div>
+
+            
+
+            
+
+          </section>
+
+        
+
+          <section
+            class="surface conta-card"
+            id="secao-valores"
+            aria-labelledby="titulo-valores"
+          >
+
+            <header class="conta-card-header">
+
+              <span
+                class="conta-card-icon"
+                aria-hidden="true"
+              >
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+<path d="M20 7V3H5a3 3 0 0 0 0 6h16v12H5a3 3 0 0 1-3-3V6M21 12h-5v5h5"/>
+
+
+
+
+
+</svg>
+              </span>
+
+              <div>
+                <h2 id="titulo-valores">
+                  Valores
+                </h2>
+
+                <p>
+                  O total é calculado pelos valores informados. Nenhum pagamento é registrado aqui.
+                </p>
+              </div>
+
+            </header>
+
+            <div class="conta-campos">
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="valor_original"
+                >
+
+                  <label for="id_valor_original">
+                    Valor original (R$)
+
+                    
+                      <span
+                        class="campo-obrigatorio"
+                        aria-label="obrigatório"
+                      >
+                        *
+                      </span>
+                    
+                  </label>
+
+                  <input type="text" name="valor_original" class="form-control" inputmode="decimal" data-valor-conta="valor_original" required id="id_valor_original">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="desconto"
+                >
+
+                  <label for="id_desconto">
+                    Desconto (R$)
+
+                    
+                  </label>
+
+                  <input type="text" name="desconto" value="0" class="form-control" inputmode="decimal" data-valor-conta="desconto" id="id_desconto">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="juros"
+                >
+
+                  <label for="id_juros">
+                    Juros (R$)
+
+                    
+                  </label>
+
+                  <input type="text" name="juros" value="0" class="form-control" inputmode="decimal" data-valor-conta="juros" id="id_juros">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="multa"
+                >
+
+                  <label for="id_multa">
+                    Multa (R$)
+
+                    
+                  </label>
+
+                  <input type="text" name="multa" value="0" class="form-control" inputmode="decimal" data-valor-conta="multa" id="id_multa">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="acrescimos"
+                >
+
+                  <label for="id_acrescimos">
+                    Outros acréscimos (R$)
+
+                    
+                  </label>
+
+                  <input type="text" name="acrescimos" value="0" class="form-control" inputmode="decimal" data-valor-conta="acrescimos" id="id_acrescimos">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+            </div>
+
+            
+
+            
+
+          </section>
+
+        
+
+          <section
+            class="surface conta-card"
+            id="secao-datas"
+            aria-labelledby="titulo-datas"
+          >
+
+            <header class="conta-card-header">
+
+              <span
+                class="conta-card-icon"
+                aria-hidden="true"
+              >
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg>
+              </span>
+
+              <div>
+                <h2 id="titulo-datas">
+                  Datas
+                </h2>
+
+                <p>
+                  Vencimento e programação são independentes da data em que o pagamento será realizado.
+                </p>
+              </div>
+
+            </header>
+
+            <div class="conta-campos">
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="emissao"
+                >
+
+                  <label for="id_emissao">
+                    Data de emissão
+
+                    
+                  </label>
+
+                  <input type="date" name="emissao" class="form-control" id="id_emissao">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="vencimento"
+                >
+
+                  <label for="id_vencimento">
+                    Data de vencimento
+
+                    
+                      <span
+                        class="campo-obrigatorio"
+                        aria-label="obrigatório"
+                      >
+                        *
+                      </span>
+                    
+                  </label>
+
+                  <input type="date" name="vencimento" class="form-control" required id="id_vencimento">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="data_programada"
+                >
+
+                  <label for="id_data_programada">
+                    Data programada de pagamento
+
+                    
+                  </label>
+
+                  <input type="date" name="data_programada" class="form-control" id="id_data_programada">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+            </div>
+
+            
+
+            
+
+          </section>
+
+        
+
+          <section
+            class="surface conta-card"
+            id="secao-pagamento"
+            aria-labelledby="titulo-pagamento"
+          >
+
+            <header class="conta-card-header">
+
+              <span
+                class="conta-card-icon"
+                aria-hidden="true"
+              >
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 6v12m-5-5 5 5 5-5"/>
+
+
+
+
+</svg>
+              </span>
+
+              <div>
+                <h2 id="titulo-pagamento">
+                  Pagamento
+                </h2>
+
+                <p>
+                  Passe o leitor ou cole a linha digitável do boleto. O sistema pode identificar automaticamente valor e vencimento.
+                </p>
+              </div>
+
+            </header>
+
+            <div class="conta-campos">
+
+              
+
+                <div
+                  class="conta-campo
+                  
+                    conta-campo-largo
+                  "
+                  data-campo="codigo_boleto"
+                >
+
+                  <label for="id_codigo_boleto">
+                    Código de barras / Linha digitável
+
+                    
+                  </label>
+
+                  <input type="text" name="codigo_boleto" placeholder="Passe o leitor ou cole a linha digitável" autocomplete="off" inputmode="numeric" data-codigo-boleto="true" maxlength="100" class="form-control" id="id_codigo_boleto">
+
+                  
+
+                  
+
+                    <div class="mt-2">
+
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        id="processar-boleto"
+                      >
+                        Processar código
+                      </button>
+
+                      <small
+                        id="boleto-status"
+                        class="conta-ajuda ms-2"
+                        aria-live="polite"
+                      ></small>
+
+                    </div>
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="ciclo_boleto"
+                >
+
+                  <label for="id_ciclo_boleto">
+                    Ciclo do vencimento do boleto
+
+                    
+                  </label>
+
+                  <select name="ciclo_boleto" class="form-select" aria-describedby="id_ciclo_boleto_helptext" id="id_ciclo_boleto">
+  <option value="atual" selected>Atual (desde 22/02/2025)</option>
+
+  <option value="anterior">Anterior (até 21/02/2025)</option>
+
+</select>
+
+                  
+
+                  
+
+                  
+                    <small class="conta-ajuda">
+                      Para boletos antigos, selecione o ciclo anterior. Confira a data no documento.
+                    </small>
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="forma_prevista"
+                >
+
+                  <label for="id_forma_prevista">
+                    Forma de pagamento prevista
+
+                    
+                  </label>
+
+                  <select name="forma_prevista" class="form-select" id="id_forma_prevista">
+  <option value="" selected>---------</option>
+
+  <option value="1">PIX</option>
+
+</select>
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  
+                    conta-campo-largo
+                  "
+                  data-campo="pix_copia_cola"
+                >
+
+                  <label for="id_pix_copia_cola">
+                    PIX Copia e Cola
+
+                    
+                  </label>
+
+                  <textarea name="pix_copia_cola" cols="40" rows="3" maxlength="4096" class="form-control" aria-describedby="id_pix_copia_cola_helptext" id="id_pix_copia_cola">
+</textarea>
+
+                  
+
+                  
+
+                  
+                    <small class="conta-ajuda">
+                      Cole o código de pagamento fornecido pelo recebedor.
+                    </small>
+                  
+
+                </div>
+
+              
+
+            </div>
+
+            
+
+            
+
+          </section>
+
+        
+
+          <section
+            class="surface conta-card"
+            id="secao-recorrencia"
+            aria-labelledby="titulo-recorrencia"
+          >
+
+            <header class="conta-card-header">
+
+              <span
+                class="conta-card-icon"
+                aria-hidden="true"
+              >
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
+
+<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+
+
+
+
+
+
+
+</svg>
+              </span>
+
+              <div>
+                <h2 id="titulo-recorrencia">
+                  Recorrência / Parcelamento
+                </h2>
+
+                <p>
+                  Parcelamento divide o valor total. Recorrência repete o valor em cada lançamento.
+                </p>
+              </div>
+
+            </header>
+
+            <div class="conta-campos">
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="modo"
+                >
+
+                  <label for="id_modo">
+                    Tipo de lançamento
+
+                    
+                      <span
+                        class="campo-obrigatorio"
+                        aria-label="obrigatório"
+                      >
+                        *
+                      </span>
+                    
+                  </label>
+
+                  <select name="modo" class="form-select" id="id_modo">
+  <option value="unica" selected>Conta única</option>
+
+  <option value="recorrente">Recorrente</option>
+
+  <option value="parcelada">Parcelada</option>
+
+</select>
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="frequencia"
+                >
+
+                  <label for="id_frequencia">
+                    Frequencia
+
+                    
+                  </label>
+
+                  <select name="frequencia" class="form-select" id="id_frequencia">
+  <option value="" selected>---------</option>
+
+  <option value="semanal">Semanal</option>
+
+  <option value="quinzenal">Quinzenal</option>
+
+  <option value="mensal">Mensal</option>
+
+  <option value="bimestral">Bimestral</option>
+
+  <option value="trimestral">Trimestral</option>
+
+  <option value="semestral">Semestral</option>
+
+  <option value="anual">Anual</option>
+
+  <option value="dias">Intervalo em dias</option>
+
+</select>
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="quantidade_lancamentos"
+                >
+
+                  <label for="id_quantidade_lancamentos">
+                    Quantidade de lançamentos / parcelas
+
+                    
+                  </label>
+
+                  <input type="number" name="quantidade_lancamentos" min="2" max="120" class="form-control" id="id_quantidade_lancamentos">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="entrada"
+                >
+
+                  <label for="id_entrada">
+                    Entrada prevista
+
+                    
+                  </label>
+
+                  <input type="number" name="entrada" min="0" step="0.01" class="form-control" aria-describedby="id_entrada_helptext" id="id_entrada">
+
+                  
+
+                  
+
+                  
+                    <small class="conta-ajuda">
+                      Não confirma pagamento automaticamente.
+                    </small>
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="data_entrada"
+                >
+
+                  <label for="id_data_entrada">
+                    Vencimento da entrada
+
+                    
+                  </label>
+
+                  <input type="date" name="data_entrada" class="form-control" id="id_data_entrada">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="intervalo_dias"
+                >
+
+                  <label for="id_intervalo_dias">
+                    Intervalo em dias
+
+                    
+                  </label>
+
+                  <input type="number" name="intervalo_dias" value="30" min="1" max="3650" class="form-control" id="id_intervalo_dias">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  "
+                  data-campo="plano_personalizado"
+                >
+
+                  <label for="id_plano_personalizado">
+                    Parcelas personalizadas
+
+                    
+                  </label>
+
+                  <textarea name="plano_personalizado" cols="40" rows="3" placeholder="2026-11-05;100,00
+2026-12-05;150,00" maxlength="12000" class="form-control" aria-describedby="id_plano_personalizado_helptext" id="id_plano_personalizado">
+</textarea>
+
+                  
+
+                  
+
+                  
+                    <small class="conta-ajuda">
+                      Ajuste os valores, vencimentos e formas por parcela. Inclua a entrada; a soma deve fechar o total.
+                    </small>
+                  
+
+                </div>
+
+              
+
+            </div>
+
+            
+
+              <div
+                id="serie-info"
+                class="conta-nota"
+                hidden
+              ></div>
+
+              <div
+                id="serie-previa"
+                class="conta-previa"
+                hidden
+              >
+
+                <h3>Prévia dos lançamentos</h3>
+
+                <div class="table-responsive">
+
+                  <table class="table table-sm">
+
+                    <thead>
+                      <tr>
+                        <th>Lançamento</th>
+                        <th>Vencimento</th>
+                        <th class="text-end">Valor</th>
+                      </tr>
+                    </thead>
+
+                    <tbody id="serie-linhas"></tbody>
+
+                  </table>
+
+                </div>
+
+                <small id="serie-limite"></small>
+
+              </div>
+
+            
+
+            
+
+          </section>
+
+        
+
+          <section
+            class="surface conta-card"
+            id="secao-documentos"
+            aria-labelledby="titulo-documentos"
+          >
+
+            <header class="conta-card-header">
+
+              <span
+                class="conta-card-icon"
+                aria-hidden="true"
+              >
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg>
+              </span>
+
+              <div>
+                <h2 id="titulo-documentos">
+                  Documentos
+                </h2>
+
+                <p>
+                  Anexe boletos, faturas, notas fiscais ou contratos. Comprovantes são anexados ao registrar o pagamento.
+                </p>
+              </div>
+
+            </header>
+
+            <div class="conta-campos">
+
+              
+
+                <div
+                  class="conta-campo
+                  
+                    conta-campo-largo
+                  "
+                  data-campo="documentos"
+                >
+
+                  <label for="id_documentos">
+                    Documentos da cobrança
+
+                    
+                  </label>
+
+                  <input type="file" name="documentos" accept=".pdf,.jpg,.jpeg,.png" multiple class="form-control" aria-describedby="id_documentos_helptext" id="id_documentos">
+
+                  
+
+                  
+
+                  
+                    <small class="conta-ajuda">
+                      Até 10 arquivos em PDF, JPG ou PNG, com até 10 MB cada. Não registra pagamento.
+                    </small>
+                  
+
+                </div>
+
+              
+
+                <div
+                  class="conta-campo
+                  
+                    conta-campo-largo
+                  "
+                  data-campo="link_acesso"
+                >
+
+                  <label for="id_link_acesso">
+                    Link de acesso
+
+                    
+                  </label>
+
+                  <input type="url" name="link_acesso" placeholder="https://" maxlength="2000" class="form-control" id="id_link_acesso">
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+            </div>
+
+            
+
+            
+
+              <p class="conta-nota">
+                Em contas parceladas ou recorrentes,
+                estes documentos ficam no primeiro lançamento.
+
+                Cada conta também pode receber seus próprios
+                anexos depois.
+              </p>
+
+              
+
+            
+
+          </section>
+
+        
+
+          <section
+            class="surface conta-card"
+            id="secao-observacoes"
+            aria-labelledby="titulo-observacoes"
+          >
+
+            <header class="conta-card-header">
+
+              <span
+                class="conta-card-icon"
+                aria-hidden="true"
+              >
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+
+
+<path d="M14 2H5v20h14V7zM14 2v5h5M8 11h8M8 15h8M8 18h4"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</svg>
+              </span>
+
+              <div>
+                <h2 id="titulo-observacoes">
+                  Observações
+                </h2>
+
+                <p>
+                  Informações complementares para o controle interno.
+                </p>
+              </div>
+
+            </header>
+
+            <div class="conta-campos">
+
+              
+
+                <div
+                  class="conta-campo
+                  
+                    conta-campo-largo
+                  "
+                  data-campo="observacoes"
+                >
+
+                  <label for="id_observacoes">
+                    Observações
+
+                    
+                  </label>
+
+                  <textarea name="observacoes" cols="40" rows="3" class="form-control" id="id_observacoes">
+</textarea>
+
+                  
+
+                  
+
+                  
+
+                </div>
+
+              
+
+            </div>
+
+            
+
+            
+
+          </section>
+
+        
+
+      </div>
+
+      <aside
+        class="conta-resumo"
+        aria-label="Resumo da conta"
+      >
+
+        <div class="surface conta-resumo-card">
+
+          <div class="eyebrow">
+            RESUMO FINANCEIRO
+          </div>
+
+          <h2 id="resumo-titulo">
+            Valor total
+          </h2>
+
+          <output
+            id="conta-total"
+            class="conta-total"
+            aria-live="polite"
+          >
+            R$ 0,00
+          </output>
+
+          <p id="resumo-legenda">
+            Original − desconto + juros + multa + acréscimos.
+          </p>
+
+          <dl>
+
+            <div>
+              <dt>Valor original</dt>
+              <dd id="resumo-original">
+                R$ 0,00
+              </dd>
+            </div>
+
+            <div>
+              <dt>Desconto</dt>
+              <dd id="resumo-desconto">
+                R$ 0,00
+              </dd>
+            </div>
+
+            <div>
+              <dt>Acréscimos totais</dt>
+              <dd id="resumo-acrescimos">
+                R$ 0,00
+              </dd>
+            </div>
+
+            
+
+          </dl>
+
+          <div class="conta-resumo-status">
+
+            <span class="status-dot"></span>
+
+            
+              Pagamento ainda não registrado
+            
+
+          </div>
+
+          <p class="conta-ajuda">
+            Salvar cadastra a obrigação.
+            Nenhum valor é retirado do caixa nesta etapa.
+          </p>
+
+          <div class="conta-acoes">
+
+            <button
+              class="btn btn-primary"
+              name="acao"
+              value="salvar"
+              type="submit"
+            >
+              Salvar
+            </button>
+
+            
+
+              <button
+                class="btn btn-outline-primary"
+                name="acao"
+                value="outra"
+                type="submit"
+              >
+                Salvar e criar outra
+              </button>
+
+            
+
+            <a
+              class="btn btn-outline-secondary"
+              href="
+              
+                /contas-a-pagar/
+              
+              "
+            >
+              Cancelar
+            </a>
+
+          </div>
+
+          
+
+            <button
+              class="conta-excluir"
+              disabled
+              type="button"
+            >
+              Excluir
+
+              
+                (disponível após salvar)
+              
+
+            </button>
+
+          
+
+        </div>
+
+        <p class="conta-ajuda mt-3">
+          Campos com * são obrigatórios.
+        </p>
+
+      </aside>
+
+    </div>
+
+  </form>
+
+</div>
+
+<script
+  src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/js/conta-formulario.js"
+  defer
+></script>
+
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/js/conta-captura.js" defer></script>
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/js/parcelamento.js" defer></script>
+
+    <footer class="page-footer">REGISTER <span>Organização que move o seu negócio.</span></footer>
+  </main>
+</div>
+
+<script src="file:///C:/Users/Isabela/OneDrive/%C3%81rea%20de%20Trabalho/Estoque%20PontoCar/static/vendor/bootstrap.bundle.min.js" defer></script>
+</body>
+</html>
