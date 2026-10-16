@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Anunciar no Mercado Livre{% endblock %}
+{% block content %}<div class="page-heading"><div><h1>Anunciar no Mercado Livre</h1><p>{{ peca.codigo }} · {{ peca.nome }}</p></div><a class="btn btn-outline-secondary" href="{% url 'estoque:detalhe' peca.pk %}">Voltar à peça</a></div>
+<section class="surface p-4"><span class="badge text-bg-warning mb-3">Somente leitura · publicação indisponível nesta etapa</span><p>A seleção é manual e fica registrada somente no REGISTER. Ela não publica a peça nem autoriza alterações de preço, estoque ou vendas.</p><p>Preço no REGISTER: R$ {{ peca.preco_venda|floatformat:2 }} · Estoque: {{ peca.quantidade }}</p>
+<form method="post">{% csrf_token %}{% if selecionada %}<p>Esta peça está selecionada para uma etapa futura.</p><button class="btn btn-outline-danger" name="acao" value="remover">Remover seleção</button>{% else %}<button class="btn btn-primary" name="acao" value="selecionar">Selecionar para publicação futura</button>{% endif %}</form>
+<h2 class="mt-4">Anúncios vinculados</h2>{% for anuncio in anuncios %}<p>{{ anuncio.item_id }} · {{ anuncio.titulo }} · {{ anuncio.status }}</p>{% empty %}<p>Nenhum anúncio vinculado a esta peça.</p>{% endfor %}<a href="{% url 'mercadolivre:painel' %}">Gerenciar integração e vínculos</a></section>{% endblock %}

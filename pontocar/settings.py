@@ -16,7 +16,7 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
     "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
-    "core", "accounts", "dashboard", "veiculos", "estoque", "clientes", "vendas", "caixa", "contas", "comercial", "fiscal",
+    "core", "accounts", "dashboard", "veiculos", "estoque", "clientes", "vendas", "caixa", "contas", "comercial", "fiscal", "mercadolivre",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -118,3 +118,12 @@ FISCAL_SECRET_KEY = env("FISCAL_SECRET_KEY", default="")
 FISCAL_SCHEMA_DIR = Path(env("FISCAL_SCHEMA_DIR", default=str(BASE_DIR / "fiscal" / "schemas")))
 FISCAL_ENDPOINT_HOSTS = env.list("FISCAL_ENDPOINT_HOSTS", default=[])
 FISCAL_NFSE_ADAPTER = env("FISCAL_NFSE_ADAPTER", default="")
+
+# Opt-in por instalação; esta etapa não oferece escrita na API de anúncios.
+MERCADOLIVRE_ENABLED = env.bool("MERCADOLIVRE_ENABLED", default=False)
+MERCADOLIVRE_CLIENT_ID = env("MERCADOLIVRE_CLIENT_ID", default="")
+MERCADOLIVRE_CLIENT_SECRET = env("MERCADOLIVRE_CLIENT_SECRET", default="")
+MERCADOLIVRE_REDIRECT_URI = env("MERCADOLIVRE_REDIRECT_URI", default="")
+MERCADOLIVRE_TOKEN_KEY = env("MERCADOLIVRE_TOKEN_KEY", default="")
+MERCADOLIVRE_SELLER_ID = env("MERCADOLIVRE_SELLER_ID", default="")
+MERCADOLIVRE_INSTALLATION_ID = env("MERCADOLIVRE_INSTALLATION_ID", default="")

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Vincular anúncio{% endblock %}
+{% block content %}<div class="page-heading"><div><h1>Vincular anúncio à peça</h1><p>{{ anuncio.item_id }} · {{ anuncio.titulo }}</p></div><a class="btn btn-outline-secondary" href="{% url 'mercadolivre:painel' %}">Voltar</a></div>
+<section class="surface p-4"><p>Informe o código exato de uma peça cadastrada nesta loja. Confira o anúncio e a peça antes de confirmar.</p>{% if anuncio.peca %}<p>Vínculo atual: <strong>{{ anuncio.peca.codigo }} · {{ anuncio.peca.nome }}</strong>. Salvar substituirá esse vínculo local.</p>{% endif %}
+{% if anuncio.variacoes %}<div class="alert alert-warning">Este anúncio possui variações. O vínculo desta etapa é apenas de referência ao anúncio completo; estoque e variações não serão sincronizados.</div>{% endif %}
+<div class="alert alert-info">O vínculo não altera o Mercado Livre, o preço ou o estoque do REGISTER e não autoriza sincronização.</div>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Confirmar vínculo local</button></form></section>{% endblock %}

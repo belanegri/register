@@ -9,9 +9,11 @@
     <td class="peca-acoes">{% if menu_acoes %}<div class="dropdown"><button class="btn btn-sm btn-outline-secondary table-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Ações da peça {{ peca.codigo }}"><span aria-hidden="true">⋮</span></button><ul class="dropdown-menu dropdown-menu-end">
       {% if perms.estoque.change_peca %}<li><a class="dropdown-item" href="{% url 'estoque:editar' peca.pk %}">Editar</a></li>{% endif %}
       <li><a class="dropdown-item" href="{% url 'estoque:etiqueta' peca.pk %}" target="_blank" rel="noopener">Etiqueta</a></li>
+      {% include 'mercadolivre/acao_peca.html' with menu=True %}
     </ul></div>{% else %}<div class="d-flex align-items-center gap-2 text-nowrap">
       {% if perms.estoque.change_peca %}<a class="btn btn-sm btn-outline-primary" href="{% url 'estoque:editar' peca.pk %}">Editar</a>{% endif %}
       <a class="btn btn-sm btn-outline-secondary" href="{% url 'estoque:etiqueta' peca.pk %}" target="_blank" rel="noopener">Etiqueta</a>
+      {% include 'mercadolivre/acao_peca.html' with menu=False %}
     </div>{% endif %}</td>
   </tr>{% endfor %}</tbody>
 </table></div>
