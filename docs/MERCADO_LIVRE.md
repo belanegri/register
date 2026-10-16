@@ -6,7 +6,7 @@ Implementação local; não executar deploy/push para a branch de produção sem
 
 - Aplicação Django `mercadolivre`, banco PostgreSQL e processo web existentes. Sem workers, cron, webhooks ou serviços adicionais.
 - OAuth Authorization Code com PKCE S256, state aleatório vinculado à sessão e ao usuário, validade de dez minutos e consumo único no banco. Verificação do vendedor tanto no token quanto em `/users/me`.
-- Solicitação de `read offline_access`. Tokens que contenham `write` são recusados. Configure também as permissões da aplicação Developers para somente leitura.
+- Solicitação de `read offline_access`. Por padrão, tokens com `write` são recusados. Quando a configuração funcional obrigatória do provedor retorna esse escopo global, a loja pode aceitar o formato somente com autorização explícita e `MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=True`. A flag não habilita chamadas de alteração: o transporte continua bloqueando métodos de escrita em todos os recursos de negócio. Os escopos recebidos são registrados no banco, na auditoria de conexão e informados no painel. Leitura, acesso offline e identidade correta continuam obrigatórios; escopos inesperados são recusados. Desativar a flag bloqueia o uso dos tokens amplos existentes. Configure as permissões funcionais de anúncios no Developers como Leitura.
 - Access/refresh tokens cifrados com Fernet (criptografia autenticada); chave independente do SECRET_KEY do Django. Segredo da aplicação somente em variável de ambiente. Tokens não aparecem em formulário, admin, mensagens ou auditoria. O log Gunicorn omite query strings, incluindo o código temporário do callback. Se houver logs de proxy externos, configure-os também para não armazenar query strings do callback.
 - Renovação por demanda, com bloqueio de linha PostgreSQL para evitar duas renovações simultâneas. O novo refresh token é salvo antes das consultas de importação, pois o anterior é de uso único. Não há retry automático de troca/renovação; em falha ambígua, reconecte.
 - Importação manual em lotes de até 20, usando scan e o novo `/items/bulk` (não utiliza o multiget antigo em descontinuação). Lista anúncios da conta autenticada, inclusive os que ainda não têm vínculo. Salva apenas os campos exibidos e IDs/quantidades das variações; não importa compradores, pedidos ou dados pessoais.
@@ -27,6 +27,7 @@ As tabelas `Anuncio` e `Selecao` e os vínculos locais preparam a base da próxi
 
 | Variável | Valor |
 | --- | --- |
+| `MERCADOLIVRE_PROVIDER_SCOPE_COMPAT` | `False` por padrão. `True` somente após autorização específica para aceitar o escopo global retornado pelo provedor, com todas as chamadas de alteração bloqueadas. |
 | `MERCADOLIVRE_ENABLED` | `True` somente na loja que vai conectar. Padrão `False`. |
 | `MERCADOLIVRE_CLIENT_ID` | App ID da aplicação Mercado Livre Developers. |
 | `MERCADOLIVRE_CLIENT_SECRET` | Secret Key da aplicação; variável secreta no Railway. |
@@ -43,7 +44,7 @@ Para gerar a chave na sua máquina, sem gravá-la no repositório:
 
 Não colar credenciais reais em arquivos versionados ou no chat. Não configurar access/refresh tokens manualmente no Railway: eles são obtidos no OAuth e armazenados cifrados no PostgreSQL da loja. Preserve a chave ao recriar o serviço/restaurar backups; trocar a chave sem recifrar exige reconectar.
 
-No Developers, habilite Authorization Code, PKCE S256 e os acessos de leitura necessários para consultar conta/anúncios, incluindo acesso offline. Remova autorização de escrita nesta etapa. Não há URL de notificações implementada; não enviar webhooks a este callback OAuth. Cadastre a redirect URI exata, com a barra final.
+No Developers, habilite Authorization Code, PKCE S256 e os acessos de leitura necessários para consultar conta/anúncios, incluindo acesso offline. Mantenha os recursos configuráveis em Leitura nesta etapa. O Developers pode manter Usuários em Leitura e escrita por padrão; não confundir o escopo global devolvido pelo provedor com permissão para o REGISTER alterar dados. Não há URL de notificações implementada; não enviar webhooks a este callback OAuth. Cadastre a redirect URI exata, com a barra final.
 
 ## Independência das lojas
 
@@ -82,6 +83,8 @@ Resultado local em 16/10/2026: `check` sem problemas, `makemigrations --check --
 Essas falhas preexistentes não foram alteradas como parte da integração.
 
 Validação adicional em 16/10/2026: 24 testes da integração aprovados após corrigir a política de referência dos formulários HTTPS. O caso novo confirma o POST com token e referência válidos, a recusa sem referência e a preservação de `no-referrer` no callback OAuth.
+
+Compatibilidade opcional do provedor validada em 16/10/2026: 26 testes aprovados. Foram verificados consentimento por instalação, persistência de escopos, bloqueio ao desativar a opção, recusa de outra conta, de escopos inesperados e de leitura/acesso offline ausentes, além da recusa de métodos de escrita mesmo com a compatibilidade ativada.
 
 ## Documentação oficial consultada em 16/10/2026
 

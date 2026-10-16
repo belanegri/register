@@ -43,7 +43,8 @@ def acesso(view):
 
 def identidade_config():
     valores = [settings.MERCADOLIVRE_CLIENT_ID, settings.MERCADOLIVRE_REDIRECT_URI,
-               settings.MERCADOLIVRE_INSTALLATION_ID, settings.MERCADOLIVRE_SELLER_ID]
+               settings.MERCADOLIVRE_INSTALLATION_ID, settings.MERCADOLIVRE_SELLER_ID,
+               str(settings.MERCADOLIVRE_PROVIDER_SCOPE_COMPAT)]
     return hashlib.sha256("\n".join(valores).encode()).hexdigest()
 
 
@@ -106,7 +107,7 @@ def callback(request):
     except ErroIntegracao as erro:
         messages.error(request, str(erro))
     else:
-        registrar(request.user, "mercadolivre.conectada", conexao.vendedor_id)
+        registrar(request.user, "mercadolivre.conectada", conexao.vendedor_id, escopos=conexao.escopos)
         messages.success(request, "Conta conectada em modo somente leitura. Nenhum anúncio foi publicado.")
     return redirect("mercadolivre:painel")
 

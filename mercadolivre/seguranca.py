@@ -43,6 +43,8 @@ def validar_configuracao():
 
 def validar_conexao(conexao):
     validar_configuracao()
+    if "write" in conexao.escopos.split() and not settings.MERCADOLIVRE_PROVIDER_SCOPE_COMPAT:
+        raise ErroIntegracao("A compatibilidade com o escopo do provedor está desativada nesta loja.")
     if (not conexao.conectada or conexao.instalacao != settings.MERCADOLIVRE_INSTALLATION_ID
             or conexao.cliente_id != settings.MERCADOLIVRE_CLIENT_ID
             or conexao.vendedor_id != settings.MERCADOLIVRE_SELLER_ID):

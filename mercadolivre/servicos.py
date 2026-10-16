@@ -24,14 +24,19 @@ def salvar_tokens(conexao, dados):
         if str(dados["user_id"]) != settings.MERCADOLIVRE_SELLER_ID:
             raise ErroIntegracao("A conta autorizada não corresponde ao vendedor configurado para esta loja.")
         scopes = set(dados["scope"].split())
-        if not {"read", "offline_access"}.issubset(scopes) or "write" in scopes:
-            raise ErroIntegracao("Autorize somente leitura e acesso offline na aplicação do Mercado Livre; remova a permissão de escrita e reconecte.")
+        if not {"read", "offline_access"}.issubset(scopes):
+            raise ErroIntegracao("A autorização não incluiu leitura e acesso offline. Confira o fluxo Refresh Token no Developers e reconecte.")
+        if scopes - {"read", "offline_access", "write"}:
+            raise ErroIntegracao("A autorização retornou escopos não previstos para esta integração.")
+        if "write" in scopes and not settings.MERCADOLIVRE_PROVIDER_SCOPE_COMPAT:
+            raise ErroIntegracao("O Mercado Livre retornou o escopo global write. A compatibilidade exige autorização específica nesta loja; nenhuma credencial foi salva.")
         segundos = int(dados["expires_in"])
         if segundos <= 0 or not dados["access_token"] or not dados["refresh_token"]:
             raise ValueError
         conexao.access_token_cifrado = cifrar(dados["access_token"])
         conexao.refresh_token_cifrado = cifrar(dados["refresh_token"])
         conexao.expira_em = timezone.now() + timedelta(seconds=segundos)
+        conexao.escopos = " ".join(sorted(scopes))
     except (KeyError, TypeError, ValueError, AttributeError):
         raise ErroIntegracao("Mercado Livre retornou credenciais incompletas. Reconecte a conta.") from None
 
@@ -60,6 +65,7 @@ def conectar(codigo, verifier):
         conexao.access_token_cifrado = nova.access_token_cifrado
         conexao.refresh_token_cifrado = nova.refresh_token_cifrado
         conexao.expira_em = nova.expira_em
+        conexao.escopos = nova.escopos
         conexao.conectada = True
         conexao.cursor = ""
         conexao.cursor_expira_em = None

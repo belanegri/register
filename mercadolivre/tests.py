@@ -23,6 +23,7 @@ from .servicos import conectar, importar_lote, token_atual
 
 
 CONFIG = dict(MERCADOLIVRE_ENABLED=True, MERCADOLIVRE_CLIENT_ID="12345",
+    MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=False,
     MERCADOLIVRE_CLIENT_SECRET="segredo-de-teste", MERCADOLIVRE_SELLER_ID="9876",
     MERCADOLIVRE_INSTALLATION_ID="loja-teste", MERCADOLIVRE_TOKEN_KEY=Fernet.generate_key().decode(),
     MERCADOLIVRE_REDIRECT_URI="https://testserver/mercado-livre/oauth/callback/", ALLOWED_HOSTS=["testserver"])
@@ -85,6 +86,7 @@ class IntegracaoTests(TestCase):
         self.assertEqual(decifrar(conexao.refresh_token_cifrado), "refresh-secreto")
         self.assertEqual(api.return_value.consultar.call_args.args[0], "/users/me")
         self.assertFalse(Anuncio.objects.exists())
+
         self.assertFalse(Selecao.objects.exists())
         self.assertNotIn("codigo-secreto", str(list(Evento.objects.values())))
 
@@ -140,6 +142,31 @@ class IntegracaoTests(TestCase):
         with self.assertRaises(ErroIntegracao):
             conectar("code", "verifier")
         self.assertFalse(Conexao.objects.exists())
+
+    @override_settings(MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=True)
+    @patch("mercadolivre.servicos.Cliente")
+    def test_compatibilidade_explicita_aceita_token_global_registra_escopos(self, api):
+        api.return_value.token.return_value = credenciais(scope="read write offline_access")
+        api.return_value.consultar.return_value = {"id": 9876, "nickname": "PontoCar"}
+        conexao = conectar("code", "verifier")
+        self.assertEqual(set(conexao.escopos.split()), {"read", "write", "offline_access"})
+        self.assertTrue(conexao.conectada)
+        self.assertEqual(api.return_value.consultar.call_args.args[0], "/users/me")
+        self.assertFalse(Anuncio.objects.exists())
+        with override_settings(MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=False), self.assertRaises(ErroIntegracao):
+            token_atual()
+
+    @override_settings(MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=True)
+    @patch("mercadolivre.servicos.Cliente")
+    def test_compatibilidade_nao_aceita_outro_vendedor_ou_falta_de_leitura_offline(self, api):
+        for dados in (credenciais(user_id=555, scope="read write offline_access"),
+                      credenciais(scope="write offline_access"), credenciais(scope="read write"),
+                      credenciais(scope="read offline_access write urn:mp:pagamentos")):
+            api.return_value.token.return_value = dados
+            with self.assertRaises(ErroIntegracao):
+                conectar("code", "verifier")
+        self.assertFalse(Conexao.objects.exists())
+        api.return_value.consultar.assert_not_called()
 
     @patch("mercadolivre.servicos.Cliente")
     def test_renovacao_persiste_novo_refresh_mesmo_se_importacao_falha(self, api):
@@ -327,6 +354,7 @@ class IntegracaoTests(TestCase):
 
 
 class TransporteTests(TestCase):
+    @override_settings(MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=True)
     @patch("mercadolivre.api.build_opener")
     def test_bloqueia_escrita_caminhos_arbitrarios_e_url_externa(self, opener):
         for metodo, caminho in [("POST", "/items"), ("PUT", "/items/MLB123"), ("DELETE", "/items/MLB123"),

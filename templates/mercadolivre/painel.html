@@ -6,6 +6,7 @@
 {% if erro_config %}<div class="alert alert-warning">{{ erro_config }}</div>{% endif %}
 <section class="surface p-4 mb-4"><h2>Conta da loja</h2>
 {% if conexao.conectada %}<p><strong>{{ conexao.apelido }}</strong> · Vendedor {{ conexao.vendedor_id }}</p><p>Última consulta de anúncios: {{ conexao.ultima_importacao|date:'d/m/Y H:i'|default:'Ainda não realizada' }}. Os valores importados são uma fotografia dessa consulta.</p>
+{% if 'write' in conexao.escopos %}<p class="small text-secondary">O Mercado Livre concedeu um escopo global de escrita. A compatibilidade foi autorizada para esta loja; o REGISTER aceita somente consultas e bloqueia operações de alteração.</p>{% endif %}
 {% else %}<p>Conta desconectada. Conecte o titular da conta vendedora configurada para esta loja.</p>{% endif %}
 <div class="d-flex gap-2 flex-wrap">
 {% if not erro_config %}<form method="post" action="{% url 'mercadolivre:autorizar' %}">{% csrf_token %}<button class="btn btn-primary">{% if conexao.conectada %}Reconectar conta{% else %}Conectar conta{% endif %}</button></form>{% endif %}
