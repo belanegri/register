@@ -9,7 +9,7 @@ from django.views.decorators.debug import sensitive_variables
 
 from .api import Cliente, ErroIntegracao
 from .models import Anuncio, Conexao
-from .seguranca import cifrar, decifrar, validar_conexao, validar_configuracao
+from .seguranca import cifrar, decifrar, validar_conexao, validar_configuracao, validar_escopos
 
 
 @sensitive_variables()
@@ -23,13 +23,7 @@ def salvar_tokens(conexao, dados):
     try:
         if str(dados["user_id"]) != settings.MERCADOLIVRE_SELLER_ID:
             raise ErroIntegracao("A conta autorizada não corresponde ao vendedor configurado para esta loja.")
-        scopes = set(dados["scope"].split())
-        if not {"read", "offline_access"}.issubset(scopes):
-            raise ErroIntegracao("A autorização não incluiu leitura e acesso offline. Confira o fluxo Refresh Token no Developers e reconecte.")
-        if scopes - {"read", "offline_access", "write"}:
-            raise ErroIntegracao("A autorização retornou escopos não previstos para esta integração.")
-        if "write" in scopes and not settings.MERCADOLIVRE_PROVIDER_SCOPE_COMPAT:
-            raise ErroIntegracao("O Mercado Livre retornou o escopo global write. A compatibilidade exige autorização específica nesta loja; nenhuma credencial foi salva.")
+        scopes = validar_escopos(dados["scope"])
         segundos = int(dados["expires_in"])
         if segundos <= 0 or not dados["access_token"] or not dados["refresh_token"]:
             raise ValueError

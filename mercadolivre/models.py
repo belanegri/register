@@ -9,7 +9,7 @@ class Conexao(models.Model):
     cliente_id = models.CharField(max_length=80)
     vendedor_id = models.CharField(max_length=30)
     apelido = models.CharField(max_length=200, blank=True)
-    escopos = models.CharField(max_length=200, blank=True, editable=False)
+    escopos = models.TextField(blank=True, editable=False)
     access_token_cifrado = models.TextField(blank=True, editable=False)
     refresh_token_cifrado = models.TextField(blank=True, editable=False)
     expira_em = models.DateTimeField(null=True)

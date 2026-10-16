@@ -18,7 +18,7 @@ from estoque.models import Categoria, Peca
 from vendas.models import Venda
 from .api import Cliente, ErroIntegracao, SemRedirect
 from .models import Anuncio, Conexao, Selecao, TentativaOAuth
-from .seguranca import cifrar, decifrar, validar_configuracao
+from .seguranca import cifrar, decifrar, validar_configuracao, validar_escopos
 from .servicos import conectar, importar_lote, token_atual
 
 
@@ -167,6 +167,27 @@ class IntegracaoTests(TestCase):
                 conectar("code", "verifier")
         self.assertFalse(Conexao.objects.exists())
         api.return_value.consultar.assert_not_called()
+
+    @override_settings(MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=True)
+    @patch("mercadolivre.servicos.Cliente")
+    def test_escopos_funcionais_da_api_atual_sao_preservados_e_exigem_opt_in(self, api):
+        escopos = ('read write offline_access urn:global:admin:oauth:/read-only '
+                   'urn:ml:mktp:publish-sync:/read-only urn:ml:mktp:orders-shipments:/read-only '
+                   'urn:ml:mktp:billing:/read-only urn:ml:mktp:communications:/read-only')
+        self.assertGreater(len(escopos), 200)
+        api.return_value.token.return_value = credenciais(scope=escopos)
+        api.return_value.consultar.return_value = {"id": 9876, "nickname": "PontoCar"}
+        conexao = conectar("code", "verifier")
+        conexao.refresh_from_db()
+        self.assertEqual(set(conexao.escopos.split()), set(escopos.split()))
+        with override_settings(MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=False), self.assertRaises(ErroIntegracao):
+            token_atual()
+
+    @override_settings(MERCADOLIVRE_PROVIDER_SCOPE_COMPAT=True)
+    def test_compatibilidade_rejeita_namespaces_externos_e_escopos_excessivos(self):
+        for extra in ('urn:mp:payments:/read-write', 'urn:outro:admin:/read-only', 'desconhecido', 'a' * 4097):
+            with self.assertRaises(ErroIntegracao):
+                validar_escopos('read offline_access ' + extra)
 
     @patch("mercadolivre.servicos.Cliente")
     def test_renovacao_persiste_novo_refresh_mesmo_se_importacao_falha(self, api):
