@@ -94,3 +94,5 @@
 .module-ui .peca-acoes>.d-flex{flex-wrap:wrap;white-space:normal!important}
 .module-ui .peca-acoes .btn{flex:1 1 100px;min-height:42px;text-align:center}
 }
+
+.module-ui .table-action-menu{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:4px 10px;font-size:24px;line-height:1}
