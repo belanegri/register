@@ -1,1 +1,10 @@
-{% extends 'base.html' %}{% block title %}{{ titulo }}{% endblock %}{% block content %}<div class="page-heading"><div><div class="eyebrow">FISCAL</div><h1>{{ titulo }}</h1></div><a class="btn btn-outline-secondary" href="{% url 'fiscal:lista' %}">Voltar</a></div>{% include 'fiscal/aviso.html' %}<section class="surface p-4"><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Salvar solicitação</button></form></section>{% endblock %}
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/formularios.css' %}">{% endblock %}
+{% block content %}<div class="editor-page">
+<div class="page-heading"><div><div class="eyebrow">FISCAL</div><h1>{{ titulo }}</h1><p>Preencha os dados por seção e confira as informações antes de salvar.</p></div><a class="btn btn-outline-secondary" href="{% url 'fiscal:lista' %}">Voltar</a></div>
+{% include 'fiscal/aviso.html' %}
+<form method="post" enctype="multipart/form-data" class="editor-form">{% csrf_token %}
+{% include 'components/form_secoes.html' %}
+<div class="editor-actions"><a class="btn btn-outline-secondary" href="{% url 'fiscal:lista' %}">Voltar</a><button class="btn btn-primary" type="submit">Salvar solicitação</button></div>
+</form></div>{% endblock %}

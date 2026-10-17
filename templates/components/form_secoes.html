@@ -1,0 +1,21 @@
+{% load formularios %}
+{% organizar_formulario form as secoes %}
+{{ form.non_field_errors }}
+{% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
+<p class="editor-required">Campos com <span aria-hidden="true">*</span> são obrigatórios.</p>
+{% for secao in secoes %}
+<section class="surface editor-section" aria-labelledby="editor-section-{{ forloop.counter }}">
+  <div class="section-heading"><div class="editor-section-title"><span class="section-step" aria-hidden="true">{{ forloop.counter|stringformat:'02d' }}</span><div><h2 id="editor-section-{{ forloop.counter }}">{{ secao.titulo }}</h2><p>{{ secao.descricao }}</p></div></div></div>
+  <div class="editor-section-body"><div class="row g-3">
+    {% for item in secao.campos %}{% with field=item.field %}
+    <div class="{% if item.largo %}col-12{% else %}col-md-6{% endif %}{% if field.name == 'fotos' %} editor-photo-field{% endif %}">
+      {% if field.field.widget.input_type == 'checkbox' and not item.largo %}
+      <div class="editor-checkbox">{{ field }}{{ item.rotulo }}</div>
+      {% else %}<div class="editor-field-label">{{ item.rotulo }}{% if field.field.required %}<span class="editor-asterisk" aria-hidden="true">*</span>{% endif %}</div>{{ field }}{% endif %}
+      {% if field.help_text %}<small id="{{ field.auto_id }}_helptext" class="editor-help">{{ field.help_text }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+    {% endwith %}{% endfor %}
+  </div></div>
+</section>
+{% endfor %}

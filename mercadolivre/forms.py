@@ -3,6 +3,19 @@ from estoque.models import Peca
 from decimal import Decimal
 
 
+class FotosAnuncioWidget(forms.CheckboxSelectMultiple):
+    template_name = "mercadolivre/widgets/fotos.html"
+    option_template_name = "mercadolivre/widgets/foto_opcao.html"
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        foto = getattr(value, "instance", None)
+        if foto is not None:
+            option["foto_url"] = foto.imagem.url
+            option["foto_legenda"] = foto.legenda or "Foto da peça"
+        return option
+
+
 class VinculoForm(forms.Form):
     codigo = forms.CharField(label="Código exato da peça no REGISTER", max_length=40,
                              widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "REG000001"}))
@@ -33,7 +46,8 @@ class PublicacaoForm(forms.Form):
             max_length=min(200, categoria.get("settings", {}).get("max_title_length", 60) or 60))
         self.fields["tipo"].choices = [(t["id"], t["name"]) for t in tipos if t.get("id") in ("gold_special", "gold_pro", "free")]
         self.fields["quantidade"].max_value = peca.quantidade
-        self.fields["fotos"] = forms.ModelMultipleChoiceField(label="Fotos públicas do anúncio", queryset=peca.fotos.all(), widget=forms.CheckboxSelectMultiple)
+        self.fields["fotos"] = forms.ModelMultipleChoiceField(label="Fotos públicas do anúncio", queryset=peca.fotos.all(),
+            widget=FotosAnuncioWidget, help_text="Marque as imagens que deseja mostrar no anúncio. Somente fotos desta peça podem ser selecionadas.")
         self.max_fotos = min(20, categoria.get("settings", {}).get("max_pictures_per_item", 12) or 12)
         self.estoque = peca.quantidade
         for attr in atributos:
@@ -51,9 +65,13 @@ class PublicacaoForm(forms.Form):
             self.atributos.append((attr, chave))
         self.initial.update(titulo=peca.nome, preco=peca.preco_venda, quantidade=1,
                             condicao="new" if peca.condicao == "nova" else "used", envio="me2")
+        self.fields["titulo"].widget.attrs["placeholder"] = "Ex.: Farol esquerdo original — modelo e aplicação"
+        self.fields["quantidade"].help_text = f"Estoque disponível no REGISTER: {peca.quantidade}."
+        self.fields["tipo"].help_text = "Os custos variam conforme o tipo de anúncio e as regras da sua conta."
+        self.fields["descricao"].help_text = "Descreva estado, aplicação e itens incluídos. Esse texto será público."
         for field in self.fields.values():
             if not isinstance(field.widget, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):
-                field.widget.attrs["class"] = "form-control"
+                field.widget.attrs["class"] = "form-select" if isinstance(field.widget, forms.Select) else "form-control"
 
     def clean_quantidade(self):
         n = self.cleaned_data["quantidade"]

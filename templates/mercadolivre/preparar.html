@@ -1,15 +1,19 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load static %}
 {% block title %}Preparar anúncio{% endblock %}
-{% block content %}
-<h1>Preparar anúncio</h1><p>{{ peca.codigo }} · {{ peca.nome }}</p>
-<p>Somente esta peça será enviada após sua confirmação. Estoque disponível: {{ peca.quantidade }}. A venda no Mercado Livre ainda exige acompanhamento manual do estoque no REGISTER.</p>
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/formularios.css' %}">{% endblock %}
+{% block content %}<div class="editor-page">
+<div class="page-heading"><div><div class="eyebrow">MERCADO LIVRE</div><h1>Preparar anúncio</h1><p>{{ peca.codigo }} · {{ peca.nome }}</p></div><a class="btn btn-outline-secondary" href="{% url 'mercadolivre:selecionar' peca.pk %}">Voltar à peça</a></div>
+<p class="ml-notice">Somente esta peça será enviada após sua confirmação. Estoque disponível: <strong>{{ peca.quantidade }}</strong>. Acompanhe manualmente as vendas e o estoque no REGISTER.</p>
 {% if erro %}<div class="alert alert-warning">{{ erro }}</div>{% endif %}
-<section class="surface p-4">
-{% if form %}<h2>Categoria: {{ categoria.name }}</h2><a href="{% url 'mercadolivre:preparar_publicacao' peca.pk %}">Escolher outra categoria</a>
-<p>Confira as características e informe somente dados públicos. O tipo de anúncio e o frete podem gerar cobranças conforme as regras da sua conta no Mercado Livre.</p>
-<form method="post">{% csrf_token %}{{ form.as_p }}<p>As fotos selecionadas serão compartilhadas com o Mercado Livre para validar e criar o anúncio.</p><button class="btn btn-primary">Validar e revisar anúncio</button></form>
-{% else %}<form method="get"><label for="busca">Buscar categoria pelo nome do produto</label><input id="busca" class="form-control" name="busca" value="{{ busca }}" maxlength="100"><button class="btn btn-primary mt-2">Buscar categorias</button></form>
-{% for sugestao in categorias %}<p class="mt-3"><a href="?categoria={{ sugestao.category_id|urlencode }}">{{ sugestao.category_name }} · {{ sugestao.category_id }}</a></p>{% endfor %}
-<form method="get" class="mt-4"><label for="categoria">Ou informe o código da categoria do Mercado Livre</label><input id="categoria" class="form-control" name="categoria" placeholder="MLB…" pattern="MLB[0-9]+" required><button class="btn btn-outline-primary mt-2">Usar categoria</button></form>{% endif %}
-</section><a href="{% url 'mercadolivre:selecionar' peca.pk %}">Voltar à peça</a>
-{% endblock %}
+{% if form %}
+<section class="surface editor-summary"><div><h2>Categoria: {{ categoria.name }}</h2><p>As características abaixo seguem os requisitos desta categoria.</p></div><a class="btn btn-sm btn-outline-secondary" href="{% url 'mercadolivre:preparar_publicacao' peca.pk %}">Escolher outra categoria</a></section>
+<form method="post" class="editor-form">{% csrf_token %}{% include 'components/form_secoes.html' %}
+<p class="ml-notice mb-0">O tipo de anúncio e o frete podem gerar cobranças conforme as regras da sua conta. As fotos selecionadas serão compartilhadas com o Mercado Livre para validar e criar o anúncio.</p>
+<div class="editor-actions"><a class="btn btn-outline-secondary" href="{% url 'mercadolivre:selecionar' peca.pk %}">Voltar à peça</a><button class="btn btn-primary" type="submit">Validar e revisar anúncio</button></div></form>
+{% else %}
+<section class="surface editor-section"><div class="section-heading"><div class="editor-section-title"><span class="section-step">01</span><div><h2>Escolha a categoria</h2><p>Busque pelo produto e selecione a categoria que melhor descreve a peça.</p></div></div></div><div class="editor-section-body">
+<form method="get" class="editor-inline-form"><div><label for="busca">Buscar categoria pelo nome do produto</label><input id="busca" class="form-control" name="busca" value="{{ busca }}" maxlength="100"></div><button class="btn btn-primary">Buscar categorias</button></form>
+<div class="editor-category-list">{% for sugestao in categorias %}<a class="editor-category-option" href="?categoria={{ sugestao.category_id|urlencode }}"><span>{{ sugestao.category_name }}</span><small>{{ sugestao.category_id }} →</small></a>{% endfor %}</div>
+<details class="mt-4"><summary class="small text-secondary">Já tenho o código da categoria</summary><form method="get" class="editor-inline-form mt-3"><div><label for="categoria">Código da categoria do Mercado Livre</label><input id="categoria" class="form-control" name="categoria" placeholder="MLB…" pattern="MLB[0-9]+" required></div><button class="btn btn-outline-primary">Usar categoria</button></form></details>
+</div></section>{% endif %}
+</div>{% endblock %}

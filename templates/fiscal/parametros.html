@@ -1,1 +1,8 @@
-{% extends 'base.html' %}{% block title %}Parâmetros fiscais{% endblock %}{% block content %}<div class="page-heading"><div><div class="eyebrow">FISCAL</div><h1>Parâmetros fiscais · {{ tipo }}</h1></div><a href="{% url 'fiscal:configuracao' %}" class="btn btn-outline-secondary">Voltar</a></div><section class="surface p-4 mb-4"><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Salvar parâmetros</button></form></section><section class="surface p-4">{% for param in parametros %}<p><a href="{% url 'fiscal:parametro_editar' tipo param.pk %}">{{ param }}</a></p>{% empty %}<p>Nenhum parâmetro fiscal cadastrado.</p>{% endfor %}</section>{% endblock %}
+{% extends 'base.html' %}{% load static %}
+{% block title %}Parâmetros fiscais{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/formularios.css' %}">{% endblock %}
+{% block content %}<div class="editor-page">
+<div class="page-heading"><div><div class="eyebrow">FISCAL</div><h1>Parâmetros fiscais · {{ tipo }}</h1><p>Organize os códigos e tributos do cadastro selecionado.</p></div><a href="{% url 'fiscal:configuracao' %}" class="btn btn-outline-secondary">Voltar</a></div>
+<form method="post" class="editor-form mb-4">{% csrf_token %}{% include 'components/form_secoes.html' %}<div class="editor-actions"><button class="btn btn-primary" type="submit">Salvar parâmetros</button></div></form>
+<section class="surface editor-section"><div class="section-heading"><h2>Parâmetros cadastrados</h2></div><div class="editor-section-body">{% for param in parametros %}<p><a href="{% url 'fiscal:parametro_editar' tipo param.pk %}">{{ param }}</a></p>{% empty %}<p class="mb-0 text-secondary">Nenhum parâmetro fiscal cadastrado.</p>{% endfor %}</div></section>
+</div>{% endblock %}

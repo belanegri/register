@@ -1,0 +1,5 @@
+<label class="editor-photo-option"{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}>
+  {% include 'django/forms/widgets/input.html' %}
+  {% if widget.foto_url %}<img src="{{ widget.foto_url }}" alt="" loading="lazy">{% endif %}
+  <span>{{ widget.foto_legenda|default:widget.label }}</span>
+</label>

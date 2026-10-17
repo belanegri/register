@@ -229,7 +229,21 @@ class PublicacaoTests(TestCase):
         painel = self.client.get(reverse("mercadolivre:painel"))
         self.assertContains(painel, "Minhas publicações recentes")
         self.assertContains(painel, "<title>Mercado Livre · REGISTER</title>", html=True)
+        html = painel.content.decode()
+        self.assertLess(html.index('<h2>Peças selecionadas manualmente</h2>'), html.index('<h2>Anúncios importados</h2>'))
+        self.assertLess(html.index('<h2>Minhas publicações recentes</h2>'), html.index('<h2>Anúncios importados</h2>'))
         self.assertEqual([c.args[1] for c in cls.return_value.enviar.call_args_list], ["/users/me", "/items/validate"])
+
+    def test_fotos_com_miniatura_preservam_ids_e_selecao(self):
+        form = self.form()
+        html = str(form["fotos"])
+        self.assertIn('name="fotos"', html)
+        self.assertIn(f'value="{self.foto.pk}"', html)
+        self.assertIn('checked', html)
+        self.assertIn('editor-photo-option', html)
+        self.assertIn('<img ', html)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(list(form.cleaned_data["fotos"]), [self.foto])
 
     @patch("mercadolivre.publicacao_api.build_opener")
     def test_erros_http_sanitizados_e_falhas_ambiguas(self, opener):
