@@ -65,9 +65,47 @@ class PublicacaoForm(forms.Form):
             self.atributos.append((attr, chave))
         self.initial.update(titulo=peca.nome, preco=peca.preco_venda, quantidade=1,
                             condicao="new" if peca.condicao == "nova" else "used", envio="me2")
+        # Sugestões locais, nunca autorização de envio. Dados de POST sempre
+        # têm precedência sobre initial, inclusive escolhas desmarcadas.
+        preferencias = {"titulo": peca.ml_titulo, "descricao": peca.ml_descricao, "preco": peca.ml_preco,
+            "condicao": peca.ml_condicao, "envio": peca.ml_envio}
+        for nome, valor in preferencias.items():
+            if valor is not None and valor != "":
+                self.initial[nome] = valor
+        if peca.ml_quantidade:
+            self.initial["quantidade"] = min(peca.ml_quantidade, peca.quantidade)
+        if peca.ml_tipo:
+            # Não trocar silenciosamente por outro plano se o escolhido deixou
+            # de estar disponível. O vendedor precisará escolher na revisão.
+            self.initial["tipo"] = peca.ml_tipo if peca.ml_tipo in dict(self.fields["tipo"].choices) else ""
+            if not self.initial["tipo"]:
+                self.fields["tipo"].choices = [("", "Selecione o tipo de anúncio")] + list(self.fields["tipo"].choices)
+        for nome, valor in (("retirada", peca.ml_retirada), ("frete_gratis", peca.ml_frete_gratis)):
+            if valor is not None:
+                self.initial[nome] = valor
+        for atributo, valor in {"BRAND": peca.ml_fabricante, "PART_NUMBER": peca.ml_numero_peca,
+                                "OEM": peca.ml_oem, "ORIGIN": peca.ml_origem}.items():
+            chave = "attr_" + atributo
+            if not valor or chave not in self.fields:
+                continue
+            campo = self.fields[chave]
+            if isinstance(campo, forms.ChoiceField):
+                correspondente = next((id_ for id_, nome in campo.choices if nome.casefold() == valor.casefold()), None)
+                if correspondente is not None:
+                    self.initial[chave] = correspondente
+                else:
+                    campo.help_text = f"Informado no cadastro: {valor}. Selecione a opção correspondente."
+            else:
+                self.initial[chave] = valor
+        self.initial["fotos"] = list(peca.fotos.values_list("pk", flat=True)[:self.max_fotos])
         self.fields["titulo"].widget.attrs["placeholder"] = "Ex.: Farol esquerdo original — modelo e aplicação"
         self.fields["quantidade"].help_text = f"Estoque disponível no REGISTER: {peca.quantidade}."
-        self.fields["tipo"].help_text = "Os custos variam conforme o tipo de anúncio e as regras da sua conta."
+        if peca.ml_quantidade and peca.ml_quantidade > peca.quantidade:
+            self.fields["quantidade"].help_text += f" A preparação indicava {peca.ml_quantidade}; a sugestão foi limitada ao saldo atual."
+        if peca.ml_tipo and peca.ml_tipo not in dict(self.fields["tipo"].choices):
+            self.fields["tipo"].help_text = "O tipo salvo no cadastro não está disponível para esta categoria. Escolha um dos tipos permitidos."
+        else:
+            self.fields["tipo"].help_text = "Os custos variam conforme o tipo de anúncio e as regras da sua conta."
         self.fields["descricao"].help_text = "Descreva estado, aplicação e itens incluídos. Esse texto será público."
         for field in self.fields.values():
             if not isinstance(field.widget, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):

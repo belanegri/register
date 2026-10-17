@@ -6,7 +6,7 @@
 <p class="ml-notice">Somente esta peça será enviada após sua confirmação. Estoque disponível: <strong>{{ peca.quantidade }}</strong>. Acompanhe manualmente as vendas e o estoque no REGISTER.</p>
 {% if erro %}<div class="alert alert-warning">{{ erro }}</div>{% endif %}
 {% if form %}
-<section class="surface editor-summary"><div><h2>Categoria: {{ categoria.name }}</h2><p>As características abaixo seguem os requisitos desta categoria.</p></div><a class="btn btn-sm btn-outline-secondary" href="{% url 'mercadolivre:preparar_publicacao' peca.pk %}">Escolher outra categoria</a></section>
+<section class="surface editor-summary"><div><h2>Categoria: {{ categoria.name }}</h2><p>As características abaixo seguem os requisitos desta categoria. Os dados disponíveis no cadastro da peça já foram carregados para revisão.</p></div><a class="btn btn-sm btn-outline-secondary" href="{% url 'mercadolivre:preparar_publicacao' peca.pk %}?trocar_categoria=1">Escolher outra categoria</a></section>
 <form method="post" class="editor-form">{% csrf_token %}{% include 'components/form_secoes.html' %}
 <p class="ml-notice mb-0">O tipo de anúncio e o frete podem gerar cobranças conforme as regras da sua conta. As fotos selecionadas serão compartilhadas com o Mercado Livre para validar e criar o anúncio.</p>
 <div class="editor-actions"><a class="btn btn-outline-secondary" href="{% url 'mercadolivre:selecionar' peca.pk %}">Voltar à peça</a><button class="btn btn-primary" type="submit">Validar e revisar anúncio</button></div></form>

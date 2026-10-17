@@ -1,8 +1,9 @@
 import uuid
+from decimal import Decimal
 from pathlib import Path
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
 from core.codigos import atribuir_codigo
 from core.models import TimestampedModel
@@ -54,6 +55,10 @@ class Localizacao(TimestampedModel):
 
 
 class Peca(TimestampedModel):
+    CAMPOS_MERCADO_LIVRE = (
+        "ml_titulo", "ml_descricao", "ml_categoria_id", "ml_fabricante", "ml_numero_peca", "ml_oem", "ml_origem",
+        "ml_preco", "ml_quantidade", "ml_condicao", "ml_tipo", "ml_envio", "ml_retirada", "ml_frete_gratis",
+    )
     class Status(models.TextChoices):
         DISPONIVEL = "disponivel", "Disponível"
         RESERVADA = "reservada", "Reservada"
@@ -94,6 +99,36 @@ class Peca(TimestampedModel):
         help_text="Informe veículos, modelos ou outras aplicações compatíveis.")
     observacoes = models.TextField("observações", blank=True)
     status = models.CharField(max_length=20, choices=Status, default=Status.DISPONIVEL, db_index=True)
+
+    # Preparação local e opcional. Estes campos não selecionam nem publicam a peça.
+    ml_titulo = models.CharField("Título do anúncio", max_length=200, blank=True,
+        help_text="Se não preencher, será usado o nome da peça. O limite final depende da categoria.")
+    ml_descricao = models.TextField("Descrição pública do anúncio", max_length=50000, blank=True,
+        help_text="Informe estado, aplicação e itens incluídos. As observações internas não serão copiadas.")
+    ml_categoria_id = models.CharField("Categoria no Mercado Livre (código opcional)", max_length=23, blank=True,
+        validators=[RegexValidator(r"\AMLB[0-9]{1,20}\Z", "Informe um código de categoria como MLB192572, ou deixe vazio.")],
+        help_text="Preencha somente se já souber o código. Você também pode escolher a categoria ao publicar.")
+    ml_fabricante = models.CharField("Marca / fabricante da peça", max_length=200, blank=True,
+        help_text="Ex.: Bosch, Magneti Marelli ou Cibié. É diferente da marca do veículo.")
+    ml_numero_peca = models.CharField("Número / referência da peça", max_length=200, blank=True)
+    ml_oem = models.CharField("Código OEM", max_length=200, blank=True)
+    ml_origem = models.CharField("Origem da peça", max_length=200, blank=True)
+    ml_preco = models.DecimalField("Preço para o Mercado Livre (R$)", max_digits=12, decimal_places=2,
+        blank=True, null=True, validators=[MinValueValidator(Decimal("0.01"))],
+        help_text="Opcional. Se vazio, será sugerido o preço de venda do estoque. Não altera o preço local.")
+    ml_quantidade = models.PositiveIntegerField("Quantidade pretendida no anúncio", blank=True, null=True,
+        validators=[MinValueValidator(1)], help_text="Se vazio, a sugestão é uma unidade. Na revisão, será limitada ao estoque disponível.")
+    ml_condicao = models.CharField("Condição no anúncio", max_length=20, blank=True,
+        choices=[("new", "Nova"), ("used", "Usada"), ("not_specified", "Não especificada")],
+        help_text="Se vazio, será sugerida a condição cadastrada na peça.")
+    ml_tipo = models.CharField("Tipo de anúncio", max_length=20, blank=True,
+        choices=[("gold_special", "Clássico"), ("gold_pro", "Premium"), ("free", "Grátis")],
+        help_text="A disponibilidade e os custos serão conferidos com o Mercado Livre na publicação.")
+    ml_envio = models.CharField("Modalidade de envio", max_length=20, blank=True,
+        choices=[("me2", "Mercado Envios"), ("not_specified", "Combinar com o comprador")])
+    ml_retirada = models.BooleanField("Permitir retirada pessoal", null=True, blank=True, default=None)
+    ml_frete_gratis = models.BooleanField("Oferecer frete grátis", null=True, blank=True, default=None,
+        help_text="Os custos e as regras do frete devem ser conferidos antes de publicar.")
 
     class Meta:
         ordering = ["nome", "codigo"]

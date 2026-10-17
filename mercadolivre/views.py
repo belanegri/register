@@ -210,6 +210,8 @@ def preparar_publicacao(request, pk):
     peca = get_object_or_404(Peca, pk=pk)
     form, categorias, erro, categoria = None, [], "", None
     categoria_id = request.GET.get("categoria", "")
+    if not categoria_id and not request.GET.get("trocar_categoria") and "busca" not in request.GET:
+        categoria_id = peca.ml_categoria_id
     busca = request.GET.get("busca", peca.nome).strip()[:100]
     try:
         autorizar_publicacao(request.user)

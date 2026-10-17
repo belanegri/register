@@ -1,0 +1,13 @@
+<fieldset class="border rounded-3 p-3 mt-4">
+  <legend class="float-none w-auto px-2 fs-6 fw-semibold">Preparar anúncio no Mercado Livre · opcional</legend>
+  <p class="small text-secondary">Adiante os dados do anúncio aqui. Salvar a peça não publica, não a seleciona e não altera anúncios existentes. Na publicação manual, os dados serão carregados para você conferir e ajustar.</p>
+  <div class="row g-3">
+    {% for field in form.campos_mercadolivre %}
+    <div class="{% if field.name == 'ml_titulo' or field.name == 'ml_descricao' %}col-12{% else %}col-md-6{% endif %}">
+      {{ field.label_tag }}{{ field }}
+      {% if field.help_text %}<small class="d-block text-secondary mt-1">{{ field.help_text }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+    {% endfor %}
+  </div>
+</fieldset>

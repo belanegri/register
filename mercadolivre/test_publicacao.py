@@ -38,6 +38,28 @@ class PublicacaoTests(TestCase):
     def form(self, **updates):
         return PublicacaoForm({**self.dados, **updates}, peca=self.peca, categoria=self.categoria, atributos=self.attrs, tipos=self.tipos)
 
+    @patch("mercadolivre.publicacao.acesso_api")
+    @patch("mercadolivre.publicacao.metadados")
+    def test_categoria_salva_precarrega_e_pode_ser_trocada(self, metadata, acesso):
+        self.peca.ml_categoria_id = "MLB123"
+        self.peca.ml_descricao = "Descrição cadastrada"
+        self.peca.save()
+        metadata.return_value = (self.categoria, self.attrs, self.tipos)
+        acesso.return_value = (self.conexao, "token-teste", Cliente())
+        acesso.return_value[2].enviar = lambda *args, **kwargs: []
+        url = reverse("mercadolivre:preparar_publicacao", args=[self.peca.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        metadata.assert_called_once_with(self.admin, "MLB123")
+        self.assertEqual(response.context["form"]["descricao"].value(), "Descrição cadastrada")
+        metadata.reset_mock()
+        self.client.get(url, {"trocar_categoria": "1"})
+        metadata.assert_not_called()
+        self.client.get(url, {"busca": "lanterna"})
+        metadata.assert_not_called()
+        self.client.get(url, {"categoria": "MLB456"})
+        metadata.assert_called_once_with(self.admin, "MLB456")
+
     def rascunho(self, **extras):
         return Publicacao.objects.create(peca=self.peca, conexao=self.conexao, usuario=self.admin,
             payload={"title": "Farol", "category_id": "MLB123", "available_quantity": 1, "price": 120.5},

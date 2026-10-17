@@ -35,6 +35,12 @@ class PecaAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        for nome in ("ml_retirada", "ml_frete_gratis"):
+            if nome in self.fields:
+                self.fields[nome].widget.choices = [("unknown", "Definir na publicação"), ("true", "Sim"), ("false", "Não")]
+        if "ml_descricao" in self.fields:
+            self.fields["ml_descricao"].widget.attrs["rows"] = 4
+
         if self.instance.pk:
             self.fields["versao_estoque"].initial = (
                 self.instance.atualizado_em.isoformat()
@@ -141,7 +147,7 @@ class PecaEdicaoForm(EstiloForm, PecaAdminForm):
     class Meta(PecaAdminForm.Meta):
         fields = ["quantidade", "status", "motivo", "nome", "marca", "aplicacao", "categoria",
             "veiculo_origem", "localizacao", "custo", "preco_venda", "ano_inicial", "ano_final",
-            "motor", "posicao", "compativel", "postada_online", "condicao", "observacoes", "versao_estoque"]
+            "motor", "posicao", "compativel", "postada_online", "condicao", "observacoes", "versao_estoque"] + list(Peca.CAMPOS_MERCADO_LIVRE)
         labels = {"quantidade": "Quantidade total em estoque"}
         help_texts = {"quantidade": "Informe o total que vocÃª tem agora, nÃ£o apenas a quantidade que estÃ¡ entrando.",
             "status": "Para saldo zero, use Baixada / indisponÃ­vel. Ao repor uma peÃ§a vendida, selecione DisponÃ­vel."}
@@ -151,3 +157,11 @@ class PecaEdicaoForm(EstiloForm, PecaAdminForm):
         if "quantidade" in self.changed_data and not data.get("motivo", "").strip():
             self.add_error("motivo", "Informe o motivo da alteraÃ§Ã£o da quantidade.")
         return data
+
+    @property
+    def campos_estoque(self):
+        return [field for field in self.visible_fields() if field.name not in Peca.CAMPOS_MERCADO_LIVRE]
+
+    @property
+    def campos_mercadolivre(self):
+        return [self[nome] for nome in Peca.CAMPOS_MERCADO_LIVRE]

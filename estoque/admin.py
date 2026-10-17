@@ -76,6 +76,13 @@ class PecaAdmin(admin.ModelAdmin):
         ("Aplicação", {"fields": [("ano_inicial", "ano_final"), "motor", "posicao", "compativel"]}),
         ("Estoque e valores", {"fields": ["condicao", "localizacao", "custo", "preco_venda", "quantidade", "status"]}),
         ("Venda online", {"fields": ["postada_online"]}),
+        ("Preparar anúncio no Mercado Livre (opcional)", {
+            "classes": ["collapse"],
+            "description": "Adiante os dados do anúncio, mesmo sem conta conectada. Salvar não publica nem seleciona a peça. Na publicação manual você poderá revisar e alterar tudo.",
+            "fields": ["ml_titulo", "ml_descricao", ("ml_fabricante", "ml_numero_peca"), ("ml_oem", "ml_origem"),
+                       ("ml_preco", "ml_quantidade"), ("ml_condicao", "ml_tipo"), "ml_categoria_id", "ml_envio",
+                       ("ml_retirada", "ml_frete_gratis")],
+        }),
         ("Informações adicionais", {"fields": ["observacoes", "identificador", "criado_em", "atualizado_em"]}),
     ]
 
@@ -93,6 +100,7 @@ class PecaAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         campos = ["nome", "preco_venda", "custo", "quantidade", "status", "marca", "aplicacao", "localizacao_id", "postada_online", "compativel"]
+        campos += list(Peca.CAMPOS_MERCADO_LIVRE)
         antigo = Peca.objects.get(pk=obj.pk) if change else None
         antes = {c: str(getattr(antigo, c)) for c in campos} if antigo else {}
         super().save_model(request, obj, form, change)
