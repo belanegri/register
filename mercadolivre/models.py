@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+import uuid
 
 
 class Conexao(models.Model):
@@ -64,3 +65,28 @@ class TentativaOAuth(models.Model):
 
     class Meta:
         default_permissions = ()
+
+
+class Publicacao(models.Model):
+    """Uma tentativa por peça. Estados incertos nunca são reenviados automaticamente."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    peca = models.OneToOneField("estoque.Peca", on_delete=models.PROTECT, related_name="publicacao_ml")
+    conexao = models.ForeignKey(Conexao, on_delete=models.PROTECT)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    payload = models.JSONField(default=dict)
+    resumo = models.JSONField(default=dict)
+    descricao = models.TextField()
+    fotos = models.JSONField(default=list)
+    assinatura = models.CharField(max_length=64)
+    estado = models.CharField(max_length=20, default="revisao", choices=[
+        ("revisao", "Aguardando confirmação"), ("enviando", "Envio iniciado"),
+        ("publicada", "Publicada"), ("incerta", "Conferir no Mercado Livre"),
+        ("rejeitada", "Rejeitada pelo Mercado Livre")])
+    item_id = models.CharField(max_length=30, blank=True)
+    aviso = models.CharField(max_length=500, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        default_permissions = ()
+        permissions = [("publicar_peca", "Publicar peça individual no Mercado Livre")]

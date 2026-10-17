@@ -23,7 +23,7 @@ from core.auditoria import registrar
 from estoque.models import Peca
 from .api import ErroIntegracao
 from .forms import VinculoForm
-from .models import Anuncio, Conexao, Selecao, TentativaOAuth
+from .models import Anuncio, Conexao, Publicacao, Selecao, TentativaOAuth
 from .seguranca import validar_configuracao
 from .servicos import conectar, importar_lote
 
@@ -61,6 +61,8 @@ def painel(request):
     if q:
         anuncios = anuncios.filter(Q(item_id__icontains=q) | Q(titulo__icontains=q) | Q(peca__codigo__icontains=q))
     return render(request, "mercadolivre/painel.html", {"conexao": Conexao.objects.first(),
+        "publicacao_habilitada": settings.MERCADOLIVRE_PUBLISH_ENABLED,
+        "publicacoes": Publicacao.objects.filter(usuario=request.user).select_related("peca").order_by("-atualizado_em")[:10] if settings.MERCADOLIVRE_PUBLISH_ENABLED else [],
         "erro_config": erro_config, "q": q, "pagina": Paginator(anuncios, 20).get_page(request.GET.get("page")),
         "selecoes": Selecao.objects.select_related("peca", "usuario").order_by("-criado_em")[:50]})
 
@@ -83,7 +85,8 @@ def autorizar(request):
     return redirect("https://auth.mercadolivre.com.br/authorization?" + urlencode({
         "response_type": "code", "client_id": settings.MERCADOLIVRE_CLIENT_ID,
         "redirect_uri": settings.MERCADOLIVRE_REDIRECT_URI, "state": estado,
-        "scope": "read offline_access", "code_challenge": challenge, "code_challenge_method": "S256"}))
+        "scope": "read write offline_access" if settings.MERCADOLIVRE_PUBLISH_ENABLED else "read offline_access",
+        "code_challenge": challenge, "code_challenge_method": "S256"}))
 
 
 @acesso
@@ -108,7 +111,7 @@ def callback(request):
         messages.error(request, str(erro))
     else:
         registrar(request.user, "mercadolivre.conectada", conexao.vendedor_id, escopos=conexao.escopos)
-        messages.success(request, "Conta conectada em modo somente leitura. Nenhum anúncio foi publicado.")
+        messages.success(request, "Conta conectada. A conexão não publica anúncios; cada publicação exige revisão e confirmação individual." if settings.MERCADOLIVRE_PUBLISH_ENABLED else "Conta conectada em modo somente leitura. Nenhum anúncio foi publicado.")
     return redirect("mercadolivre:painel")
 
 
@@ -193,4 +196,58 @@ def selecionar(request, pk):
         messages.success(request, "Seleção local atualizada. Nenhum anúncio foi enviado ao Mercado Livre.")
         return redirect(reverse("mercadolivre:selecionar", args=[pk]))
     return render(request, "mercadolivre/selecionar.html", {"peca": peca,
+        "publicacao_habilitada": settings.MERCADOLIVRE_PUBLISH_ENABLED,
+        "publicacao": getattr(peca, "publicacao_ml", None),
         "selecionada": Selecao.objects.filter(peca=peca).exists(), "anuncios": peca.anuncios_mercadolivre.all()})
+
+
+@acesso
+@permission_required(("mercadolivre.publicar_peca", "estoque.view_peca", "estoque.change_peca"), raise_exception=True)
+@require_http_methods(["GET", "POST"])
+def preparar_publicacao(request, pk):
+    from .forms import PublicacaoForm
+    from .publicacao import acesso_api, autorizar_publicacao, metadados, preparar, validar_peca
+    peca = get_object_or_404(Peca, pk=pk)
+    form, categorias, erro, categoria = None, [], "", None
+    categoria_id = request.GET.get("categoria", "")
+    busca = request.GET.get("busca", peca.nome).strip()[:100]
+    try:
+        autorizar_publicacao(request.user)
+        validar_peca(peca)
+        if categoria_id:
+            categoria, atributos, tipos = metadados(request.user, categoria_id)
+            form = PublicacaoForm(request.POST if request.method == "POST" else None,
+                peca=peca, categoria=categoria, atributos=atributos, tipos=tipos)
+            if request.method == "POST" and form.is_valid():
+                pub = preparar(request.user, peca, form)
+                return redirect("mercadolivre:revisar_publicacao", pk=pub.pk)
+        elif request.method == "GET":
+            _, token, api = acesso_api(request.user)
+            categorias = api.enviar("GET", "/sites/MLB/domain_discovery/search", token, q=busca, limit=3)
+        else:
+            erro = "Escolha a categoria antes de preparar o anúncio."
+    except ErroIntegracao as exc:
+        erro = str(exc)
+    return render(request, "mercadolivre/preparar.html", {"peca": peca, "form": form, "categorias": categorias,
+        "categoria": categoria, "busca": busca, "erro": erro})
+
+
+@acesso
+@permission_required(("mercadolivre.publicar_peca", "estoque.view_peca", "estoque.change_peca"), raise_exception=True)
+@require_http_methods(["GET", "POST"])
+def revisar_publicacao(request, pk):
+    from .models import Publicacao
+    from .publicacao import confirmar
+    pub = get_object_or_404(Publicacao.objects.select_related("peca"), pk=pk, usuario=request.user)
+    if request.method == "POST":
+        if request.POST.get("confirmacao") != str(pub.pk):
+            return HttpResponseBadRequest("Confirme a publicação individual deste anúncio.")
+        try:
+            confirmar(request.user, pub.pk)
+        except ErroIntegracao as exc:
+            messages.error(request, str(exc))
+        else:
+            messages.success(request, "Anúncio criado no Mercado Livre. Confira o resultado abaixo.")
+        return redirect("mercadolivre:revisar_publicacao", pk=pub.pk)
+    return render(request, "mercadolivre/revisar.html", {"publicacao": pub, "dados": pub.payload,
+        "fotos": pub.peca.fotos.filter(pk__in=pub.fotos), "publicacao_habilitada": settings.MERCADOLIVRE_PUBLISH_ENABLED})

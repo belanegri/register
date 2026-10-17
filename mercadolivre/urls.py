@@ -11,4 +11,6 @@ urlpatterns = [
     path("anuncios/<int:pk>/vincular/", views.vincular, name="vincular"),
     path("anuncios/<int:pk>/desvincular/", views.desvincular, name="desvincular"),
     path("pecas/<int:pk>/", views.selecionar, name="selecionar"),
+    path("pecas/<int:pk>/preparar/", views.preparar_publicacao, name="preparar_publicacao"),
+    path("publicacoes/<uuid:pk>/", views.revisar_publicacao, name="revisar_publicacao"),
 ]

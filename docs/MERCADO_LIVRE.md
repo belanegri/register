@@ -1,5 +1,7 @@
 # Mercado Livre — etapa 1: conexão e importação somente leitura
 
+Este documento registra a primeira etapa. O novo fluxo opcional de publicação individual está documentado em [Publicação manual](MERCADO_LIVRE_PUBLICACAO.md). Ele permanece desativado por padrão e depende de autorização para deploy/ativação.
+
 Implementação local; não executar deploy/push para a branch de produção sem autorização.
 
 ## Escopo entregue

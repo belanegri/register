@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Revisar publicação{% endblock %}
+{% block content %}
+<h1>Revisar publicação</h1><p>{{ publicacao.peca.codigo }} · {{ publicacao.peca.nome }}</p>
+<section class="surface p-4"><p><strong>{{ publicacao.get_estado_display }}</strong></p>
+{% if publicacao.item_id %}<p>Anúncio: <a href="https://www.mercadolivre.com.br/anuncios/lista" target="_blank" rel="noopener noreferrer">{{ publicacao.item_id }} · Conferir na minha conta</a></p>{% endif %}
+{% if publicacao.aviso %}<div class="alert alert-warning">{{ publicacao.aviso }}</div>{% endif %}
+<dl><dt>Título / nome do produto</dt><dd>{% if dados.title %}{{ dados.title }}{% else %}{{ dados.family_name }}{% endif %}</dd><dt>Categoria</dt><dd>{{ publicacao.resumo.categoria }} ({{ dados.category_id }})</dd><dt>Preço</dt><dd>R$ {{ dados.price|floatformat:2 }}</dd><dt>Quantidade</dt><dd>{{ dados.available_quantity }}</dd><dt>Condição</dt><dd>{% if dados.condition == 'used' %}Usada{% elif dados.condition == 'new' %}Nova{% else %}Não especificada{% endif %}</dd><dt>Tipo</dt><dd>{% if dados.listing_type_id == 'gold_special' %}Clássico{% elif dados.listing_type_id == 'gold_pro' %}Premium{% else %}Grátis{% endif %}</dd><dt>Envio</dt><dd>{% if dados.shipping.mode == 'me2' %}Mercado Envios{% else %}Combinar com comprador{% endif %} · Retirada: {{ dados.shipping.local_pick_up|yesno:'Sim,Não' }} · Frete grátis: {{ dados.shipping.free_shipping|yesno:'Sim,Não' }}</dd></dl>
+<h2>Fotos</h2>{% for foto in fotos %}<img src="{{ foto.imagem.url }}" alt="Foto selecionada da peça" style="max-width:150px;max-height:150px" loading="lazy">{% endfor %}
+<h2 class="mt-3">Características</h2>{% for atributo in publicacao.resumo.atributos %}<p>{{ atributo.nome }}: {{ atributo.valor }}</p>{% endfor %}
+<h2>Descrição pública</h2><div style="white-space:pre-wrap">{{ publicacao.descricao }}</div>
+{% if publicacao.estado == 'revisao' and publicacao_habilitada %}<div class="alert alert-info mt-3">Ao confirmar, este anúncio será publicado na conta da loja. Confira os custos do tipo de anúncio e do frete no Mercado Livre. A revisão vale por 15 minutos. Estoque e preços continuam sem sincronização automática.</div><form method="post">{% csrf_token %}<label><input type="checkbox" name="confirmacao" value="{{ publicacao.pk }}" required> Revisei os dados e autorizo publicar somente esta peça.</label><button class="btn btn-primary d-block mt-3">Confirmar e publicar esta peça</button></form><a href="{% url 'mercadolivre:preparar_publicacao' publicacao.peca_id %}?categoria={{ dados.category_id }}">Corrigir dados antes de publicar</a>{% endif %}
+{% if publicacao.estado == 'incerta' or publicacao.estado == 'enviando' %}<div class="alert alert-warning">Não envie novamente. Confira os anúncios na conta da loja e importe-os para verificar se o anúncio foi criado.</div>{% endif %}
+{% if publicacao.estado == 'rejeitada' %}<a href="{% url 'mercadolivre:preparar_publicacao' publicacao.peca_id %}?categoria={{ dados.category_id }}">Corrigir e preparar novamente</a>{% endif %}
+</section><a href="{% url 'mercadolivre:painel' %}">Gerenciar integração</a>
+{% endblock %}

@@ -27,5 +27,5 @@ class Command(BaseCommand):
                     grupo.permissions.add(*Permission.objects.filter(content_type__app_label=app, codename__in=codigos))
             if nome == "Administrador":
                 grupo.permissions.add(*Permission.objects.filter(content_type__app_label__in=["vendas", "caixa", "clientes", "core"]))
-                grupo.permissions.add(*Permission.objects.filter(content_type__app_label="mercadolivre", codename="gerenciar_integracao"))
+                grupo.permissions.add(*Permission.objects.filter(content_type__app_label="mercadolivre", codename__in=["gerenciar_integracao", "publicar_peca"]))
         self.stdout.write("Permissões operacionais adicionadas aos quatro grupos.")

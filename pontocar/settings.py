@@ -129,3 +129,5 @@ MERCADOLIVRE_SELLER_ID = env("MERCADOLIVRE_SELLER_ID", default="")
 MERCADOLIVRE_INSTALLATION_ID = env("MERCADOLIVRE_INSTALLATION_ID", default="")
 # Compatibilidade explícita por loja. Não habilita nenhum método de escrita.
 MERCADOLIVRE_PROVIDER_SCOPE_COMPAT = env.bool("MERCADOLIVRE_PROVIDER_SCOPE_COMPAT", default=False)
+# Ativação independente por loja, após aprovação do fluxo de publicação manual.
+MERCADOLIVRE_PUBLISH_ENABLED = env.bool("MERCADOLIVRE_PUBLISH_ENABLED", default=False)
