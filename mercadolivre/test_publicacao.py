@@ -226,7 +226,9 @@ class PublicacaoTests(TestCase):
         pub = Publicacao.objects.get()
         self.assertRedirects(resposta, reverse("mercadolivre:revisar_publicacao", args=[pub.pk]))
         self.assertEqual(pub.resumo["atributos"], [{"nome": "Marca", "valor": "Original"}])
-        self.assertContains(self.client.get(reverse("mercadolivre:painel")), "Minhas publicações recentes")
+        painel = self.client.get(reverse("mercadolivre:painel"))
+        self.assertContains(painel, "Minhas publicações recentes")
+        self.assertContains(painel, "<title>Mercado Livre · REGISTER</title>", html=True)
         self.assertEqual([c.args[1] for c in cls.return_value.enviar.call_args_list], ["/users/me", "/items/validate"])
 
     @patch("mercadolivre.publicacao_api.build_opener")

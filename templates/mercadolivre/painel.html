@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Mercado Livre{% if publicacao_habilitada and perms.mercadolivre.publicar_peca %}<section class="surface p-4 mt-4"><h2>Minhas publicações recentes</h2>{% for pub in publicacoes %}<p><a href="{% url 'mercadolivre:revisar_publicacao' pub.pk %}">{{ pub.peca.codigo }} · {{ pub.peca.nome }}</a> · {{ pub.get_estado_display }} {% if pub.item_id %}· {{ pub.item_id }}{% endif %}</p>{% empty %}<p>Nenhum anúncio preparado. Abra as ações de uma peça no estoque para começar.</p>{% endfor %}</section>{% endif %}
-{% endblock %}
+{% block title %}Mercado Livre{% endblock %}
 {% block content %}
 <div class="page-heading"><div><div class="eyebrow">INTEGRAÇÕES</div><h1>Mercado Livre</h1><p>Conexão e consulta dos anúncios desta loja.</p></div><span class="badge text-bg-warning">{% if publicacao_habilitada %}Publicação manual{% else %}Somente leitura{% endif %}</span></div>
 <div class="alert alert-info">{% if publicacao_habilitada %}Publique apenas uma peça por vez pelas ações do estoque, após revisar e confirmar o anúncio. Nenhuma publicação é automática.{% else %}Nesta etapa, nenhum anúncio é publicado ou alterado.{% endif %} Preços, estoque e vendas do REGISTER permanecem sob seu controle. Vincular ou selecionar uma peça não autoriza sincronização.</div>
