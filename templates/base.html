@@ -9,7 +9,7 @@
   <title>{% block title %}Painel{% endblock %} · REGISTER</title>
   <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
-  {% if user.is_authenticated %}<link rel="stylesheet" href="{% static 'css/modulos.css' %}?v=20261016-acoes">{% endif %}
+  {% if user.is_authenticated %}<link rel="stylesheet" href="{% static 'css/modulos.css' %}?v=20261016-compacto">{% endif %}
   {% block extra_css %}{% endblock %}
 </head>
 <body class="{% if user.is_authenticated %}app-shell{% if request.resolver_match.url_name != 'pdv' %} module-ui{% endif %}{% endif %}" data-module="{{ request.resolver_match.app_name }}" data-view="{{ request.resolver_match.url_name }}" data-document="{% firstof tipo doc.tipo %}">
