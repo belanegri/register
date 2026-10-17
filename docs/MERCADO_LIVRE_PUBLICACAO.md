@@ -1,6 +1,17 @@
 # Publicação manual de peças no Mercado Livre
 
-Implementada localmente. Ativação em produção depende de autorização do responsável; não fazer push/deploy enquanto não autorizado.
+Publicada e habilitada na PontoCar após autorização explícita em 16/10/2026. Qualquer nova implantação continua dependendo de autorização do responsável.
+
+## Estado de produção
+
+- Serviço PontoCar `register`: implantação `aa673456-ca50-4cb0-ad66-37a81d0d7a0e`, status `SUCCESS`, código dos commits locais `21bb6cf` e `cb624c7`.
+- Implantação direcionada pelo Railway CLI a partir de um pacote limpo, sem `.env`, tokens, fotos, backups ou temporários. **Não houve push para main**; a fonte GitHub compartilhada da Loja 2 não recebeu esse código.
+- `MERCADOLIVRE_PUBLISH_ENABLED=True` configurado somente no serviço PontoCar. Migração e permissões aplicadas pelo predeploy.
+- Titular salvou pessoalmente a permissão funcional de publicação em Leitura e escrita no Developers. Conta reconectada; token confirmou `publish-sync:/read-write`, com cifra preservada.
+- Confirmadas via API real as sugestões de categoria, características e tipos permitidos. Perfil da conta usa User Products.
+- Formulário da peça REG000159 aberto e conferido pelo navegador; **nenhum anúncio foi preparado/enviado/criado na ativação**. A primeira publicação real exige revisão e confirmação do usuário.
+- Loja 2 permaneceu na implantação anterior `3bae84cc-8a2a-42f5-9ac0-24b18696c584`, com integração e publicação desativadas; sem alteração de variáveis ou reinício.
+- Validação adicional: teste do título do painel aprovado após correção; título e formulário finais conferidos em produção.
 
 ## Uso
 
