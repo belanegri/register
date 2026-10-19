@@ -15,6 +15,19 @@ class Rejeitada(ErroIntegracao):
     pass
 
 
+def codigos_validacao(causas):
+    return [c["code"] for c in causas if isinstance(c, dict) and
+            isinstance(c.get("code"), str) and re.fullmatch(r"[a-zA-Z0-9_.-]{1,100}", c["code"])][:8]
+
+
+def avisos_validacao(resposta):
+    if not isinstance(resposta, dict) or not isinstance(resposta.get("cause", []), list):
+        return []
+    codigos = codigos_validacao([c for c in resposta.get("cause", []) if isinstance(c, dict) and c.get("type") == "warning"])
+    return ["ME1 não está habilitado nesta conta. Confira a modalidade de envio escolhida; este aviso não bloqueia a validação."
+            if c == "shipping.lost_me1_by_user" else "Aviso do Mercado Livre: " + c for c in codigos]
+
+
 class ClientePublicacao:
     LEITURAS = re.compile(r"/(?:users/me|categories/MLB[0-9]+(?:/attributes)?|sites/MLB/domain_discovery/search|users/[0-9]+/available_listing_types)\Z")
     ESCRITAS = re.compile(r"/items(?:/validate|/MLB[0-9]+/description)?\Z")
@@ -44,12 +57,22 @@ class ClientePublicacao:
                 codigos = []
                 try:
                     obj = json.loads(erro.read(65536))
-                    codigos = [c.get("code", "") for c in obj.get("cause", []) if isinstance(c, dict)]
+                    causas = obj.get("cause", [])
+                    # /validate pode responder 400 somente com avisos informativos.
+                    # Isso nunca transforma uma resposta de criação em sucesso nem
+                    # repete POST /items. Causas desconhecidas continuam bloqueando.
+                    if (metodo == "POST" and caminho == "/items/validate" and erro.code == 400
+                            and obj.get("error") == "validation_error" and isinstance(causas, list) and causas
+                            and all(isinstance(c, dict) and c.get("type") == "warning"
+                                    and codigos_validacao([c]) for c in causas)):
+                        return {"cause": causas}
+                    codigos = codigos_validacao(causas) if isinstance(causas, list) else []
                 except (ValueError, TypeError, AttributeError):
                     pass
-                codigos = [c for c in codigos if isinstance(c, str) and re.fullmatch(r"[a-zA-Z0-9_.-]{1,100}", c)][:8]
                 orientacao = {401: "Reconecte a conta.", 403: "Confira a permissão de publicação da aplicação e reconecte.",
                              429: "Aguarde antes de tentar novamente."}.get(erro.code, "Revise categoria, características, fotos, envio e preço.")
+                if erro.code in (400, 422) and "shipping.lost_me1_by_user" in codigos:
+                    orientacao = "ME1 não está habilitado nesta conta. Confira a modalidade de envio permitida pelo Mercado Livre. Não houve confirmação de publicação."
                 raise Rejeitada("Mercado Livre recusou a solicitação. " + orientacao + (" Códigos: " + ", ".join(codigos) if codigos else "")) from None
             raise ErroIntegracao("Resposta inconclusiva. Confira o anúncio no Mercado Livre antes de qualquer novo envio.") from None
         except (URLError, OSError, TimeoutError, ValueError):

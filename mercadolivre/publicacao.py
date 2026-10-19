@@ -14,7 +14,7 @@ from core.auditoria import registrar
 from estoque.models import Peca
 from .api import ErroIntegracao
 from .models import Anuncio, Conexao, Publicacao
-from .publicacao_api import ClientePublicacao, Rejeitada
+from .publicacao_api import ClientePublicacao, Rejeitada, avisos_validacao
 from .seguranca import validar_conexao
 from .servicos import token_atual, extrair_anuncio
 
@@ -98,7 +98,8 @@ def preparar(usuario, peca, form):
     payload["family_name" if "user_product_seller" in perfil.get("tags", []) else "title"] = dados["titulo"]
     fotos = [f.pk for f in dados["fotos"]]
     enviado = {**payload, "pictures": fotos_payload(peca, fotos)}
-    api.enviar("POST", "/items/validate", token, enviado)
+    validacao = api.enviar("POST", "/items/validate", token, enviado)
+    resumo["avisos"] = avisos_validacao(validacao)
     with transaction.atomic():
         peca = Peca.objects.select_for_update().get(pk=peca.pk)
         validar_peca(peca)

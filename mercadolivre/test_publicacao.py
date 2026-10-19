@@ -1,6 +1,7 @@
 from datetime import timedelta
 from unittest.mock import patch
 from io import BytesIO
+import json
 from urllib.error import HTTPError, URLError
 
 from django.contrib.auth import get_user_model
@@ -266,6 +267,43 @@ class PublicacaoTests(TestCase):
         self.assertIn('<img ', html)
         self.assertTrue(form.is_valid())
         self.assertEqual(list(form.cleaned_data["fotos"]), [self.foto])
+
+    @patch("mercadolivre.publicacao_api.build_opener")
+    def test_aviso_me1_so_libera_validacao_e_nunca_criacao(self, opener):
+        warning = {"code": "shipping.lost_me1_by_user", "type": "warning", "cause_id": 4053}
+
+        def resposta(causes, status=400):
+            opener.return_value.open.side_effect = HTTPError("url", status, "erro", {},
+                BytesIO(json.dumps({"error": "validation_error", "cause": causes}).encode()))
+
+        resposta([warning])
+        result = ClientePublicacao().enviar("POST", "/items/validate", "token", {})
+        self.assertEqual(result["cause"], [warning])
+        for causas in ([warning], [warning, {"code": "item.price.invalid", "type": "error"}],
+                       [{"code": "shipping.lost_me1_by_user"}], [], ["warning"],
+                       [{"type": "warning", "code": "segredo/token"}]):
+            for path in (["/items"] if causas == [warning] else ["/items/validate", "/items"]):
+                resposta(causas)
+                with self.assertRaises(Rejeitada):
+                    ClientePublicacao().enviar("POST", path, "token", {})
+        resposta([warning], 403)
+        with self.assertRaises(Rejeitada):
+            ClientePublicacao().enviar("POST", "/items/validate", "token", {})
+
+    @patch("mercadolivre.publicacao.fotos_payload", return_value=[{"source": "https://storage.test/foto"}])
+    @patch("mercadolivre.publicacao.ClientePublicacao")
+    def test_aviso_de_envio_aparece_na_revisao_sem_publicar(self, cls, fotos):
+        cls.return_value.enviar.side_effect = [{"id": 9876}, {"cause": [
+            {"code": "shipping.lost_me1_by_user", "type": "warning", "message": "token-secreto"}]}]
+        form = self.form()
+        self.assertTrue(form.is_valid())
+        pub = preparar(self.admin, self.peca, form)
+        response = self.client.get(reverse("mercadolivre:revisar_publicacao", args=[pub.pk]))
+        self.assertContains(response, "ME1 não está habilitado nesta conta")
+        self.assertNotContains(response, "token-secreto")
+        self.assertEqual(pub.estado, "revisao")
+        self.assertFalse(pub.item_id)
+        self.assertEqual([c.args[1] for c in cls.return_value.enviar.call_args_list], ["/users/me", "/items/validate"])
 
     @patch("mercadolivre.publicacao_api.build_opener")
     def test_erros_http_sanitizados_e_falhas_ambiguas(self, opener):
