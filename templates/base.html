@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   {% if user.is_authenticated %}<link rel="stylesheet" href="{% static 'css/modulos.css' %}?v=20261016-compacto">{% endif %}
   {% block extra_css %}{% endblock %}
+  {% if request.resolver_match.app_name == 'fiscal' %}<link rel="stylesheet" href="{% static 'css/fiscal.css' %}?v=20261027-organizacao">{% endif %}
 </head>
 <body class="{% if user.is_authenticated %}app-shell{% if request.resolver_match.url_name != 'pdv' %} module-ui{% endif %}{% endif %}" data-module="{{ request.resolver_match.app_name }}" data-view="{{ request.resolver_match.url_name }}" data-document="{% firstof tipo doc.tipo %}">
 <a class="visually-hidden-focusable skip-link" href="#conteudo">Ir para o conteúdo</a>
@@ -26,10 +27,11 @@
 {% if perms.comercial.view_documento %}<a class="nav-link {% if tipo == 'orcamento' or doc.tipo == 'orcamento' %}active{% endif %}" href="{% url 'comercial:documentos' 'orcamento' %}">{% include 'components/nav_icon.html' with name='quote' %}<span class="nav-text">Orçamentos</span></a>{% endif %}
 {% if perms.comercial.view_documento %}<a class="nav-link {% if tipo == 'os' or doc.tipo == 'os' %}active{% endif %}" href="{% url 'comercial:documentos' 'os' %}">{% include 'components/nav_icon.html' with name='os' %}<span class="nav-text">Ordens de serviço</span></a>{% endif %}
 {% if perms.vendas.view_venda %}<a class="nav-link {% if request.resolver_match.app_name == 'vendas' and request.resolver_match.url_name != 'pdv' and request.resolver_match.url_name != 'relatorios' %}active{% endif %}" href="{% url 'vendas:lista' %}">{% include 'components/nav_icon.html' with name='sale' %}<span class="nav-text">Vendas</span></a>{% endif %}
+{% if perms.clientes.view_cliente %}<a class="nav-link {% if request.resolver_match.url_name == 'etiquetas_entrega' %}active{% endif %}" href="{% url 'core:etiquetas_entrega' %}">{% include 'components/nav_icon.html' with name='box' %}<span class="nav-text">Etiquetas de entrega</span></a>{% endif %}
 <div class="nav-label">CADASTROS</div>
 {% if perms.estoque.view_peca %}<a class="nav-link {% if request.resolver_match.app_name == 'estoque' %}active{% endif %}" href="{% url 'estoque:lista' %}">{% include 'components/nav_icon.html' with name='box' %}<span class="nav-text">Peças</span></a>{% endif %}
 {% if perms.comercial.view_servico %}<a class="nav-link {% if request.resolver_match.url_name == 'servicos' or request.resolver_match.url_name == 'servico_novo' or request.resolver_match.url_name == 'servico_editar' %}active{% endif %}" href="{% url 'comercial:servicos' %}">{% include 'components/nav_icon.html' with name='service' %}<span class="nav-text">Serviços</span></a>{% endif %}
-{% if perms.clientes.view_cliente %}<a class="nav-link {% if request.resolver_match.app_name == 'clientes' %}active{% endif %}" href="{% url 'clientes:lista' %}">{% include 'components/nav_icon.html' with name='users' %}<span class="nav-text">Clientes</span></a>{% endif %}
+{% if perms.clientes.view_cliente %}<a class="nav-link {% if request.resolver_match.app_name == 'clientes' %}active{% endif %}" href="{% url 'clientes:lista' %}">{% include 'components/nav_icon.html' with name='users' %}<span class="nav-text">Pessoas e empresas</span></a>{% endif %}
 {% if user.is_staff and perms.veiculos.view_veiculo %}<a class="nav-link" href="{% url 'admin:veiculos_veiculo_changelist' %}">{% include 'components/nav_icon.html' with name='car' %}<span class="nav-text">Veículos de origem</span></a>{% endif %}
 {% if user.is_staff and perms.estoque.view_categoria %}<a class="nav-link" href="{% url 'admin:estoque_categoria_changelist' %}">{% include 'components/nav_icon.html' with name='grid' %}<span class="nav-text">Categorias</span></a>{% endif %}
 {% if user.is_staff and perms.estoque.view_localizacao %}<a class="nav-link" href="{% url 'admin:estoque_localizacao_changelist' %}">{% include 'components/nav_icon.html' with name='pin' %}<span class="nav-text">Localizações</span></a>{% endif %}
@@ -41,7 +43,7 @@
 {% if perms.contas.view_contapagar %}<a class="nav-link {% if request.resolver_match.app_name == 'contas' %}active{% endif %}" href="{% url 'contas:lista' %}">{% include 'components/nav_icon.html' with name='expense' %}<span class="nav-text">Contas a pagar</span></a>{% endif %}
 {% if perms.vendas.ver_relatorios %}<a class="nav-link {% if request.resolver_match.url_name == 'relatorios' %}active{% endif %}" href="{% url 'vendas:relatorios' %}">{% include 'components/nav_icon.html' with name='chart' %}<span class="nav-text">Relatórios</span></a>{% endif %}
 {% if perms.core.change_configuracaoempresa or user.is_staff %}<div class="nav-label">SISTEMA</div>{% endif %}
-{% if perms.core.change_configuracaoempresa %}<a class="nav-link {% if request.resolver_match.app_name == 'core' %}active{% endif %}" href="{% url 'core:configuracao_empresa' %}">{% include 'components/nav_icon.html' with name='company' %}<span class="nav-text">Minha empresa</span></a>{% endif %}
+{% if perms.core.change_configuracaoempresa %}<a class="nav-link {% if request.resolver_match.url_name == 'configuracao_empresa' %}active{% endif %}" href="{% url 'core:configuracao_empresa' %}">{% include 'components/nav_icon.html' with name='company' %}<span class="nav-text">Minha empresa</span></a>{% endif %}
 {% if user.is_staff %}<a class="nav-link" href="{% url 'admin:index' %}">{% include 'components/nav_icon.html' with name='settings' %}<span class="nav-text">Administração</span></a>{% endif %}
 </nav>
     <div class="sidebar-note mt-auto"><span class="status-dot"></span> Seu estoque, organizado.<small>Da origem da peça ao balcão.</small></div>
@@ -54,6 +56,7 @@
   </header>
   <main id="conteudo" class="main-content">
     {% include 'components/messages.html' %}
+    {% if request.resolver_match.app_name == 'fiscal' %}{% include 'fiscal/navegacao.html' %}{% endif %}
     {% block content %}{% endblock %}
     <footer class="page-footer">REGISTER <span>Organização que move o seu negócio.</span></footer>
   </main>
@@ -62,6 +65,7 @@
 <main id="conteudo">{% include 'components/messages.html' %}{% block public_content %}{% endblock %}</main>
 {% endif %}
 <script src="{% static 'vendor/bootstrap.bundle.min.js' %}" defer></script>
+{% if request.resolver_match.app_name == 'fiscal' %}<script src="{% static 'js/fiscal-cadastros.js' %}" defer></script>{% endif %}
 {% if user.is_authenticated %}<script src="{% static 'js/modulos.js' %}?v=20261015" defer></script>{% endif %}
 </body>
 </html>

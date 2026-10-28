@@ -43,7 +43,7 @@ def finalizar(usuario, chave, carrinho, pagamentos, desconto=0, cliente_id=None,
         exigir(usuario, "vendas.dar_desconto")
     cliente = None
     if cliente_id:
-        cliente = Cliente.objects.filter(pk=cliente_id, ativo=True).first()
+        cliente = Cliente.objects.filter(pk=cliente_id, ativo=True, eh_cliente=True).first()
         if not cliente:
             raise ValidationError("Cliente não encontrado ou inativo.")
     ids_pecas = [k for k in carrinho if not str(k).startswith("s:")]

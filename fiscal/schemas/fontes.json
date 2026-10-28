@@ -110,5 +110,30 @@
   "nfe/xmldsig-core-schema_v1.01.xsd": {
     "sha256": "f56744a5f51c03f027de13f39f869307091781a9ef1d91b1ebe14719ce28e1ac",
     "fonte": "https://hom.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=lxjvtPfGzo8="
+  },
+  "nfe/CCe_v1.00.xsd": {
+    "sha256": "479662816bbb81aa475e838a17e210482688a0a66eecbd9c03fed91cbc023ca1",
+    "fonte": "https://raw.githubusercontent.com/nfephp-org/sped-nfe/master/schemes/PL_010_V1.30/CCe_v1.00.xsd",
+    "especificacao": "https://www.nfe.fazenda.gov.br/Portal/exibirArquivo.aspx?conteudo=hNJXbmu+l8Q%3D"
+  },
+  "nfe/envCCe_v1.00.xsd": {
+    "sha256": "7b75c1a452fd155ad2dd9f88c93a234da10ebc07ea9f956c3e1dadc5813fe469",
+    "fonte": "https://raw.githubusercontent.com/nfephp-org/sped-nfe/master/schemes/PL_010_V1.30/envCCe_v1.00.xsd",
+    "especificacao": "https://www.nfe.fazenda.gov.br/Portal/exibirArquivo.aspx?conteudo=hNJXbmu+l8Q%3D"
+  },
+  "nfe/leiauteCCe_v1.00.xsd": {
+    "sha256": "903bc4104f60788bf15baa966eef7857f9f667164d81a6f44444c861382e7dc8",
+    "fonte": "https://raw.githubusercontent.com/nfephp-org/sped-nfe/master/schemes/PL_010_V1.30/leiauteCCe_v1.00.xsd",
+    "especificacao": "https://www.nfe.fazenda.gov.br/Portal/exibirArquivo.aspx?conteudo=hNJXbmu+l8Q%3D"
+  },
+  "nfe/procCCeNFe_v1.00.xsd": {
+    "sha256": "3827487dc2206d3dc2b5503e4dd4c7a625b99a8d9939dc1953e2e4522cf40048",
+    "fonte": "https://raw.githubusercontent.com/nfephp-org/sped-nfe/master/schemes/PL_010_V1.30/procCCeNFe_v1.00.xsd",
+    "especificacao": "https://www.nfe.fazenda.gov.br/Portal/exibirArquivo.aspx?conteudo=hNJXbmu+l8Q%3D"
+  },
+  "nfe/retEnvCCe_v1.00.xsd": {
+    "sha256": "c98332af1c891497b7550a3373bebe21adce3c75fc14c9daa82040901b19f436",
+    "fonte": "https://raw.githubusercontent.com/nfephp-org/sped-nfe/master/schemes/PL_010_V1.30/retEnvCCe_v1.00.xsd",
+    "especificacao": "https://www.nfe.fazenda.gov.br/Portal/exibirArquivo.aspx?conteudo=hNJXbmu+l8Q%3D"
   }
 }

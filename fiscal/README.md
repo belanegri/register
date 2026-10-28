@@ -1,6 +1,6 @@
 # Fiscal REGISTER
 
-Etapa atual SEFAZ-SP: NF-e/NFC-e estão restritas a endpoints oficiais de **homologação**, inclusive quando flags de produção estiverem configuradas. Os demais módulos comerciais e o gerador de documento auxiliar não foram alterados nesta etapa.
+NF-e (55) suporta os endpoints oficiais da SEFAZ-SP em homologação e produção. Produção exige flags e validações explícitas da instalação; NFC-e continua restrita a homologação. Uma prévia é salva como rascunho por usuário, sem numeração; a reserva e a transmissão são ações separadas.
 
 Em **Configurações fiscais / Testar conexão SEFAZ**, selecione NF-e ou NFC-e após salvar UF SP, ambiente homologação e A1. A ação exige permissão de configuração e POST com CSRF. Pode ser usada com a emissão desativada: envia apenas `consStatServ` 4.00 (`tpAmb=2`, `cUF=35`, `xServ=STATUS`) por SOAP 1.2 e autenticação mTLS, conforme MOC 7.0 §5.5. Não assina o XML de status, não emite notas, não reserva série/número e não grava documentos/eventos. O resultado conectado exige `cStat=107`, ambiente/UF/versão e campos obrigatórios compatíveis. Os endereços são fixados no código a partir dos portais oficiais citados ao final; overrides diferentes são recusados. Não foram criados esquemas XML próprios.
 
@@ -56,3 +56,19 @@ O pacote NFS-e 1.01 publica a expressão de série `^0{0,4}\d{1,5}$`, incompatí
 Certificados privados/segredos não são gravados em logs nem servidos por download. Chaves temporárias de mTLS permanecem criptografadas e são removidas ao concluir a conexão. XML e documentos ficam restritos à permissão de consulta. Respostas de auditoria são sanitizadas; certificados/senhas/CSC/tokens são removidos. Alterar a chave Fernet sem processo de migração torna os segredos existentes inacessíveis.
 
 Referências: [SEFAZ-SP NF-e](https://portal.fazenda.sp.gov.br/servicos/nfe/Paginas/URL-WEBSERVICES.aspx), [SEFAZ-SP NFC-e](https://portal.fazenda.sp.gov.br/servicos/nfce/Paginas/WebServices.aspx), [APIs NFS-e](https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/apis-prod-restrita-e-producao), [documentação e esquemas NFS-e](https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual).
+
+
+## Status, CC-e e CEP
+A página de status apresenta o retorno, chave, protocolo e tentativas. CC-e usa evento 110110, sequências 1–20, assinatura A1 e validação dos XSD; só cStat 135 com chave, ambiente, sequência e protocolo correspondentes confirma registro. A CC-e não cancela a NF-e. Respostas incertas exigem consulta e não permitem novo número/evento para contornar a pendência. Cancelamento e inutilização continuam como eventos distintos.
+
+IBS/CBS normal CST 000/cClassTrib 000001 usa campos próprios e totalização do XML; o cálculo de 2026 considera IBS UF 0,1%, municipal 0% e CBS 0,9%. Outras situações não são aproximadas. A base PIS/COFINS é selecionável; a base IBS/CBS desconta os tributos da regra UB16-10. DIFAL de saída para consumidor final não contribuinte em outra UF suporta CRT 3/CST 00, base integral no preço final, alíquota interna e FCP explícitos por nota. FCP vazio não equivale a zero. Reduções e isenções não são presumidas. O grupo ICMSUFDest e os totais entram no XML; DIFAL e FCP do destino são deduzidos da base IBS/CBS (UB16-10). O imposto já está incluído no preço final e não é somado novamente ao total. A conferência permanece sem numeração e sem transmissão.
+
+O CEP é consultado no ViaCEP por um endpoint autenticado, em URL fixa com 8 dígitos; somente o CEP é enviado. Os dados ficam editáveis. Falha de consulta não impede o preenchimento manual.
+
+
+## Central fiscal e transporte
+A Central reúne rascunhos e notas numeradas com busca comum, filtros de modelo/operação/ambiente e abas por etapa. As rotas antigas continuam disponíveis. Rascunhos de saída e entrada ficam restritos ao usuário, inclusive no salvamento incompleto e na paginação. A tela de preparação salva/confronta a prévia; numeração e transmissão são etapas seguintes.
+
+Transporte da NF-e usa os mesmos campos na saída e na entrada: modalidade (0/1/2/3/4/9), transportador, CPF/CNPJ/IE, endereço, veículo/UF/RNTRC, volumes e pesos em kg com três casas decimais. O XML serializa transportador e volumes conforme o XSD instalado, e a DANFE lê esse XML. Conforme MOC 7.0 X02-20, veicTransp não é enviado nas operações interestaduais: placa e RNTRC permanecem no controle interno do envio, com indicação na conferência. Nas demais operações suportadas, o veículo compõe o grupo correspondente do XML. Dados e frete contraditórios, placa incompleta e peso bruto menor que o líquido são recusados. Registros anteriores sem transporte estruturado mantêm a modalidade já usada pelo emissor (0 quando há frete, 9 nos demais casos).
+
+Notas numeradas podem complementar transporte apenas antes da primeira transmissão e sem XML assinado/autorizado. Essa edição preserva número, total e tributos. Notas transmitidas, com situação incerta ou autorizadas não são reescritas por essa ação. A atualização da interface não emite notas nem cria transportadores fictícios.

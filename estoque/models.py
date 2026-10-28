@@ -57,8 +57,11 @@ class Localizacao(TimestampedModel):
 class Peca(TimestampedModel):
     CAMPOS_MERCADO_LIVRE = (
         "ml_titulo", "ml_descricao", "ml_categoria_id", "ml_fabricante", "ml_numero_peca", "ml_oem", "ml_origem",
-        "ml_preco", "ml_quantidade", "ml_condicao", "ml_tipo", "ml_envio", "ml_retirada", "ml_frete_gratis",
+        "ml_preco", "ml_quantidade", "ml_condicao", "ml_tipo", "ml_envio", "ml_retirada", "ml_frete_gratis", "ml_caracteristicas", "ml_garantia_tipo", "ml_garantia_prazo", "ml_garantia_unidade",
     )
+    GARANTIAS_ML = [("2230280", "Garantia do vendedor"), ("2230279", "Garantia de fábrica"), ("6150835", "Sem garantia")]
+    UNIDADES_GARANTIA_ML = [("dias", "dias"), ("meses", "meses"), ("anos", "anos")]
+
     class Status(models.TextChoices):
         DISPONIVEL = "disponivel", "Disponível"
         RESERVADA = "reservada", "Reservada"
@@ -100,6 +103,26 @@ class Peca(TimestampedModel):
     observacoes = models.TextField("observações", blank=True)
     status = models.CharField(max_length=20, choices=Status, default=Status.DISPONIVEL, db_index=True)
 
+    classificacao_fiscal_no_estoque = models.BooleanField(default=False, editable=False)
+    ncm = models.CharField("NCM", max_length=8, blank=True,
+        validators=[RegexValidator(r"\A[0-9]{8}\Z", "Informe os 8 dígitos do NCM.")],
+        help_text="Classificação específica desta peça, usada nas notas de entrada e saída.")
+    origem_fiscal = models.CharField("Origem fiscal da mercadoria", max_length=1, blank=True,
+        choices=[("0", "0 — Nacional"), ("1", "1 — Estrangeira: importação direta"),
+                 ("2", "2 — Estrangeira: adquirida no mercado interno"),
+                 ("3", "3 — Nacional: conteúdo de importação superior a 40% e até 70%"),
+                 ("4", "4 — Nacional: processos produtivos básicos"),
+                 ("5", "5 — Nacional: conteúdo de importação até 40%"),
+                 ("6", "6 — Estrangeira: importação direta, sem similar nacional"),
+                 ("7", "7 — Estrangeira: mercado interno, sem similar nacional"),
+                 ("8", "8 — Nacional: conteúdo de importação superior a 70%")],
+        help_text="Selecione conforme a procedência comprovada da peça.")
+    cest = models.CharField("CEST", max_length=7, blank=True,
+        validators=[RegexValidator(r"\A[0-9]{7}\Z", "Informe os 7 dígitos do CEST.")],
+        help_text="Preencha quando houver enquadramento. Deixe vazio se não se aplica.")
+    classificacao_fiscal_conferida = models.BooleanField("NCM, origem e enquadramento do CEST conferidos", default=False,
+        help_text="Confirme após revisar os dados desta peça. Necessário para preparar a nota fiscal.")
+
     # Preparação local e opcional. Estes campos não selecionam nem publicam a peça.
     ml_titulo = models.CharField("Título do anúncio", max_length=200, blank=True,
         help_text="Se não preencher, será usado o nome da peça. O limite final depende da categoria.")
@@ -113,6 +136,11 @@ class Peca(TimestampedModel):
     ml_numero_peca = models.CharField("Número / referência da peça", max_length=200, blank=True)
     ml_oem = models.CharField("Código OEM", max_length=200, blank=True)
     ml_origem = models.CharField("Origem da peça", max_length=200, blank=True)
+    ml_garantia_tipo = models.CharField("Garantia", max_length=20, blank=True, choices=GARANTIAS_ML)
+    ml_garantia_prazo = models.PositiveSmallIntegerField("Prazo de garantia", null=True, blank=True, validators=[MinValueValidator(1)])
+    ml_garantia_unidade = models.CharField("Unidade do prazo de garantia", max_length=10, blank=True,
+        choices=UNIDADES_GARANTIA_ML, default="dias")
+    ml_caracteristicas = models.JSONField("Características secundárias do anúncio", default=dict, blank=True)
     ml_preco = models.DecimalField("Preço para o Mercado Livre (R$)", max_digits=12, decimal_places=2,
         blank=True, null=True, validators=[MinValueValidator(Decimal("0.01"))],
         help_text="Opcional. Se vazio, será sugerido o preço de venda do estoque. Não altera o preço local.")
@@ -147,6 +175,11 @@ class Peca(TimestampedModel):
 
     def clean(self):
         super().clean()
+        if self.classificacao_fiscal_conferida:
+            erros = {}
+            if not self.ncm: erros["ncm"] = "Informe o NCM antes de confirmar a classificação."
+            if not self.origem_fiscal: erros["origem_fiscal"] = "Selecione a origem antes de confirmar a classificação."
+            if erros: raise ValidationError(erros)
         if self.ano_inicial and self.ano_final and self.ano_final < self.ano_inicial:
             raise ValidationError({"ano_final": "O ano final deve ser igual ou posterior ao inicial."})
         if self.status in [self.Status.DISPONIVEL, self.Status.RESERVADA] and not self.quantidade:
@@ -184,9 +217,11 @@ class FotoPeca(TimestampedModel):
 
     def save(self, *args, **kwargs):
         if self.imagem and not self.imagem._committed:
-            from .imagens import otimizar_foto
+            from .imagens import otimizar_foto, validar_tamanho_envio
+            if not getattr(self.imagem.file, "_pontocar_otimizada", False):
+                validar_tamanho_envio(self.imagem)
+                self.imagem = otimizar_foto(self.imagem, original_celular=True)
             validar_tamanho_foto(self.imagem)
-            self.imagem = otimizar_foto(self.imagem)
         return super().save(*args, **kwargs)
 
     def __str__(self):

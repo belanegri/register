@@ -3,6 +3,7 @@ from django.utils.html import format_html
 from django.contrib import admin
 from .models import Categoria, Localizacao, Peca, FotoPeca
 from .forms import PecaAdminForm
+from mercadolivre.atributos import CAMPOS_CARACTERISTICAS
 from core.auditoria import registrar
 
 
@@ -34,24 +35,32 @@ from django.core.exceptions import ValidationError
 
 from django import forms
 
+class FotoCelularField(forms.FileField):
+    def to_python(self, data):
+        arquivo = super().to_python(data)
+        if not arquivo:
+            return arquivo
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from .imagens import otimizar_foto, validar_tamanho_envio
+        validar_tamanho_envio(arquivo)
+        convertido = otimizar_foto(arquivo, original_celular=True)
+        resultado = SimpleUploadedFile(convertido.name, convertido.read(), content_type="image/webp")
+        resultado._pontocar_otimizada = True
+        return resultado
+
+
 class FotoUploadForm(forms.ModelForm):
+    imagem = FotoCelularField(required=False, label="Imagem",
+        help_text="Fotos do celular, inclusive HEIC/HEIF, são reduzidas automaticamente. Original: até 25 MB e 50 megapixels.",
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*,.heic,.heif"}))
+
     class Meta:
         model = FotoPeca
         fields = "__all__"
 
-    def clean_imagem(self):
-        arquivo = self.cleaned_data["imagem"]
-        if arquivo and hasattr(arquivo, "content_type"):
-            # Valida também a resolução; compressão definitiva acontece no model.
-            from PIL import Image
-            from django.conf import settings
-            try:
-                with Image.open(arquivo) as imagem:
-                    if imagem.width * imagem.height > settings.PHOTO_MAX_PIXELS or getattr(imagem, "is_animated", False):
-                        raise ValidationError("Envie uma foto estática de até 24 megapixels.")
-            finally:
-                arquivo.seek(0)
-        return arquivo
+    class Media:
+        js = ["js/fotos-celular.js"]
+
 
 class FotoPecaInline(admin.TabularInline):
     model = FotoPeca
@@ -75,13 +84,19 @@ class PecaAdmin(admin.ModelAdmin):
         ("Identificação", {"fields": ["versao_estoque", "codigo_automatico", "codigo_barras", "nome", "marca", "aplicacao", "categoria", "veiculo_origem"]}),
         ("Aplicação", {"fields": [("ano_inicial", "ano_final"), "motor", "posicao", "compativel"]}),
         ("Estoque e valores", {"fields": ["condicao", "localizacao", "custo", "preco_venda", "quantidade", "status"]}),
+        ("Classificação fiscal da peça", {"fields": ["ncm", "origem_fiscal", "cest", "classificacao_fiscal_conferida"]}),
         ("Venda online", {"fields": ["postada_online"]}),
         ("Preparar anúncio no Mercado Livre (opcional)", {
             "classes": ["collapse"],
             "description": "Adiante os dados do anúncio, mesmo sem conta conectada. Salvar não publica nem seleciona a peça. Na publicação manual você poderá revisar e alterar tudo.",
-            "fields": ["ml_titulo", "ml_descricao", ("ml_fabricante", "ml_numero_peca"), ("ml_oem", "ml_origem"),
+            "fields": ["ml_sku", "ml_titulo", "ml_descricao", ("ml_fabricante", "ml_numero_peca"),
                        ("ml_preco", "ml_quantidade"), ("ml_condicao", "ml_tipo"), "ml_categoria_id", "ml_envio",
-                       ("ml_retirada", "ml_frete_gratis")],
+                       ("ml_retirada", "ml_frete_gratis"), "ml_garantia_tipo", ("ml_garantia_prazo", "ml_garantia_unidade")],
+        }),
+        ("Características secundárias do anúncio", {
+            "classes": ["collapse"],
+            "description": "Preencha as características aplicáveis à peça. Use Não se aplica somente quando correto. Na publicação, serão usadas as características aceitas pela categoria escolhida.",
+            "fields": list(CAMPOS_CARACTERISTICAS),
         }),
         ("Informações adicionais", {"fields": ["observacoes", "identificador", "criado_em", "atualizado_em"]}),
     ]
@@ -99,7 +114,7 @@ class PecaAdmin(admin.ModelAdmin):
             reverse("estoque:etiqueta", args=[obj.pk]))
 
     def save_model(self, request, obj, form, change):
-        campos = ["nome", "preco_venda", "custo", "quantidade", "status", "marca", "aplicacao", "localizacao_id", "postada_online", "compativel"]
+        campos = ["nome", "preco_venda", "custo", "quantidade", "status", "marca", "aplicacao", "localizacao_id", "postada_online", "compativel", "ncm", "origem_fiscal", "cest", "classificacao_fiscal_conferida"]
         campos += list(Peca.CAMPOS_MERCADO_LIVRE)
         antigo = Peca.objects.get(pk=obj.pk) if change else None
         antes = {c: str(getattr(antigo, c)) for c in campos} if antigo else {}

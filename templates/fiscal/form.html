@@ -1,10 +1,13 @@
 {% extends 'base.html' %}{% load static %}
 {% block title %}{{ titulo }}{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/formularios.css' %}">{% endblock %}
-{% block content %}<div class="editor-page">
+{% block content %}<div class="editor-page fiscal-editor">
 <div class="page-heading"><div><div class="eyebrow">FISCAL</div><h1>{{ titulo }}</h1><p>Preencha os dados por seção e confira as informações antes de salvar.</p></div><a class="btn btn-outline-secondary" href="{% url 'fiscal:lista' %}">Voltar</a></div>
-{% include 'fiscal/aviso.html' %}
-<form method="post" enctype="multipart/form-data" class="editor-form">{% csrf_token %}
-{% include 'components/form_secoes.html' %}
-<div class="editor-actions"><a class="btn btn-outline-secondary" href="{% url 'fiscal:lista' %}">Voltar</a><button class="btn btn-primary" type="submit">Salvar solicitação</button></div>
-</form></div>{% endblock %}
+{% if preparacao %}{% include 'fiscal/etapas.html' %}{% endif %}{% include 'fiscal/aviso.html' %}
+{% if operacao %}{% include 'fiscal/operacao.html' %}{% endif %}
+<form method="post" enctype="multipart/form-data" class="editor-form" data-fiscal-preparacao data-uf-emitente="{{ fiscal_uf }}">{% csrf_token %}
+{% if form.errors %}<div class="alert alert-danger" role="alert"><strong>A prévia ainda não está pronta.</strong> Confira os campos abaixo.{% for campo in form %}{% for erro in campo.errors %}<div>{{ campo.label }}: {{ erro }}</div>{% endfor %}{% endfor %}{{ form.non_field_errors }}</div>{% endif %}
+{% if preparacao %}<div class="fiscal-save-status" role="status" aria-live="polite" data-fiscal-save-status>{% if form.rascunho.value %}Rascunho carregado. Salve novamente após editar.{% else %}Preencha os dados e salve para continuar depois.{% endif %}</div><nav class="fiscal-section-nav" data-fiscal-sections aria-label="Seções do preenchimento"></nav>{% endif %}{% if perms.clientes.view_cliente %}<div class="fiscal-cadastro-ajuda">Use os seletores para carregar os dados de clientes, fornecedores e transportadoras. <a href="{% url 'clientes:lista' %}" target="_blank" rel="noopener">Gerenciar cadastros ↗</a></div>{% endif %}{% include 'components/form_secoes.html' %}
+
+<div class="editor-actions"><a class="btn btn-outline-secondary" href="{% url 'fiscal:lista' %}">Voltar</a>{% if preparacao %}<button class="btn btn-outline-primary" type="submit" name="acao" value="rascunho" formnovalidate>Salvar preparação</button><button class="btn btn-primary" type="submit" name="acao" value="conferir" formnovalidate>Salvar e conferir prévia da nota</button><span class="fiscal-action-help">A numeração e a emissão ficam para depois da conferência.</span>{% else %}<button class="btn btn-primary" type="submit">Salvar solicitação</button>{% endif %}</div>
+</form></div>{% if preparacao %}<script src="{% static 'js/fiscal-interface.js' %}?v=20261026-central" defer></script><script src="{% static 'js/fiscal-preparacao.js' %}?v=20261026-central" defer></script>{% endif %}<script src="{% static 'js/fiscal-cep.js' %}" data-url="{% url 'fiscal:consultar_cep' %}" defer></script>{% endblock %}

@@ -124,6 +124,13 @@ def xml_seguro(valor):
         raise ErroFiscal("XML fiscal inválido.") from None
 
 
+def canonicalizar_xml(elemento):
+    # Canonicalizar um documento independente evita resets espurios de xmlns
+    # emitidos pelo libxml2 ao canonicalizar subarvores com namespace padrao.
+    isolado = xml_seguro(etree.tostring(elemento, encoding='utf-8'))
+    return etree.tostring(isolado, method='c14n', exclusive=False, with_comments=False)
+
+
 def assinatura_xml(raiz, tag, config, sha256=False):
     from cryptography.hazmat.primitives.asymmetric import padding
     alvo = raiz.find(f'.//{{*}}{tag}')
@@ -132,7 +139,7 @@ def assinatura_xml(raiz, tag, config, sha256=False):
     chave, certificado, _ = material_a1(config)
     ns = 'http://www.w3.org/2000/09/xmldsig#'
     algoritmo = hashes.SHA256() if sha256 else hashes.SHA1()
-    canon = lambda el: etree.tostring(el, method='c14n', exclusive=False)
+    canon = canonicalizar_xml
     assinatura = etree.SubElement(raiz, f'{{{ns}}}Signature', nsmap={None: ns})
     info = etree.SubElement(assinatura, f'{{{ns}}}SignedInfo')
     etree.SubElement(info, f'{{{ns}}}CanonicalizationMethod', Algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315')
@@ -164,6 +171,9 @@ def contexto_tls(config):
                                           serialization.BestAvailableEncryption(senha_temporaria)))
         cp.chmod(0o600); kp.chmod(0o600)
         contexto = ssl.create_default_context()
+        # Raiz pública oficial do ITI para os servidores SEFAZ com cadeia ICP-Brasil.
+        # Complementa as autoridades do sistema; mantém validação e hostname ativos.
+        contexto.load_verify_locations(cafile=str(Path(__file__).parent / 'certificados' / 'icp-brasil-v10.pem'))
         contexto.minimum_version = ssl.TLSVersion.TLSv1_2
         contexto.load_cert_chain(str(cp), str(kp), password=senha_temporaria.decode())
         yield contexto

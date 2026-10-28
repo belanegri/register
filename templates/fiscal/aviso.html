@@ -1,1 +1,1 @@
-{% if not fiscal_habilitado %}<div class="alert alert-info">Módulo fiscal desativado nesta instalação. Cadastros e consultas internas disponíveis; transmissões bloqueadas.</div>{% endif %}
+{% if not fiscal_habilitado %}<div class="alert alert-info">Emissão fiscal desativada. Você pode salvar rascunhos e consultar cadastros; notas numeradas e transmissões estão bloqueadas.</div>{% elif fiscal_ambiente == 'homologacao' %}<div class="alert alert-warning">Ambiente de testes da SEFAZ (homologação). As notas podem ser autorizadas, mas não têm valor fiscal.</div>{% endif %}

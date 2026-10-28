@@ -1,13 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}Evento fiscal{% endblock %}
+{% block title %}{{ evento.get_tipo_display }}{% endblock %}
 {% block content %}
-<div class="page-heading"><div><div class="eyebrow">FISCAL</div><h1>{{ evento.get_tipo_display }}</h1><p>{{ evento.get_status_display }} · {{ evento.get_ambiente_display }}</p></div></div>
-<section class="surface p-4"><p>{{ evento.documento }}</p><p>{{ evento.justificativa }}</p><p>{{ evento.numero_inicial|default:'' }} {{ evento.numero_final|default:'' }}</p><p>{{ evento.codigo_resposta }} {{ evento.mensagem }}</p><p>Protocolo: {{ evento.protocolo }}</p>
-{% if evento.tipo == 'cancelamento' or evento.tipo == 'inutilizacao' %}
-<form method="post" action="{% url 'fiscal:transmitir_evento' evento.pk %}">{% csrf_token %}<button class="btn btn-primary">Transmitir evento</button></form>
+<div class="page-heading"><div><div class="eyebrow">FISCAL · {{ evento.get_ambiente_display }}</div><h1>{{ evento.get_tipo_display }}</h1><p>{{ evento.get_status_display }}{% if evento.tipo == 'correcao' %} · sequência {{ evento.sequencia }}{% endif %}</p></div><a class="btn btn-outline-secondary" href="{% url 'fiscal:eventos' %}">Todos os eventos</a></div>
+{% include 'fiscal/aviso.html' %}
+<section class="surface p-4">
+{% if evento.documento %}<p><a href="{% url 'fiscal:status' evento.documento_id %}">Ver status de {{ evento.documento }}</a></p>{% endif %}
+{% if evento.tipo == 'correcao' %}<h2 class="h5">Correção solicitada</h2><p>{{ evento.texto_correcao|linebreaksbr }}</p>{% else %}<p>{{ evento.justificativa }}</p>{% endif %}
+{% if evento.tipo == 'inutilizacao' %}<p>Modelo {{ evento.modelo }} · série {{ evento.serie }} · ano {{ evento.ano }} · números {{ evento.numero_inicial }} a {{ evento.numero_final }}</p>{% endif %}
+<p><strong>Situação:</strong> {{ evento.get_status_display }}</p><p><strong>Retorno SEFAZ:</strong> {{ evento.codigo_resposta|default:'Ainda não recebido' }} {{ evento.mensagem }}</p><p><strong>Protocolo:</strong> {{ evento.protocolo|default:'Ainda sem confirmação' }}</p>
+{% if evento.status == 'autorizada' or evento.status == 'cancelada' %}<div class="alert alert-success">Evento confirmado pela SEFAZ.{% if evento.ambiente == 'homologacao' %} Ambiente de testes, sem valor fiscal.{% endif %}</div>{% else %}
+{% if fiscal_habilitado and pode_transmitir_evento %}<form method="post" action="{% url 'fiscal:transmitir_evento' evento.pk %}">{% csrf_token %}<p>Confira o texto, a nota e o ambiente antes de confirmar o envio.</p><button class="btn btn-primary">Confirmar transmissão do evento à SEFAZ</button></form>{% endif %}
 {% endif %}
-{% if evento.tipo == 'cancelamento' %}
-<form method="post" action="{% url 'fiscal:consultar_evento' evento.pk %}" class="mt-3">{% csrf_token %}<button class="btn btn-outline-secondary">Consultar situação do cancelamento</button></form>
-{% elif evento.tipo == 'inutilizacao' %}<p class="mt-3">Após falha técnica, confirme a inutilização no portal oficial da SEFAZ antes de qualquer nova ação.</p>{% endif %}
-</section>
-{% endblock %}
+{% if evento.tipo == 'cancelamento' or evento.tipo == 'correcao' %}<form method="post" action="{% url 'fiscal:consultar_evento' evento.pk %}" class="mt-3">{% csrf_token %}<button class="btn btn-outline-secondary">Consultar registro do evento na SEFAZ</button></form>{% elif evento.tipo == 'inutilizacao' %}<p class="mt-3">Se houver falha de comunicação, confira a inutilização no portal da SEFAZ antes de repetir a operação.</p>{% endif %}
+{% if evento.xml %}<a class="btn btn-outline-secondary mt-3" href="{% url 'fiscal:evento_xml' evento.pk %}">{% if evento.xml_autorizado %}Baixar XML registrado{% else %}Baixar XML da solicitação{% endif %}</a>{% endif %}
+<h2 class="h5 mt-4">Histórico do evento</h2>{% for t in evento.tentativas.all %}<p>{{ t.criado_em|date:'d/m/Y H:i:s' }} · {{ t.operacao }} · {{ t.codigo }} {{ t.mensagem }}</p>{% empty %}<p>Nenhuma tentativa de comunicação registrada.</p>{% endfor %}
+</section>{% endblock %}

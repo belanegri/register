@@ -99,3 +99,20 @@ class PreparacaoMercadoLivreTests(TestCase):
         peca.refresh_from_db()
         self.assertEqual(peca.ml_descricao, "Descrição para anúncio")
         self.assertEqual(peca.quantidade, 2)
+
+    def test_sku_do_cadastro_derivado_do_estoque_sem_edicao(self):
+        from .forms import PecaEdicaoForm
+        novo = PecaAdminForm()
+        self.assertTrue(novo.fields["ml_sku"].disabled)
+        self.assertIn("Gerado automaticamente", novo["ml_sku"].value())
+        peca = Peca.objects.create(nome="Farol", categoria=self.categoria, preco_venda=100, quantidade=2)
+        form = PecaAdminForm({**self.dados, "ml_sku": "OUTRO", "versao_estoque": peca.atualizado_em.isoformat()}, instance=peca)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["ml_sku"], peca.codigo)
+        edicao = PecaEdicaoForm(instance=peca)
+        self.assertIn("ml_sku", [f.name for f in edicao.campos_mercadolivre])
+        self.assertNotIn("ml_sku", [f.name for f in edicao.campos_estoque])
+        self.client.force_login(get_user_model().objects.create_superuser("sku_cadastro"))
+        response = self.client.get(reverse("admin:estoque_peca_change", args=[peca.pk]))
+        self.assertContains(response, "Código de identificação (SKU)")
+        self.assertContains(response, f'value="{peca.codigo}"')

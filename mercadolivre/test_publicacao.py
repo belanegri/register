@@ -61,6 +61,16 @@ class PublicacaoTests(TestCase):
         self.client.get(url, {"categoria": "MLB456"})
         metadata.assert_called_once_with(self.admin, "MLB456")
 
+    @patch("mercadolivre.publicacao.acesso_api")
+    def test_busca_sem_resultados_exibe_orientacao_e_codigo_visivel(self, acesso):
+        from unittest.mock import Mock
+        api = Mock(); api.enviar.return_value = []
+        acesso.return_value = (self.conexao, "token-teste", api)
+        resposta = self.client.get(reverse("mercadolivre:preparar_publicacao", args=[self.peca.pk]))
+        self.assertContains(resposta, "Nenhuma categoria foi encontrada")
+        self.assertContains(resposta, '<details class="mt-4" open>', html=False)
+        self.assertFalse(Publicacao.objects.exists())
+
     def rascunho(self, **extras):
         return Publicacao.objects.create(peca=self.peca, conexao=self.conexao, usuario=self.admin,
             payload={"title": "Farol", "category_id": "MLB123", "available_quantity": 1, "price": 120.5},
@@ -319,3 +329,46 @@ class PublicacaoTests(TestCase):
                 ClientePublicacao().enviar("POST", "/items", "token-secreto", {})
             self.assertNotIsInstance(contexto.exception, Rejeitada)
             self.assertNotIn("segredo", str(contexto.exception))
+
+    def test_sku_automatico_protegido_e_enviado_uma_vez(self):
+        attrs = self.attrs + [{"id": "SELLER_SKU", "name": "SKU", "value_type": "string", "tags": {"hidden": True}}]
+        form = PublicacaoForm({**self.dados, "sku": "CODIGO-ALTERADO", "attr_SELLER_SKU": "OUTRO"},
+            peca=self.peca, categoria=self.categoria, atributos=attrs, tipos=self.tipos)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(form.fields["sku"].disabled)
+        self.assertEqual(form.cleaned_data["sku"], self.peca.codigo)
+        self.assertEqual([a for a in form.atributos_payload() if a["id"] == "SELLER_SKU"],
+                         [{"id": "SELLER_SKU", "value_name": self.peca.codigo}])
+
+    @patch("mercadolivre.publicacao.fotos_payload", return_value=[{"source": "https://storage.test/foto"}])
+    @patch("mercadolivre.publicacao.ClientePublicacao")
+    def test_preparacao_envia_sku_do_estoque_e_revisao_exibe(self, cls, fotos):
+        cls.return_value.enviar.side_effect = [{"id": 9876}, {}]
+        form = self.form()
+        self.assertTrue(form.is_valid(), form.errors)
+        pub = preparar(self.admin, self.peca, form)
+        esperado = {"id": "SELLER_SKU", "value_name": self.peca.codigo}
+        self.assertIn(esperado, pub.payload["attributes"])
+        self.assertEqual(pub.payload["seller_custom_field"], self.peca.codigo)
+        self.assertIn(esperado, cls.return_value.enviar.call_args_list[-1].args[3]["attributes"])
+        response = self.client.get(reverse("mercadolivre:revisar_publicacao", args=[pub.pk]))
+        self.assertContains(response, "Código de identificação (SKU)")
+        self.assertContains(response, f"<dd>{self.peca.codigo}</dd>", html=True)
+
+    def test_importacao_prioriza_sku_e_preserva_referencia_antiga(self):
+        from .servicos import extrair_anuncio
+        anuncio = item(attributes=[{"id": "SELLER_SKU", "value_name": self.peca.codigo}], seller_custom_field="REFERENCIA")
+        self.assertEqual(extrair_anuncio(anuncio, "9876")["sku"], self.peca.codigo)
+        self.assertEqual(extrair_anuncio(item(), "9876")["sku"], "SKU-001")
+    @patch("mercadolivre.publicacao.fotos_payload", return_value=[{"source": "https://storage.test/foto"}])
+    @patch("mercadolivre.publicacao.ClientePublicacao")
+    def test_garantia_enviada_e_exibida_na_revisao(self, cls, fotos):
+        cls.return_value.enviar.side_effect = [{"id": 9876}, {}]
+        form = self.form(garantia_tipo="2230279", garantia_prazo="12", garantia_unidade="meses")
+        self.assertTrue(form.is_valid(), form.errors)
+        pub = preparar(self.admin, self.peca, form)
+        esperado = [{"id": "WARRANTY_TYPE", "value_id": "2230279"}, {"id": "WARRANTY_TIME", "value_name": "12 meses"}]
+        self.assertEqual(pub.payload["sale_terms"], esperado)
+        self.assertEqual(cls.return_value.enviar.call_args_list[-1].args[3]["sale_terms"], esperado)
+        response = self.client.get(reverse("mercadolivre:revisar_publicacao", args=[pub.pk]))
+        self.assertContains(response, "Garantia de fábrica: 12 meses")

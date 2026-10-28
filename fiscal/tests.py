@@ -32,7 +32,7 @@ from . import services
 from .forms import ConfiguracaoForm, SequenciaForm, ProdutoForm, ServicoForm
 from .models import ConfiguracaoFiscal, DocumentoFiscal, SequenciaFiscal, ParametroProduto, ParametroServico, EventoFiscal, Status
 from .provedores import Resultado, SefazDireta
-from .seguranca import ErroFiscal, criptografar, descriptografar, salvar_a1, assinatura_xml, xml_seguro, validar_url, resposta_sanitizada
+from .seguranca import ErroFiscal, criptografar, descriptografar, salvar_a1, assinatura_xml, canonicalizar_xml, xml_seguro, validar_url, resposta_sanitizada
 from .xml import gerar_dps, gerar_nfe, chave_nfe
 
 CHAVE=Fernet.generate_key().decode()
@@ -84,10 +84,10 @@ class SegurancaTests(SimpleTestCase):
         assinatura_xml(raiz,'infNFe',config)
         raiz=xml_seguro(etree.tostring(raiz))
         info=raiz.find('.//{*}SignedInfo');sig=raiz.find('.//{*}SignatureValue').text
-        cert.public_key().verify(base64.b64decode(sig),etree.tostring(info,method='c14n'),padding.PKCS1v15(),hashes.SHA1())
+        cert.public_key().verify(base64.b64decode(sig),canonicalizar_xml(info),padding.PKCS1v15(),hashes.SHA1())
         import hashlib
         alvo=raiz.find('.//{*}infNFe')
-        self.assertEqual(base64.b64decode(raiz.find('.//{*}DigestValue').text),hashlib.sha1(etree.tostring(alvo,method='c14n')).digest())
+        self.assertEqual(base64.b64decode(raiz.find('.//{*}DigestValue').text),hashlib.sha1(canonicalizar_xml(alvo)).digest())
 
     def test_senha_invalida_nao_vaza(self):
         dados,_=certificado()

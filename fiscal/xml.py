@@ -88,6 +88,17 @@ def chave_nfe(doc):
 
 
 def gerar_nfe(doc, config):
+    from .operacoes import validar_cfop
+    from .models import Operacao
+    operacao=doc.operacao
+    from .difal import validar_difal
+    if doc.snapshot.get('difal') or any(i.get('difal') for i in doc.snapshot.get('itens',[])):
+        validar_difal(doc.snapshot,doc.modelo,operacao)
+    if doc.ambiente=='producao':
+        from .prontidao import validar_snapshot_producao
+        validar_snapshot_producao(doc.snapshot,doc.modelo,operacao,timezone.localtime(doc.emitido_em).year)
+    if operacao not in Operacao.values or (operacao==Operacao.ENTRADA and doc.modelo!='55'):
+        raise ErroFiscal('Entrada disponível somente para NF-e (55).')
     e = doc.snapshot['empresa']; itens = doc.snapshot['itens']
     chave = doc.chave_acesso or chave_nfe(doc)
     raiz = etree.Element(f'{{{NFE}}}NFe', nsmap={None: NFE})
@@ -96,17 +107,17 @@ def gerar_nfe(doc, config):
     campos(ide, {'cUF': UFS[e['uf']], 'cNF': chave[35:43], 'natOp': e['natureza_operacao'],
         'mod': doc.modelo, 'serie': doc.serie, 'nNF': doc.numero,
         'dhEmi': timezone.localtime(doc.emitido_em).isoformat(timespec='seconds'),
-        'tpNF': '1', 'idDest': doc.snapshot.get('id_destino', '1'), 'cMunFG': e['municipio_ibge'],
+        'tpNF': operacao, 'idDest': doc.snapshot.get('id_destino', '1'), 'cMunFG': e['municipio_ibge'],
         'tpImp': '4' if doc.modelo == '65' else '1', 'tpEmis': doc.tipo_emissao, 'cDV': chave[-1],
         'tpAmb': '2' if doc.ambiente == 'homologacao' else '1', 'finNFe': '1',
-        'indFinal': '1', 'indPres': '1', 'procEmi': '0', 'verProc': 'REGISTER-fiscal-1'})
+        'indFinal': doc.snapshot.get('ind_final','1'), 'indPres': '1', 'procEmi': '0', 'verProc': 'REGISTER-fiscal-1'})
     if doc.tipo_emissao=='9':
         campos(ide,{'dhCont':timezone.localtime(doc.emitido_em).isoformat(timespec='seconds'),
                     'xJust':doc.snapshot.get('contingencia_justificativa','Indisponibilidade do servico autorizador')})
     emit = el(inf, 'emit')
     campos(emit, {'CNPJ': e['cnpj'], 'xNome': e['razao_social']})
     end = el(emit, 'enderEmit')
-    campos(end, {'xLgr': e['logradouro'], 'nro': e['numero'], 'xBairro': e['bairro'],
+    campos(end, {'xLgr': e['logradouro'], 'nro': e['numero'], **({'xCpl':e['complemento']} if e.get('complemento') else {}), 'xBairro': e['bairro'],
         'cMun': e['municipio_ibge'], 'xMun': e['municipio'], 'UF': e['uf'], 'CEP': e['cep'],
         'cPais': '1058', 'xPais': 'BRASIL'})
     campos(emit, {'IE': e['ie'], 'CRT': e['crt']})
@@ -123,19 +134,28 @@ def gerar_nfe(doc, config):
             obrigatorios = ('logradouro', 'numero', 'bairro', 'municipio_ibge', 'municipio', 'uf', 'cep')
             if not all(dest.get(k) for k in obrigatorios):
                 raise ErroFiscal('Preencha o endereço fiscal estruturado do destinatário.')
-            campos(el(d, 'enderDest'), dict(zip(('xLgr','nro','xBairro','cMun','xMun','UF','CEP'), [dest[k] for k in obrigatorios])))
+            endereco_xml=dict(zip(('xLgr','nro','xBairro','cMun','xMun','UF','CEP'), [dest[k] for k in obrigatorios]))
+            if dest.get('complemento'):
+                endereco_xml={'xLgr':dest['logradouro'],'nro':dest['numero'],'xCpl':dest['complemento'],**{k:v for k,v in endereco_xml.items() if k not in ('xLgr','nro')}}
+            campos(el(d,'enderDest'),endereco_xml)
         campos(d, {'indIEDest': dest.get('ind_ie', '9')})
         if dest.get('ie'):
             el(d, 'IE', dest['ie'])
+    from .tributacao import calcular_item
     totais = {k: Decimal('0') for k in ('vBC', 'vICMS', 'vPIS', 'vCOFINS', 'vProd', 'vDesc')}
+    rtc = {k:Decimal('0') for k in ('base_ibscbs','ibs_uf','ibs_municipal','ibs','cbs')}
+    destacar_rtc=False
     for i, item in enumerate(itens, 1):
-        t = item['fiscal']; total = Decimal(item['total']); bruto = Decimal(item['bruto'])
+        t = item['fiscal']; validar_cfop(t['cfop'],operacao); total = Decimal(item['total'])+Decimal(item.get('frete','0')); bruto = Decimal(item['bruto'])
+        calculo=calcular_item(item,e,timezone.localtime(doc.emitido_em).year)
         det = el(inf, 'det', nItem=str(i)); prod = el(det, 'prod')
         campos(prod, {'cProd': item['codigo'], 'cEAN': 'SEM GTIN',
             'xProd': 'NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL' if doc.modelo == '65' and doc.ambiente == 'homologacao' and i == 1 else item['descricao'],
-            'NCM': t['ncm'], 'CFOP': t['cfop'], 'uCom': t['unidade'], 'qCom': item['quantidade'],
+            'NCM': t['ncm'], **({'CEST':t['cest']} if t.get('cest') else {}), 'CFOP': t['cfop'], 'uCom': t['unidade'], 'qCom': item['quantidade'],
             'vUnCom': item['preco_unitario'], 'vProd': valor(bruto), 'cEANTrib': 'SEM GTIN',
             'uTrib': t['unidade'], 'qTrib': item['quantidade'], 'vUnTrib': item['preco_unitario']})
+        if Decimal(item.get('frete','0')):
+            el(prod, 'vFrete', valor(item['frete']))
         if Decimal(item['desconto']):
             el(prod, 'vDesc', item['desconto'])
         el(prod, 'indTot', '1')
@@ -145,7 +165,7 @@ def gerar_nfe(doc, config):
                 raise ErroFiscal('CSOSN exige tratamento específico ainda não configurado neste leiaute.')
             campos(el(icms, 'ICMSSN102'), {'orig': t['origem'], 'CSOSN': t['csosn']})
         elif t['cst_icms'] == '00':
-            calculado = Decimal(valor(total*Decimal(t['aliquota_icms'])/100))
+            calculado = calculo['icms']
             campos(el(icms, 'ICMS00'), {'orig': t['origem'], 'CST': '00', 'modBC': '3', 'vBC': valor(total), 'pICMS': t['aliquota_icms'], 'vICMS': valor(calculado)})
             totais['vBC'] += total; totais['vICMS'] += calculado
         else:
@@ -153,20 +173,58 @@ def gerar_nfe(doc, config):
         for nome, campo_cst, campo_aliq, campo_total in [('PIS','cst_pis','aliquota_pis','vPIS'), ('COFINS','cst_cofins','aliquota_cofins','vCOFINS')]:
             grupo = el(imposto, nome); cst = t[campo_cst]
             if cst in ('01', '02'):
-                imposto_valor = Decimal(valor(total*Decimal(t[campo_aliq])/100)); totais[campo_total] += imposto_valor
-                campos(el(grupo,nome+'Aliq'), {'CST':cst, 'vBC':valor(total), 'p'+nome:t[campo_aliq], 'v'+nome:valor(imposto_valor)})
+                imposto_valor = calculo[nome.lower()]; totais[campo_total] += imposto_valor
+                campos(el(grupo,nome+'Aliq'), {'CST':cst, 'vBC':valor(calculo['base_pis_cofins']), 'p'+nome:t[campo_aliq], 'v'+nome:valor(imposto_valor)})
             elif cst in ('04','05','06','07','08','09'):
                 campos(el(grupo,nome+'NT'), {'CST':cst})
             else:
                 raise ErroFiscal(f'CST {nome} exige parametrização específica.')
         grupos(imposto, t.get('tributos_adicionais', {}))
+        difal=calculo['difal']
+        if difal:
+            campos(el(imposto,'ICMSUFDest'),{
+                'vBCUFDest':valor(difal['base']),'vBCFCPUFDest':valor(difal['base']),
+                'pFCPUFDest':str(difal['aliquota_fcp']),'pICMSUFDest':str(difal['aliquota_interna']),
+                'pICMSInter':valor(difal['aliquota_interestadual']),'pICMSInterPart':'100.00',
+                'vFCPUFDest':valor(difal['valor_fcp']),'vICMSUFDest':valor(difal['valor_difal']),'vICMSUFRemet':'0.00'})
+            totais['vICMSUFDest']=totais.get('vICMSUFDest',Decimal('0'))+difal['valor_difal']
+            totais['vFCPUFDest']=totais.get('vFCPUFDest',Decimal('0'))+difal['valor_fcp']
+        if t.get('ibscbs_ativo'):
+            if 'IBSCBS' in t.get('tributos_adicionais',{}):raise ErroFiscal('Remova o grupo IBS/CBS manual dos tributos adicionais para evitar duplicidade.')
+            destacar_rtc=True
+            ibscbs=el(imposto,'IBSCBS');campos(ibscbs,{'CST':t['cst_ibscbs'],'cClassTrib':t['cclass_trib']})
+            base_rtc=el(ibscbs,'gIBSCBS');el(base_rtc,'vBC',valor(calculo['base_ibscbs']))
+            campos(el(base_rtc,'gIBSUF'),{'pIBSUF':t['aliquota_ibs_uf'],'vIBSUF':valor(calculo['ibs_uf'])})
+            campos(el(base_rtc,'gIBSMun'),{'pIBSMun':t['aliquota_ibs_municipal'],'vIBSMun':valor(calculo['ibs_municipal'])})
+            el(base_rtc,'vIBS',valor(calculo['ibs']))
+            campos(el(base_rtc,'gCBS'),{'pCBS':t['aliquota_cbs'],'vCBS':valor(calculo['cbs'])})
+            for campo in rtc:rtc[campo]+=calculo[campo]
+
         totais['vProd'] += bruto; totais['vDesc'] += Decimal(item['desconto'])
+        totais['vFrete']=totais.get('vFrete',Decimal('0'))+Decimal(item.get('frete','0'))
     total = el(inf, 'total'); icmstot = el(total, 'ICMSTot')
-    for k in ('vBC','vICMS','vICMSDeson','vFCP','vBCST','vST','vFCPST','vFCPSTRet','vProd','vFrete','vSeg','vDesc','vII','vIPI','vIPIDevol','vPIS','vCOFINS','vOutro'):
+    for k in ('vBC','vICMS','vICMSDeson','vFCPUFDest','vICMSUFDest','vICMSUFRemet','vFCP','vBCST','vST','vFCPST','vFCPSTRet','vProd','vFrete','vSeg','vDesc','vII','vIPI','vIPIDevol','vPIS','vCOFINS','vOutro'):
+        if k in ('vFCPUFDest','vICMSUFDest','vICMSUFRemet') and not doc.snapshot.get('difal'):continue
         el(icmstot, k, valor(totais.get(k, 0)))
     el(icmstot, 'vNF', valor(doc.total))
-    campos(el(inf, 'transp'), {'modFrete': '9'})
+    if destacar_rtc:
+        grupo=el(total,'IBSCBSTot');el(grupo,'vBCIBSCBS',valor(rtc['base_ibscbs']))
+        ibs=el(grupo,'gIBS')
+        campos(el(ibs,'gIBSUF'),{'vDif':'0.00','vDevTrib':'0.00','vIBSUF':valor(rtc['ibs_uf'])})
+        campos(el(ibs,'gIBSMun'),{'vDif':'0.00','vDevTrib':'0.00','vIBSMun':valor(rtc['ibs_municipal'])})
+        campos(ibs,{'vIBS':valor(rtc['ibs']),'vCredPres':'0.00','vCredPresCondSus':'0.00'})
+        campos(el(grupo,'gCBS'),{'vDif':'0.00','vDevTrib':'0.00','vCBS':valor(rtc['cbs']),'vCredPres':'0.00','vCredPresCondSus':'0.00'})
+
+    from .transporte import escrever_xml
+    escrever_xml(inf,doc)
     pagamento = el(inf, 'pag'); campos(el(pagamento, 'detPag'), {'tPag': doc.snapshot.get('tipo_pagamento','99'), 'xPag':'Outros', 'vPag':valor(doc.total)})
+    from .observacoes import normalizar_observacao
+    complementos=[]
+    if doc.snapshot.get('difal'):
+        complementos.append(f"DIFAL para a UF de destino: R$ {valor(totais.get('vICMSUFDest',0))}. FCP destino: R$ {valor(totais.get('vFCPUFDest',0))}. Valores incluidos no preco final; base integral, sem reducao.")
+    observacao=normalizar_observacao(doc.snapshot.get('observacao_final'),doc.modelo)
+    if observacao:complementos.append(observacao)
+    if complementos:campos(el(inf,'infAdic'),{'infCpl':' '.join(complementos)})
     # infNFeSupl será inserido antes de Signature, na ordem do XSD.
     assinatura_xml(raiz, 'infNFe', config)
     if doc.modelo == '65':
@@ -233,6 +291,9 @@ def gerar_dps(doc, config):
     if t['codigo_tributacao_municipal']:el(codigo,'cTribMun',t['codigo_tributacao_municipal'])
     el(codigo,'xDescServ','; '.join(i['descricao'] for i in itens)[:1000])
     if t['nbs']:el(codigo,'cNBS',t['nbs'])
+    from .observacoes import normalizar_observacao
+    observacao=normalizar_observacao(doc.snapshot.get('observacao_final'),'nfse')
+    if observacao:el(el(serv,'infoCompl'),'xInfComp',observacao)
     valores=el(inf,'valores');campos(el(valores,'vServPrest'), {'vServ':valor(doc.total)})
     trib=el(valores,'trib'); municipal=el(trib,'tribMun');campos(municipal, {'tribISSQN':'1', 'tpRetISSQN':'2' if t['iss_retido'] else '1'})
     if Decimal(t['aliquota_iss']):el(municipal,'pAliq',valor(t['aliquota_iss']))

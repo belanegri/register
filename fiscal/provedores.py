@@ -74,22 +74,27 @@ class SefazDireta:
                 'consultar':('NFeConsultaProtocolo4','nfeConsultaNF'),
                 'recibo':('NFeRetAutorizacao4','nfeRetAutorizacaoLote'),
                 'cancelar':('NFeRecepcaoEvento4','nfeRecepcaoEvento'),
+                'corrigir':('NFeRecepcaoEvento4','nfeRecepcaoEvento'),
                 'inutilizar':('NFeInutilizacao4','nfeInutilizacaoNF')}
 
     def endpoint(self, config, doc, operacao):
         from .sefaz_sp import endpoint
-        return endpoint(config, doc.modelo, operacao, doc.ambiente)
+        return endpoint(config, doc.modelo, 'cancelar' if operacao=='corrigir' else operacao, doc.ambiente)
 
-    def enviar(self, config, doc, operacao, payload):
+    def enviar(self, config, doc, operacao, payload, sequencia=None):
         servico, metodo = self.SERVICOS[operacao]
         ns='http://www.w3.org/2003/05/soap-envelope'
-        soap=etree.Element(f'{{{ns}}}Envelope',nsmap={'soap':ns})
+        # Namespaces com prefixo herdados alteram o C14N inclusivo do XML assinado.
+        soap=etree.Element(f'{{{ns}}}Envelope',nsmap={None:ns})
         body=etree.SubElement(soap,f'{{{ns}}}Body')
-        mensagem=etree.SubElement(body,f'{{{NFE}/wsdl/{servico}}}nfeDadosMsg')
+        mensagem=etree.SubElement(body,f'{{{NFE}/wsdl/{servico}}}nfeDadosMsg',nsmap={None:f'{NFE}/wsdl/{servico}'})
         mensagem.append(payload)
         resultado = requisitar(config,doc.ambiente,self.endpoint(config,doc,operacao),
             etree.tostring(soap,encoding='utf-8',xml_declaration=True),
             f'application/soap+xml; charset=utf-8; action="{NFE}/wsdl/{servico}/{metodo}"')
+        if operacao=='corrigir':
+            from .cartas import interpretar
+            return interpretar(resultado,doc,sequencia)
         return self.interpretar(resultado,doc)
 
     def interpretar(self, resposta, doc):
@@ -145,6 +150,21 @@ class SefazDireta:
         assinatura_xml(ev,'infEvento',config);validar_schema(raiz,'envEventoCancNFe_v1.00.xsd')
         evento.xml=etree.tostring(raiz,encoding='unicode');evento.save(update_fields=['xml'])
         return self.enviar(config,doc,'cancelar',raiz)
+
+    def corrigir(self,config,doc,evento):
+        from .cartas import gerar_xml,processar_xml
+        if not evento.xml:
+            evento.xml=gerar_xml(config,doc,evento);evento.save(update_fields=['xml'])
+        r=self.enviar(config,doc,'corrigir',xml_seguro(evento.xml),sequencia=evento.sequencia)
+        if r.status=='autorizada':r.xml=processar_xml(evento,r.resposta)
+        return r
+
+    def consultar_correcao(self,config,doc,evento):
+        from .cartas import interpretar,processar_xml
+        consulta=self.consultar(config,doc)
+        r=interpretar(consulta.resposta,doc,evento.sequencia)
+        if r.status=='autorizada':r.xml=processar_xml(evento,r.resposta)
+        return r
 
     def inutilizar(self, config, evento):
         raiz=etree.Element(f'{{{NFE}}}inutNFe',nsmap={None:NFE},versao='4.00')

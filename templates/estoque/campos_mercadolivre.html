@@ -11,3 +11,8 @@
     {% endfor %}
   </div>
 </fieldset>
+<fieldset class="border rounded-3 p-3 mt-4">
+  <legend class="float-none w-auto px-2 fs-6 fw-semibold">Características secundárias do anúncio</legend>
+  <p class="small text-secondary">Preencha somente as informações aplicáveis à peça. Na publicação, as características serão conferidas conforme a categoria do Mercado Livre.</p>
+  <div class="row g-3">{% for field in form.campos_caracteristicas %}<div class="col-md-6">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}</div>
+</fieldset>

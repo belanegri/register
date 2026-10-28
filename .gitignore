@@ -26,3 +26,6 @@ backups/
 *.key
 fiscal-private/
 /tmp/fiscal/
+
+# Somente a raiz pública oficial de confiança TLS integra a aplicação.
+!fiscal/certificados/icp-brasil-v10.pem

@@ -10,10 +10,11 @@ from django.db.models import Q
 from django.utils import timezone
 
 from .models import (Ambiente, Modelo, Status, ConfiguracaoFiscal, DocumentoFiscal,
-                     EventoFiscal, ParametroProduto, ParametroServico, SequenciaFiscal, TentativaTransmissao)
+                     EventoFiscal, ParametroProduto, ParametroServico, SequenciaFiscal, TentativaTransmissao, Operacao)
 from .provedores import provedor
 from .seguranca import ErroFiscal, resposta_sanitizada
 from .xml import gerar_documento, chave_nfe, valor
+from .operacoes import validar_cfop, dados_fiscais, parametro_para_nota, cfop_saida
 
 
 def exigir(usuario, permissao):
@@ -29,13 +30,13 @@ def habilitado(config, ambiente=None):
         raise ErroFiscal('Emissão em produção bloqueada. Valide a homologação e libere explicitamente esta instalação.')
 
 
-def _snapshot(config, origem, itens, modelo, destinatario):
+def _snapshot(config, origem, itens, modelo, destinatario, cfop=None, natureza_operacao=None, aliquota_icms=None, ind_final='1', valor_frete=0, difal=None, transporte=None, observacao_final=''):
     from django.forms.models import model_to_dict
+    if ind_final not in ('0','1'):raise ErroFiscal('Indicador de consumidor final inválido.')
     empresa = {k: getattr(config,k) for k in ('cnpj','razao_social','nome_fantasia','ie','im','crt','uf',
-        'municipio_ibge','municipio','logradouro','numero','bairro','cep','natureza_operacao')}
+        'municipio_ibge','municipio','logradouro','numero','complemento','bairro','cep','natureza_operacao')}
     cliente = origem.cliente
-    dados_dest = {'nome':cliente.nome if cliente else getattr(origem,'cliente_nome',''),
-                  'documento':re.sub(r'\D','',cliente.documento) if cliente else ''}
+    dados_dest = cliente.dados_fiscais() if cliente else {'nome':getattr(origem,'cliente_nome',''),'documento':''}
     dados_dest.update(destinatario or {})
     selecionados = [i for i in itens if bool(i.servico_id) == (modelo == Modelo.NFSE)]
     if not selecionados:
@@ -51,15 +52,21 @@ def _snapshot(config, origem, itens, modelo, destinatario):
         rateios = [q.quantize(Decimal('.01'),rounding=ROUND_DOWN) for q in quotas]
         restos = sorted(range(len(itens)),key=lambda i:quotas[i]-rateios[i],reverse=True)
         for n in restos[:int((desconto-sum(rateios))*100)]:rateios[n]+=Decimal('.01')
-    linhas=[]
+    linhas=[]; naturezas=set(); destinos=set()
     for i in selecionados:
         try:
             params = (ParametroServico.objects.get(servico_id=i.servico_id) if modelo==Modelo.NFSE
-                      else ParametroProduto.objects.get(peca_id=i.peca_id))
+                      else parametro_para_nota(config,i.peca_id))
         except (ParametroProduto.DoesNotExist,ParametroServico.DoesNotExist):
             raise ErroFiscal('Cadastre os parâmetros fiscais de todos os itens selecionados.') from None
-        fiscal=model_to_dict(params,exclude=['id','peca','servico','criado_em','atualizado_em'])
-        fiscal={k:str(v) if isinstance(v,Decimal) else v for k,v in fiscal.items()}
+        fiscal=dados_fiscais(params)
+        if modelo != Modelo.NFSE:
+            fiscal['cfop']=cfop_saida(params,config,dados_dest,cfop)
+            if fiscal['cfop'].startswith('6') and (params.cfop_interestadual_contribuinte or params.cfop_interestadual_nao_contribuinte) and aliquota_icms is None:
+                raise ErroFiscal('Informe a alíquota interestadual de ICMS confirmada pela contabilidade para esta nota.')
+            if aliquota_icms is not None:fiscal['aliquota_icms']=str(aliquota_icms)
+            destinos.add({'5':'1','6':'2','7':'3'}[fiscal['cfop'][0]])
+            if params.natureza_operacao:naturezas.add(params.natureza_operacao)
         preco=Decimal(getattr(i,'preco_unitario',getattr(i,'preco',0)))
         bruto=preco*i.quantidade
         desconto=Decimal(i.desconto) if rateios is None else rateios[itens.index(i)]
@@ -67,16 +74,40 @@ def _snapshot(config, origem, itens, modelo, destinatario):
         linhas.append({'origem_item':i.pk,'codigo':str(i.servico.codigo if i.servico_id else i.peca.codigo),
             'descricao':i.descricao,'quantidade':i.quantidade,'preco_unitario':str(preco),
             'bruto':valor(bruto),'desconto':valor(desconto),'total':valor(total),'fiscal':fiscal})
-    return {'empresa':empresa,'destinatario':dados_dest,'itens':linhas,'origem_codigo':origem.codigo}, sum((Decimal(i['total']) for i in linhas),Decimal('0'))
+    if natureza_operacao:empresa['natureza_operacao']=natureza_operacao
+    elif len(naturezas)==1:empresa['natureza_operacao']=next(iter(naturezas))
+    if len(destinos)>1:raise ErroFiscal('Os CFOPs devem corresponder ao mesmo destino da operação.')
+    destino=next(iter(destinos),'1')
+    if destino=='3':raise ErroFiscal('Exportação exige informações específicas ainda não disponíveis neste formulário.')
+    if modelo!='nfse' and dados_dest.get('uf') and destino!=('1' if dados_dest['uf']==config.uf else '2'):
+        raise ErroFiscal('CFOP incompatível com a UF do destinatário.')
+    from .frete import aplicar_frete
+    total=aplicar_frete(linhas,valor_frete,modelo)
+    snapshot={'empresa':empresa,'destinatario':dados_dest,'itens':linhas,'origem_codigo':origem.codigo,'valor_frete':valor(valor_frete or 0),
+        'id_destino':destino,'ind_final':ind_final,'cfop_nota':cfop or '', 'aliquota_icms_nota':str(aliquota_icms) if aliquota_icms is not None else None, 'natureza_personalizada':bool(natureza_operacao)}
+    from .difal import configurar_difal
+    configurar_difal(snapshot,modelo,difal)
+    from .transporte import normalizar_transporte
+    snapshot['transporte']=normalizar_transporte(transporte,frete=valor_frete,modelo=modelo)
+    from .observacoes import normalizar_observacao
+    snapshot['observacao_final']=normalizar_observacao(observacao_final,modelo)
+    return snapshot,total
 
 
 @transaction.atomic
-def solicitar(usuario, *, venda_id=None, os_id=None, modelo=None, serie=1, destinatario=None):
+def solicitar(usuario, *, venda_id=None, os_id=None, modelo=None, serie=None, destinatario=None, operacao=Operacao.SAIDA, cfop=None, natureza_operacao=None, aliquota_icms=None,ind_final='1',valor_frete=0,difal=None,transporte=None,observacao_final=''):
     exigir(usuario,'emitir_fiscal')
-    if not isinstance(serie,int) or not 1<=serie<=999:raise ErroFiscal('Série fiscal inválida.')
+    if operacao != Operacao.SAIDA:raise ErroFiscal('Use a solicitação de entrada com fornecedor e itens para emitir uma NF-e de entrada.')
+    if cfop:validar_cfop(cfop, Operacao.SAIDA)
+    if aliquota_icms is not None:
+        aliquota_icms=Decimal(str(aliquota_icms))
+        if not aliquota_icms.is_finite() or not 0<=aliquota_icms<=100:raise ErroFiscal('Alíquota de ICMS inválida.')
+    if natureza_operacao and len(natureza_operacao)>60:raise ErroFiscal('Natureza da operação deve ter até 60 caracteres.')
     if bool(venda_id)==bool(os_id):raise ErroFiscal('Selecione uma venda ou uma OS.')
     config=ConfiguracaoFiscal.objects.select_for_update(of=('self',)).filter(pk=1).first()
     if not config:raise ErroFiscal('Cadastre a configuração fiscal desta instalação.')
+    serie=config.serie_padrao if serie is None else serie
+    if not isinstance(serie,int) or not 1<=serie<=999:raise ErroFiscal('Série fiscal inválida.')
     habilitado(config)
     from vendas.models import Venda
     from comercial.models import Documento
@@ -108,7 +139,10 @@ def solicitar(usuario, *, venda_id=None, os_id=None, modelo=None, serie=1, desti
     existente=(existente.filter(venda=venda) if venda else existente.filter(ordem_servico=ordem)).first()
     if existente:return existente
     itens=list(origem.itens.select_related('peca','servico').order_by('pk'))
-    snapshot,total=_snapshot(config,origem,itens,modelo,destinatario)
+    snapshot,total=_snapshot(config,origem,itens,modelo,destinatario,cfop,natureza_operacao,aliquota_icms,ind_final,valor_frete,difal,transporte,observacao_final)
+    if config.ambiente==Ambiente.PRODUCAO:
+        from .prontidao import validar_snapshot_producao
+        validar_snapshot_producao(snapshot,modelo,Operacao.SAIDA,timezone.localdate().year)
     sequencia,_=SequenciaFiscal.objects.get_or_create(configuracao=config,modelo=modelo,ambiente=config.ambiente,serie=serie)
     sequencia=SequenciaFiscal.objects.select_for_update(of=('self',)).get(pk=sequencia.pk)
     if sequencia.proximo_numero>999999999:raise ErroFiscal('Numeração fiscal esgotada.')
@@ -199,19 +233,27 @@ def atualizar_parametros(usuario, documento_id):
     if doc.transmissao_incerta or doc.status not in (Status.PENDENTE,Status.REJEITADA,Status.ERRO_TECNICO):
         raise ErroFiscal('Só é possível corrigir parâmetros de uma nota sem autorização ou transmissão incerta.')
     origem=doc.venda if doc.venda_id else doc.ordem_servico
-    itens={i.pk:i for i in origem.itens.all()}
+    itens={i.pk:i for i in origem.itens.all()} if origem else {}
     from django.forms.models import model_to_dict
     for linha in doc.snapshot['itens']:
         item=itens.get(linha['origem_item'])
-        if not item:raise ErroFiscal('Item de origem indisponível; valores fiscais não foram alterados.')
+        entrada=doc.operacao==Operacao.ENTRADA
+        if not item and not entrada:raise ErroFiscal('Item de origem indisponível; valores fiscais não foram alterados.')
         try:
-            params=ParametroServico.objects.get(servico_id=item.servico_id) if doc.modelo=='nfse' else ParametroProduto.objects.get(peca_id=item.peca_id)
+            params=ParametroServico.objects.get(servico_id=item.servico_id) if doc.modelo=='nfse' else parametro_para_nota(doc.configuracao,linha['peca_id'] if entrada else item.peca_id, doc.operacao)
         except (ParametroServico.DoesNotExist,ParametroProduto.DoesNotExist):
-            raise ErroFiscal('Cadastre os parâmetros fiscais do item.') from None
-        fiscal=model_to_dict(params,exclude=['id','peca','servico','criado_em','atualizado_em'])
-        linha['fiscal']={k:str(v) if isinstance(v,Decimal) else v for k,v in fiscal.items()}
+            raise ErroFiscal('Cadastre os parâmetros fiscais do item para esta operação.') from None
+        fiscal=dados_fiscais(params)
+        if doc.modelo!='nfse':
+            informado=linha.get('cfop_personalizado') or doc.snapshot.get('cfop_nota')
+            fiscal['cfop']=cfop_saida(params,doc.configuracao,doc.snapshot.get('destinatario',{}),informado) if doc.operacao==Operacao.SAIDA else validar_cfop(informado or fiscal['cfop'],doc.operacao)
+            destino={'1':'1','2':'2','3':'3','5':'1','6':'2','7':'3'}[fiscal['cfop'][0]]
+            if destino!=doc.snapshot.get('id_destino','1'):raise ErroFiscal('O CFOP atualizado altera o destino da nota. Revise a operação.')
+        if doc.modelo!='nfse' and doc.snapshot.get('aliquota_icms_nota') is not None:
+            fiscal['aliquota_icms']=doc.snapshot['aliquota_icms_nota']
+        linha['fiscal']=fiscal
     doc.xml_assinado='';doc.status=Status.PENDENTE;doc.mensagem='Parâmetros fiscais atualizados; valores e numeração preservados.'
-    doc.save(update_fields=['snapshot','xml_assinado','status','mensagem'])
+    doc.save(update_fields=['snapshot','xml_assinado','status','mensagem','atualizado_em'])
     return doc
 
 
@@ -271,6 +313,25 @@ def solicitar_cancelamento(usuario, documento_id, justificativa):
 
 
 @transaction.atomic
+def solicitar_correcao(usuario,documento_id,texto,chave):
+    exigir(usuario,'emitir_fiscal')
+    texto=' '.join(texto.split())
+    if not 15<=len(texto)<=1000:raise ErroFiscal('A correção deve ter de 15 a 1000 caracteres.')
+    doc=DocumentoFiscal.objects.select_for_update(of=('self',)).select_related('configuracao').get(pk=documento_id)
+    habilitado(doc.configuracao,doc.ambiente)
+    if doc.modelo!='55' or doc.status!=Status.AUTORIZADA or not doc.protocolo:raise ErroFiscal('CC-e disponível somente para NF-e autorizada e não cancelada.')
+    existente=doc.eventos.filter(tipo='correcao',idempotencia=chave).first()
+    if existente:return existente
+    if doc.eventos.filter(tipo='correcao',status__in=[Status.PENDENTE,Status.PROCESSANDO,Status.ERRO_TECNICO]).exists():
+        raise ErroFiscal('Conclua ou consulte a CC-e anterior antes de criar outra.')
+    from django.db.models import Max
+    sequencia=(doc.eventos.filter(tipo='correcao').aggregate(valor=Max('sequencia'))['valor'] or 0)+1
+    if sequencia>20:raise ErroFiscal('Limite de 20 sequências de CC-e atingido para esta nota.')
+    return EventoFiscal.objects.create(documento=doc,configuracao=doc.configuracao,operador=usuario,tipo='correcao',
+        idempotencia=chave,ambiente=doc.ambiente,modelo=doc.modelo,serie=doc.serie,sequencia=sequencia,texto_correcao=texto,status=Status.PENDENTE)
+
+
+@transaction.atomic
 def solicitar_inutilizacao(usuario, modelo, serie, inicio, fim, ano, justificativa):
     exigir(usuario,'inutilizar_fiscal')
     if modelo not in ('55','65') or not (1<=inicio<=fim<=999999999 and 1<=serie<=999) or not 15<=len(justificativa.strip())<=255:
@@ -291,20 +352,28 @@ def solicitar_inutilizacao(usuario, modelo, serie, inicio, fim, ano, justificati
 def transmitir_evento(usuario, evento_id):
     with transaction.atomic():
         ev=EventoFiscal.objects.select_for_update(of=('self',)).select_related('configuracao','documento').get(pk=evento_id)
-        if ev.tipo not in ('cancelamento','inutilizacao'):
+        if ev.tipo not in ('cancelamento','inutilizacao','correcao'):
             raise ErroFiscal('Este evento é apenas um registro local, sem transmissão própria.')
-        exigir(usuario,'cancelar_fiscal' if ev.tipo=='cancelamento' else 'inutilizar_fiscal')
+        exigir(usuario,{'cancelamento':'cancelar_fiscal','correcao':'emitir_fiscal','inutilizacao':'inutilizar_fiscal'}[ev.tipo])
         habilitado(ev.configuracao,ev.ambiente)
         if ev.status in (Status.CANCELADA,Status.AUTORIZADA):return ev
         if ev.status in (Status.PROCESSANDO,Status.ERRO_TECNICO):raise ErroFiscal('Resultado do evento incerto. Consulte antes de repetir.')
+        if ev.tipo=='correcao':
+            if ev.documento.status!=Status.AUTORIZADA:raise ErroFiscal('CC-e exige NF-e ainda autorizada e não cancelada.')
+            if ev.codigo_resposta in ('136','573'):raise ErroFiscal('Consulte o registro da CC-e anterior antes de repetir o envio.')
+        if ev.tipo=='correcao' and not ev.xml:
+            from .cartas import gerar_xml
+            ev.xml=gerar_xml(ev.configuracao,ev.documento,ev);ev.save(update_fields=['xml'])
         ev.status=Status.PROCESSANDO;ev.save(update_fields=['status'])
         tentativa=TentativaTransmissao.objects.create(evento=ev,documento=ev.documento,operacao=ev.tipo)
     try:
         adaptador=provedor(ev)
-        r=adaptador.cancelar(ev.configuracao,ev.documento,ev) if ev.tipo=='cancelamento' else adaptador.inutilizar(ev.configuracao,ev)
+        if ev.tipo=='correcao':r=adaptador.corrigir(ev.configuracao,ev.documento,ev)
+        elif ev.tipo=='cancelamento':r=adaptador.cancelar(ev.configuracao,ev.documento,ev)
+        else:r=adaptador.inutilizar(ev.configuracao,ev)
         with transaction.atomic():
             ev=EventoFiscal.objects.select_for_update(of=('self',)).get(pk=ev.pk)
-            ev.status=r.status;ev.protocolo=r.protocolo;ev.codigo_resposta=r.codigo[:20];ev.mensagem=resposta_sanitizada(r.mensagem)[:500];ev.save()
+            ev.status=r.status;ev.xml_autorizado=r.xml or ev.xml_autorizado;ev.protocolo=r.protocolo;ev.codigo_resposta=r.codigo[:20];ev.mensagem=resposta_sanitizada(r.mensagem)[:500];ev.save()
             tentativa.codigo=r.codigo[:20];tentativa.resposta=resposta_sanitizada(r.resposta);tentativa.pedido_sha256=hashlib.sha256(ev.xml.encode()).hexdigest();tentativa.save()
             if ev.documento_id and r.status==Status.CANCELADA:
                 doc=DocumentoFiscal.objects.select_for_update(of=('self',)).get(pk=ev.documento_id);doc.status=Status.CANCELADA;doc.save(update_fields=['status'])
@@ -317,6 +386,17 @@ def transmitir_evento(usuario, evento_id):
 def consultar_evento(usuario, evento_id):
     exigir(usuario,'consultar_fiscal')
     ev=EventoFiscal.objects.select_related('documento','configuracao').get(pk=evento_id)
+    if ev.tipo=='correcao':
+        if ev.status==Status.AUTORIZADA:return ev
+        habilitado(ev.configuracao,ev.ambiente)
+        ultima=ev.tentativas.order_by('-criado_em').first()
+        if ultima and (timezone.now()-ultima.criado_em).total_seconds()<90:raise ErroFiscal('Aguarde a conclusão do envio antes de consultar a CC-e.')
+        r=provedor(ev).consultar_correcao(ev.configuracao,ev.documento,ev)
+        with transaction.atomic():
+            ev=EventoFiscal.objects.select_for_update(of=('self',)).get(pk=ev.pk)
+            ev.status=r.status;ev.protocolo=r.protocolo;ev.codigo_resposta=r.codigo[:20];ev.mensagem=resposta_sanitizada(r.mensagem)[:500];ev.xml_autorizado=r.xml or ev.xml_autorizado;ev.save()
+            TentativaTransmissao.objects.create(evento=ev,documento=ev.documento,operacao='consultar_correcao',codigo=r.codigo[:20],mensagem=ev.mensagem,resposta=resposta_sanitizada(r.resposta))
+        return ev
     if ev.tipo!='cancelamento':
         raise ErroFiscal('Consulte a inutilização no portal oficial da SEFAZ; o serviço não oferece consulta por faixa.')
     if ev.status in (Status.CANCELADA,Status.AUTORIZADA):return ev

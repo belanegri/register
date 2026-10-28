@@ -1,6 +1,7 @@
 from django import forms
 from estoque.models import Peca
 from decimal import Decimal
+from .atributos import CaracteristicaField
 
 
 class FotosAnuncioWidget(forms.CheckboxSelectMultiple):
@@ -29,10 +30,17 @@ class VinculoForm(forms.Form):
 
 
 class PublicacaoForm(forms.Form):
+    sku = forms.CharField(label="Código de identificação (SKU)", disabled=True,
+        help_text="Código da peça no estoque, preenchido automaticamente pelo REGISTER.")
     titulo = forms.CharField(label="Título / nome do produto", max_length=60)
     preco = forms.DecimalField(label="Preço no Mercado Livre (R$)", min_value=Decimal("0.01"), max_digits=12, decimal_places=2)
     quantidade = forms.IntegerField(label="Quantidade a anunciar", min_value=1)
     condicao = forms.ChoiceField(label="Condição", choices=[("used", "Usada"), ("new", "Nova"), ("not_specified", "Não especificada")])
+    garantia_tipo = forms.ChoiceField(label="Garantia", required=False,
+        choices=[("", "Selecione a garantia")] + Peca.GARANTIAS_ML)
+    garantia_prazo = forms.IntegerField(label="Prazo de garantia", min_value=1, required=False)
+    garantia_unidade = forms.ChoiceField(label="Unidade do prazo", required=False,
+        choices=Peca.UNIDADES_GARANTIA_ML, initial="dias")
     tipo = forms.ChoiceField(label="Tipo de anúncio")
     envio = forms.ChoiceField(label="Envio", choices=[("me2", "Mercado Envios"), ("not_specified", "Combinar com o comprador")])
     retirada = forms.BooleanField(label="Permitir retirada pessoal", required=False)
@@ -42,6 +50,10 @@ class PublicacaoForm(forms.Form):
     def __init__(self, *args, peca, categoria, atributos, tipos, **kwargs):
         super().__init__(*args, **kwargs)
         self.categoria, self.atributos = categoria, []
+        self.codigo_estoque = peca.codigo
+        self.initial["sku"] = peca.codigo
+        self.initial.update(garantia_tipo=peca.ml_garantia_tipo, garantia_prazo=peca.ml_garantia_prazo,
+                            garantia_unidade=peca.ml_garantia_unidade or "dias")
         self.fields["titulo"] = forms.CharField(label="Título / nome do produto",
             max_length=min(200, categoria.get("settings", {}).get("max_title_length", 60) or 60))
         self.fields["tipo"].choices = [(t["id"], t["name"]) for t in tipos if t.get("id") in ("gold_special", "gold_pro", "free")]
@@ -57,12 +69,16 @@ class PublicacaoForm(forms.Form):
             chave = "attr_" + attr["id"]
             required = bool(tags.get("required") or tags.get("catalog_required"))
             valores = attr.get("values", [])
-            if valores and attr.get("value_type") == "list":
+            if attr["id"] not in ("BRAND", "PART_NUMBER") and (not required or attr.get("value_type") in ("boolean", "number", "number_unit")):
+                self.fields[chave] = CaracteristicaField(attr, required=required)
+            elif valores and attr.get("value_type") == "list":
                 self.fields[chave] = forms.ChoiceField(label=attr["name"], required=required,
                     choices=[("", "Selecione")] + [(v["id"], v["name"]) for v in valores if "id" in v])
             else:
                 self.fields[chave] = forms.CharField(label=attr["name"], required=required, max_length=255)
             self.atributos.append((attr, chave))
+            if required and tags.get("fixed") and len(valores) == 1:
+                self.initial[chave] = valores[0]["id"]
         self.initial.update(titulo=peca.nome, preco=peca.preco_venda, quantidade=1,
                             condicao="new" if peca.condicao == "nova" else "used", envio="me2")
         # Sugestões locais, nunca autorização de envio. Dados de POST sempre
@@ -97,6 +113,11 @@ class PublicacaoForm(forms.Form):
                     campo.help_text = f"Informado no cadastro: {valor}. Selecione a opção correspondente."
             else:
                 self.initial[chave] = valor
+        for atributo, valor in (peca.ml_caracteristicas or {}).items():
+            chave = "attr_" + atributo
+            if chave in self.fields and isinstance(self.fields[chave], CaracteristicaField):
+                if valor.get("value_id") != "-1" or not self.fields[chave].required:
+                    self.initial[chave] = valor
         self.initial["fotos"] = list(peca.fotos.values_list("pk", flat=True)[:self.max_fotos])
         self.fields["titulo"].widget.attrs["placeholder"] = "Ex.: Farol esquerdo original — modelo e aplicação"
         self.fields["quantidade"].help_text = f"Estoque disponível no REGISTER: {peca.quantidade}."
@@ -110,6 +131,27 @@ class PublicacaoForm(forms.Form):
         for field in self.fields.values():
             if not isinstance(field.widget, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):
                 field.widget.attrs["class"] = "form-select" if isinstance(field.widget, forms.Select) else "form-control"
+
+    def clean(self):
+        dados = super().clean()
+        tipo = dados.get("garantia_tipo")
+        if tipo in ("2230280", "2230279"):
+            if not dados.get("garantia_prazo"):
+                self.add_error("garantia_prazo", "Informe o prazo da garantia.")
+            if not dados.get("garantia_unidade"):
+                self.add_error("garantia_unidade", "Selecione a unidade do prazo.")
+        elif dados.get("garantia_prazo") and not tipo:
+            self.add_error("garantia_tipo", "Selecione o tipo de garantia.")
+        return dados
+
+    def garantia_payload(self):
+        tipo = self.cleaned_data.get("garantia_tipo")
+        if not tipo:
+            return []
+        termos = [{"id": "WARRANTY_TYPE", "value_id": tipo}]
+        if tipo != "6150835":
+            termos.append({"id": "WARRANTY_TIME", "value_name": f"{self.cleaned_data['garantia_prazo']} {self.cleaned_data['garantia_unidade']}"})
+        return termos
 
     def clean_quantidade(self):
         n = self.cleaned_data["quantidade"]
@@ -130,5 +172,17 @@ class PublicacaoForm(forms.Form):
         return fotos
 
     def atributos_payload(self):
-        return [{"id": a["id"], "value_id" if isinstance(self.fields[k], forms.ChoiceField) else "value_name": self.cleaned_data[k]}
-                for a, k in self.atributos if self.cleaned_data.get(k)]
+        atributos = []
+        for atributo, chave in self.atributos:
+            valor = self.cleaned_data.get(chave)
+            if not valor:
+                continue
+            campo = self.fields[chave]
+            if isinstance(campo, CaracteristicaField):
+                atributos.append({"id": atributo["id"], **valor})
+            else:
+                atributos.append({"id": atributo["id"], "value_id" if isinstance(campo, forms.ChoiceField) else "value_name": valor})
+        return atributos + [{"id": "SELLER_SKU", "value_name": self.codigo_estoque}]
+
+    class Media:
+        js = ["js/ml-caracteristicas.js"]

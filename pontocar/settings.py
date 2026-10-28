@@ -88,6 +88,11 @@ PHOTO_WEBP_QUALITY = env.int("PHOTO_WEBP_QUALITY", default=80)
 PHOTO_MAX_PIXELS = env.int("PHOTO_MAX_PIXELS", default=24000000)
 if not (320 <= PHOTO_MAX_DIMENSION <= 2048 and 40 <= PHOTO_WEBP_QUALITY <= 95 and 1000000 <= PHOTO_MAX_PIXELS <= 40000000):
     raise ImproperlyConfigured("Limites de imagem inválidos.")
+PHOTO_UPLOAD_MAX_BYTES = env.int("PHOTO_UPLOAD_MAX_BYTES", default=25 * 1024 * 1024)
+PHOTO_UPLOAD_MAX_PIXELS = env.int("PHOTO_UPLOAD_MAX_PIXELS", default=50000000)
+if not (5 * 1024 * 1024 <= PHOTO_UPLOAD_MAX_BYTES <= 50 * 1024 * 1024 and
+        1000000 <= PHOTO_UPLOAD_MAX_PIXELS <= 64000000):
+    raise ImproperlyConfigured("Limites de envio de fotos inválidos.")
 STORAGES["comprovantes"] = {"BACKEND": "django.core.files.storage.FileSystemStorage", "OPTIONS": {"location": BASE_DIR / ".local" / "comprovantes"}}
 if STORAGE_MODE == "r2":
     opcoes = {

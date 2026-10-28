@@ -96,6 +96,11 @@ class DocumentoForm(EstiloForm, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        from clientes.models import Cliente
+        from django.db.models import Q
+        filtro=Q(ativo=True,eh_cliente=True)
+        if self.instance.cliente_id:filtro|=Q(pk=self.instance.cliente_id)
+        self.fields['cliente'].queryset=Cliente.objects.filter(filtro)
         orcamento = self.instance.tipo == 'orcamento'
 
         if orcamento:

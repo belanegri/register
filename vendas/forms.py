@@ -18,7 +18,7 @@ class CheckoutForm(EstiloForm, forms.Form):
         return data
 
     chave = forms.UUIDField(widget=forms.HiddenInput)
-    cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(ativo=True), required=False, empty_label="Consumidor não identificado")
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(ativo=True,eh_cliente=True), required=False, empty_label="Consumidor não identificado")
     desconto = forms.DecimalField(label="Desconto total (R$)", min_value=0, max_digits=12, decimal_places=2, initial=0, localize=True)
     vencimento = forms.DateField(label="Vencimento da promissória", required=False, widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
     beneficiario = forms.CharField(label="Beneficiário (nome / razão social)", max_length=160, required=False)

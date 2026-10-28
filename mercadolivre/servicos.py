@@ -96,10 +96,12 @@ def extrair_anuncio(item, vendedor_id):
             raise ValueError
         variacoes = [{"id": str(v["id"]), "quantidade": int(v.get("available_quantity", 0))}
                     for v in item.get("variations", [])]
+        sku = next((a.get("value_name") for a in (item.get("attributes") or [])
+                    if isinstance(a, dict) and a.get("id") == "SELLER_SKU" and a.get("value_name")), None)
         return {"titulo": str(item["title"])[:300], "status": str(item["status"])[:40],
                 "preco": preco, "moeda": str(item["currency_id"])[:10],
                 "quantidade": quantidade, "vendidos": vendidos,
-                "sku": str(item.get("seller_custom_field") or "")[:200], "variacoes": variacoes}
+                "sku": str(sku or item.get("seller_custom_field") or "")[:200], "variacoes": variacoes}
     except (KeyError, TypeError, ValueError, InvalidOperation):
         raise ErroIntegracao("Anúncio inválido ou de outra conta. O lote não foi importado.") from None
 

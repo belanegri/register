@@ -5,9 +5,9 @@ from core.auditoria import registrar
 
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
-    list_display = ["nome", "documento", "telefone", "ativo"]
+    list_display = ["nome", "documento", "telefone", "eh_cliente", "eh_fornecedor", "eh_transportadora", "ativo"]
     search_fields = ["nome", "documento", "telefone"]
-    list_filter = ["ativo"]
+    list_filter = ["ativo", "eh_cliente", "eh_fornecedor", "eh_transportadora"]
     def has_delete_permission(self, request, obj=None):
         return False
 

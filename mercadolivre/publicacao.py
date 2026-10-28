@@ -83,17 +83,22 @@ def preparar(usuario, peca, form):
     if str(perfil.get("id")) != conexao.vendedor_id:
         raise ErroIntegracao("A conta autenticada não pertence a esta loja.")
     dados = form.cleaned_data
-    resumo = {"categoria": form.categoria["name"], "atributos": []}
+    garantia = dict(Peca.GARANTIAS_ML).get(dados.get("garantia_tipo"), "Não informada")
+    if dados.get("garantia_tipo") in ("2230280", "2230279"):
+        garantia += f": {dados['garantia_prazo']} {dados['garantia_unidade']}"
+    resumo = {"categoria": form.categoria["name"], "sku": peca.codigo, "garantia": garantia, "atributos": []}
     for attr, chave in form.atributos:
         valor = dados.get(chave)
         if valor:
             nomes = dict(getattr(form.fields[chave], "choices", []))
-            resumo["atributos"].append({"nome": attr["name"], "valor": nomes.get(valor, valor)})
+            campo = form.fields[chave]
+            texto = campo.descrever(valor) if hasattr(campo, "descrever") else nomes.get(valor, valor)
+            resumo["atributos"].append({"nome": attr["name"], "valor": texto})
     payload = {"category_id": form.categoria["id"], "price": float(dados["preco"]),
         "currency_id": "BRL", "available_quantity": dados["quantidade"], "buying_mode": "buy_it_now",
         "listing_type_id": dados["tipo"], "condition": dados["condicao"],
         "seller_custom_field": peca.codigo,
-        "attributes": form.atributos_payload(),
+        "attributes": form.atributos_payload(), "sale_terms": form.garantia_payload(),
         "shipping": {"mode": dados["envio"], "local_pick_up": dados["retirada"], "free_shipping": dados["frete_gratis"]}}
     payload["family_name" if "user_product_seller" in perfil.get("tags", []) else "title"] = dados["titulo"]
     fotos = [f.pk for f in dados["fotos"]]

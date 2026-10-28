@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -5,18 +7,31 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db import transaction
 from core.auditoria import registrar
-from .forms import PecaEdicaoForm
+from .forms import IntervaloCodigoForm, PecaEdicaoForm
 from .models import Peca
 
 
-def pecas_filtradas(params):
+def pecas_filtradas(params, *, filtro_codigo=None):
     consulta = params.get("q", "").strip()[:200]
     status = params.get("status", "")
-    pecas = Peca.objects.select_related("categoria", "veiculo_origem", "localizacao").prefetch_related("fotos")
+    pecas = Peca.objects.select_related("categoria", "veiculo_origem", "localizacao").prefetch_related("fotos").order_by("-criado_em", "-pk")
+    if filtro_codigo is None:
+        filtro_codigo = IntervaloCodigoForm(params)
+    if filtro_codigo.is_valid():
+        if inicio := filtro_codigo.cleaned_data["codigo_inicial"]:
+            pecas = pecas.filter(codigo__gte=inicio)
+        if fim := filtro_codigo.cleaned_data["codigo_final"]:
+            pecas = pecas.filter(codigo__lte=fim)
+    else:
+        pecas = pecas.none()
+    intervalo = re.fullmatch(r"REG(\d{6})\s*(?:a|até|ate|[-–—])\s*REG(\d{6})", consulta, re.IGNORECASE)
+    if intervalo:
+        inicio, fim = sorted(intervalo.groups())
+        pecas = pecas.filter(codigo__gte=f"REG{inicio}", codigo__lte=f"REG{fim}")
     campos = ["codigo", "nome", "categoria__nome", "marca", "aplicacao", "motor", "posicao", "compativel",
         "veiculo_origem__codigo", "veiculo_origem__marca", "veiculo_origem__modelo",
         "veiculo_origem__versao", "veiculo_origem__motor", "localizacao__codigo", "localizacao__nome"]
-    for termo in consulta.split()[:12]:
+    for termo in ([] if intervalo else consulta.split()[:12]):
         filtro = Q()
         for campo in campos:
             filtro |= Q(**{f"{campo}__icontains": termo})
@@ -64,10 +79,15 @@ def etiqueta(request, pk):
 @login_required
 @permission_required("estoque.view_peca", raise_exception=True)
 def lista(request):
-    pecas, consulta, status = pecas_filtradas(request.GET)
+    filtro_codigo = IntervaloCodigoForm(request.GET)
+    pecas, consulta, status = pecas_filtradas(request.GET, filtro_codigo=filtro_codigo)
     pagina = Paginator(pecas, 20).get_page(request.GET.get("page"))
+    parametros = request.GET.copy()
+    parametros.pop("page", None)
     return render(request, "estoque/lista.html", {
         "pagina": pagina, "q": consulta, "status": status, "status_opcoes": Peca.Status.choices,
+        "filtro_codigo": filtro_codigo, "filtros_url": parametros.urlencode(),
+        "tem_filtros": bool(consulta or status or request.GET.get("codigo_inicial") or request.GET.get("codigo_final")),
     })
 
 
@@ -76,7 +96,15 @@ def lista(request):
 def imprimir_pdf(request):
     from .pdf import gerar_pdf
 
-    pecas, consulta, status = pecas_filtradas(request.GET)
+    filtro_codigo = IntervaloCodigoForm(request.GET)
+    if not filtro_codigo.is_valid():
+        from django.http import HttpResponseBadRequest
+        return HttpResponseBadRequest("Revise o intervalo de códigos antes de imprimir.")
+    pecas, consulta, status = pecas_filtradas(request.GET, filtro_codigo=filtro_codigo)
+    inicio, fim = (filtro_codigo.cleaned_data[campo] for campo in ("codigo_inicial", "codigo_final"))
+    if inicio or fim:
+        descricao = f"Códigos: {inicio or 'início'} até {fim or 'último cadastro'}"
+        consulta = f"{consulta} | {descricao}" if consulta else descricao
     return gerar_pdf(pecas, consulta=consulta, status=status)
 
 

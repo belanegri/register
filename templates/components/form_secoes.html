@@ -4,8 +4,9 @@
 {% for hidden in form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
 <p class="editor-required">Campos com <span aria-hidden="true">*</span> são obrigatórios.</p>
 {% for secao in secoes %}
-<section class="surface editor-section" aria-labelledby="editor-section-{{ forloop.counter }}">
-  <div class="section-heading"><div class="editor-section-title"><span class="section-step" aria-hidden="true">{{ forloop.counter|stringformat:'02d' }}</span><div><h2 id="editor-section-{{ forloop.counter }}">{{ secao.titulo }}</h2><p>{{ secao.descricao }}</p></div></div></div>
+{% if secao.recolhivel %}<details class="surface editor-section fiscal-optional" {% if secao.aberta %}open{% endif %} aria-labelledby="editor-section-{{ forloop.counter }}"><summary class="section-heading"><div class="editor-section-title"><span class="section-step" aria-hidden="true">{{ forloop.counter|stringformat:'02d' }}</span><div><h2 id="editor-section-{{ forloop.counter }}">{{ secao.titulo }} <small>quando houver</small></h2><p>{{ secao.descricao }}</p></div></div></summary>
+{% else %}<section class="surface editor-section" aria-labelledby="editor-section-{{ forloop.counter }}">
+  <div class="section-heading"><div class="editor-section-title"><span class="section-step" aria-hidden="true">{{ forloop.counter|stringformat:'02d' }}</span><div><h2 id="editor-section-{{ forloop.counter }}">{{ secao.titulo }}</h2><p>{{ secao.descricao }}</p></div></div></div>{% endif %}
   <div class="editor-section-body"><div class="row g-3">
     {% for item in secao.campos %}{% with field=item.field %}
     <div class="{% if item.largo %}col-12{% else %}col-md-6{% endif %}{% if field.name == 'fotos' %} editor-photo-field{% endif %}">
@@ -17,5 +18,6 @@
     </div>
     {% endwith %}{% endfor %}
   </div></div>
-</section>
+{% if secao.recolhivel %}</details>{% else %}</section>{% endif %}
+{% if forloop.first and after_first_section_template %}{% include after_first_section_template %}{% endif %}
 {% endfor %}

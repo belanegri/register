@@ -34,15 +34,23 @@ ENDPOINTS = {
 }
 
 
+ENDPOINTS_PRODUCAO_NFE = {nome:url.replace('homologacao.nfe.','nfe.') for nome,url in ENDPOINTS['55'].items()}
+
+
 def endpoint(config, modelo, operacao, ambiente):
-    if ambiente != 'homologacao':
-        raise ErroFiscal('Produção bloqueada. Esta etapa permite somente homologação da SEFAZ-SP.')
     if config.uf != 'SP' or modelo not in ENDPOINTS or operacao not in ENDPOINTS[modelo]:
-        raise ErroFiscal('Configure UF SP e modelo NF-e/NFC-e para homologação.')
-    oficial = ENDPOINTS[modelo][operacao]
-    personalizado = config.endpoints.get('homologacao', {}).get(modelo, {}).get(operacao)
+        raise ErroFiscal('Configure UF SP e um serviço válido de NF-e/NFC-e.')
+    if ambiente == 'homologacao':
+        oficial=ENDPOINTS[modelo][operacao]
+    elif ambiente == 'producao' and modelo == '55':
+        if operacao != 'status' and not (settings.FISCAL_ENABLED and settings.FISCAL_ALLOW_PRODUCTION and config.ativa and config.homologacao_validada and config.producao_validada):
+            raise ErroFiscal('Produção bloqueada. Conclua a homologação e a liberação desta instalação.')
+        oficial=ENDPOINTS_PRODUCAO_NFE[operacao]
+    else:
+        raise ErroFiscal('Produção disponível somente para NF-e (55) da SEFAZ-SP.')
+    personalizado = config.endpoints.get(ambiente, {}).get(modelo, {}).get(operacao)
     if personalizado and personalizado != oficial:
-        raise ErroFiscal('Use exclusivamente o endpoint oficial de homologação da SEFAZ-SP.')
+        raise ErroFiscal('Use exclusivamente o endpoint oficial da SEFAZ-SP correspondente ao ambiente.')
     return oficial
 
 
@@ -62,8 +70,8 @@ def consultar_status(config, modelo):
     body = etree.SubElement(envelope, f'{{{soap_ns}}}Body')
     mensagem = etree.SubElement(body, f'{{{servico_ns}}}nfeDadosMsg')
     consulta = etree.SubElement(mensagem, f'{{{NFE}}}consStatServ', nsmap={None: NFE}, versao='4.00')
-    campos(consulta, {'tpAmb': '2', 'cUF': '35', 'xServ': 'STATUS'})
-    resposta = requisitar(config, 'homologacao', url,
+    campos(consulta, {'tpAmb': '2' if config.ambiente=='homologacao' else '1', 'cUF': '35', 'xServ': 'STATUS'})
+    resposta = requisitar(config, config.ambiente, url,
         etree.tostring(envelope, encoding='utf-8', xml_declaration=True),
         f'application/soap+xml; charset=utf-8; action="{servico_ns}/nfeStatusServicoNF"')
     raiz = xml_seguro(resposta)
@@ -75,12 +83,12 @@ def consultar_status(config, modelo):
     retorno = retornos[0]
     campo = lambda nome: retorno.findtext(f'{{{NFE}}}{nome}', '')
     codigo = campo('cStat')
-    if (retorno.get('versao') != '4.00' or campo('tpAmb') != '2' or campo('cUF') != '35'
+    if (retorno.get('versao') != '4.00' or campo('tpAmb') != ('2' if config.ambiente=='homologacao' else '1') or campo('cUF') != '35'
             or not re.fullmatch(r'\d{3}', codigo) or not campo('xMotivo')
             or not campo('verAplic') or not campo('dhRecbto')):
-        raise ErroFiscal('Resposta SEFAZ inválida ou incompatível com homologação de SP.')
+        raise ErroFiscal('Resposta SEFAZ inválida ou incompatível com o ambiente selecionado em SP.')
     if codigo == '107':
-        return ResultadoConexao('conectado', 'Conectado — SEFAZ-SP homologação: serviço em operação (107).', codigo)
+        return ResultadoConexao('conectado', f'Conectado — SEFAZ-SP {config.get_ambiente_display()}: serviço em operação (107).', codigo)
     # Não ecoar conteúdo livre da resposta, que pode incluir dados sensíveis.
     conhecidos = {'108': 'serviço paralisado momentaneamente', '109': 'serviço paralisado sem previsão',
                   '252': 'ambiente divergente', '289': 'UF divergente', '280': 'certificado inválido',

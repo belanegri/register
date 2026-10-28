@@ -51,6 +51,7 @@ class ProtocoloSefazSpTests(SimpleTestCase):
         with override_settings(FISCAL_ALLOW_PRODUCTION=True,FISCAL_ENABLED=True),patch('fiscal.provedores.requisitar') as rede:
             for modelo in ('55','65'):
                 for operacao in ENDPOINTS[modelo]:
+                    if modelo=='55' and operacao=='status':continue
                     with self.assertRaises(ErroFiscal):
                         endpoint(self.config,modelo,operacao,'producao')
                 doc=SimpleNamespace(modelo=modelo,ambiente='producao')
@@ -124,6 +125,10 @@ class ProtocoloSefazSpTests(SimpleTestCase):
             with patch('fiscal.seguranca.TemporaryDirectory',return_value=temporario),contexto_tls(self.config) as tls:
                 self.assertEqual(tls.verify_mode,ssl.CERT_REQUIRED)
                 self.assertTrue(tls.check_hostname)
+                from cryptography import x509
+                raiz = x509.load_pem_x509_certificate((Path(settings.BASE_DIR)/'fiscal/certificados/icp-brasil-v10.pem').read_bytes())
+                from cryptography.hazmat.primitives import serialization
+                self.assertIn(raiz.public_bytes(serialization.Encoding.DER), tls.get_ca_certs(binary_form=True))
                 self.assertGreaterEqual(tls.minimum_version,ssl.TLSVersion.TLSv1_2)
                 self.assertIn(b'BEGIN ENCRYPTED PRIVATE KEY',(pasta/'key').read_bytes())
                 self.assertNotIn(b'senha-sintetica',(pasta/'key').read_bytes())

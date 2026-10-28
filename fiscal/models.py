@@ -22,6 +22,11 @@ class Modelo(models.TextChoices):
     NFSE = "nfse", "NFS-e"
 
 
+class Operacao(models.TextChoices):
+    ENTRADA = "0", "Entrada (compras)"
+    SAIDA = "1", "Saída (vendas)"
+
+
 class Status(models.TextChoices):
     NAO_SOLICITADA = "nao_solicitada", "Não solicitada"
     PENDENTE = "pendente", "Pendente"
@@ -44,6 +49,8 @@ class ConfiguracaoFiscal(TimestampedModel):
     ambiente = models.CharField(max_length=12, choices=Ambiente, default=Ambiente.HOMOLOGACAO)
     homologacao_validada = models.BooleanField(default=False)
     producao_validada = models.BooleanField(default=False)
+    serie_padrao = models.PositiveIntegerField("série padrão da NF-e", default=1, validators=[MinValueValidator(1),MaxValueValidator(999)])
+    exigir_classificacao_individual = models.BooleanField("exigir classificação fiscal conferida por peça", default=False)
     modelo_mercadorias = models.CharField(max_length=4, choices=[("55", "NF-e"), ("65", "NFC-e")], default="55")
     cnpj = models.CharField(max_length=14, validators=[digitos(14)])
     razao_social = models.CharField(max_length=200)
@@ -56,6 +63,7 @@ class ConfiguracaoFiscal(TimestampedModel):
     municipio = models.CharField(max_length=100)
     logradouro = models.CharField(max_length=200)
     numero = models.CharField(max_length=20)
+    complemento = models.CharField(max_length=60,blank=True)
     bairro = models.CharField(max_length=100)
     cep = models.CharField(max_length=8, validators=[digitos(8)])
     telefone = models.CharField(max_length=14, blank=True)
@@ -110,23 +118,58 @@ class SequenciaFiscal(models.Model):
 
 
 class ParametroProduto(TimestampedModel):
-    peca = models.OneToOneField("estoque.Peca", on_delete=models.PROTECT, related_name="parametro_fiscal")
-    ncm = models.CharField(max_length=8, validators=[digitos(8)])
+    peca = models.ForeignKey("estoque.Peca", on_delete=models.PROTECT, related_name="parametros_fiscais", null=True, blank=True)
+    operacao = models.CharField("operação", max_length=1, choices=Operacao, default=Operacao.SAIDA)
+    natureza_operacao = models.CharField("natureza da operação", max_length=60, blank=True)
+    classificacao_conferida = models.BooleanField("NCM, origem e enquadramento do CEST conferidos", default=False)
+    ncm = models.CharField(max_length=8, blank=True, validators=[digitos(8)])
     cfop = models.CharField(max_length=4, validators=[digitos(4)])
-    origem = models.CharField(max_length=1, default="0", choices=[(str(n), str(n)) for n in range(9)])
+    cfop_interestadual_contribuinte = models.CharField("CFOP interestadual para contribuinte", max_length=4, blank=True, validators=[RegexValidator(r'^6[0-9]{3}$')])
+    cfop_interestadual_nao_contribuinte = models.CharField("CFOP interestadual para não contribuinte", max_length=4, blank=True, validators=[RegexValidator(r'^6[0-9]{3}$')])
+    origem = models.CharField(max_length=1, default="0", blank=True, choices=[(str(n), str(n)) for n in range(9)])
     unidade = models.CharField(max_length=6, default="UN")
     cest = models.CharField(max_length=7, blank=True, validators=[digitos(7)])
-    csosn = models.CharField(max_length=3, default="102", validators=[digitos(3)])
+    csosn = models.CharField(max_length=3, default="102", blank=True, validators=[digitos(3)])
     cst_icms = models.CharField(max_length=2, default="00", validators=[digitos(2)])
     aliquota_icms = models.DecimalField(max_digits=7, decimal_places=4, default=0, validators=aliquota)
     cst_pis = models.CharField(max_length=2, default="07", validators=[digitos(2)])
     aliquota_pis = models.DecimalField(max_digits=7, decimal_places=4, default=0, validators=aliquota)
     cst_cofins = models.CharField(max_length=2, default="07", validators=[digitos(2)])
     aliquota_cofins = models.DecimalField(max_digits=7, decimal_places=4, default=0, validators=aliquota)
+    base_pis_cofins = models.CharField("Base do PIS/COFINS", max_length=20, default='valor_operacao',
+        choices=[('valor_operacao','Valor da operação'),('excluir_icms','Valor da operação menos ICMS destacado')])
+    ibscbs_ativo = models.BooleanField("Destacar IBS/CBS", default=False)
+    cst_ibscbs = models.CharField("CST IBS/CBS",max_length=3,default='000',choices=[('000','000 — Tributação integral')])
+    cclass_trib = models.CharField("cClassTrib IBS/CBS",max_length=6,default='000001',choices=[('000001','000001 — Tributação integral')])
+    aliquota_ibs_uf = models.DecimalField("IBS estadual (%)",max_digits=7,decimal_places=4,default=Decimal('0.1'),validators=aliquota)
+    aliquota_ibs_municipal = models.DecimalField("IBS municipal (%)",max_digits=7,decimal_places=4,default=0,validators=aliquota)
+    aliquota_cbs = models.DecimalField("CBS (%)",max_digits=7,decimal_places=4,default=Decimal('0.9'),validators=aliquota)
     tributos_adicionais = models.JSONField(default=dict, blank=True, help_text="Grupos tributários do leiaute oficial, inclusive IBS/CBS quando aplicáveis.")
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['operacao'], condition=Q(peca__isnull=True), name="fiscal_padrao_por_operacao"),
+            models.UniqueConstraint(fields=['peca', 'operacao'], condition=Q(peca__isnull=False), name="fiscal_peca_por_operacao"),
+        ]
+
+    @classmethod
+    def para_peca(cls, peca_id, operacao=Operacao.SAIDA):
+        especifico = cls.objects.filter(peca_id=peca_id, operacao=operacao).first() if peca_id else None
+        if especifico is not None:
+            return especifico
+        return cls.objects.get(peca__isnull=True, operacao=operacao)
+
+    def clean(self):
+        from .operacoes import validar_cfop
+        from .seguranca import ErroFiscal
+        try:
+            validar_cfop(self.cfop, self.operacao)
+        except ErroFiscal as erro:
+            raise ValidationError({'cfop': str(erro)}) from None
+
     def __str__(self):
-        return str(self.peca)
+        nome = str(self.peca) if self.peca_id else "Padrão para todas as peças"
+        return f"{nome} · {self.get_operacao_display()}"
 
 
 class ParametroServico(TimestampedModel):
@@ -146,6 +189,8 @@ class ParametroServico(TimestampedModel):
 
 class DocumentoFiscal(TimestampedModel):
     configuracao = models.ForeignKey(ConfiguracaoFiscal, on_delete=models.PROTECT)
+    operacao = models.CharField("operação", max_length=1, choices=Operacao, default=Operacao.SAIDA)
+    referencia_entrada = models.CharField("referência da entrada", max_length=100, blank=True)
     venda = models.ForeignKey("vendas.Venda", null=True, blank=True, on_delete=models.PROTECT, related_name="documentos_fiscais")
     ordem_servico = models.ForeignKey("comercial.Documento", null=True, blank=True, on_delete=models.PROTECT, related_name="documentos_fiscais")
     solicitado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
@@ -181,11 +226,25 @@ class DocumentoFiscal(TimestampedModel):
         constraints = [models.UniqueConstraint(fields=["configuracao", "modelo", "ambiente", "serie", "numero"], name="fiscal_numero_unico"),
             models.UniqueConstraint(fields=["venda", "modelo", "ambiente"], condition=Q(venda__isnull=False), name="fiscal_venda_modelo_unico"),
             models.UniqueConstraint(fields=["ordem_servico", "modelo", "ambiente"], condition=Q(ordem_servico__isnull=False), name="fiscal_os_modelo_unico"),
-            models.CheckConstraint(condition=Q(venda__isnull=False) | Q(ordem_servico__isnull=False), name="fiscal_documento_origem"),
+            models.CheckConstraint(condition=Q(venda__isnull=False) | Q(ordem_servico__isnull=False) | Q(operacao=Operacao.ENTRADA, modelo=Modelo.NFE), name="fiscal_documento_origem"),
             models.CheckConstraint(condition=Q(numero__gte=1, serie__gte=1, total__gt=0), name="fiscal_documento_valores")]
 
     def __str__(self):
         return f"{self.get_modelo_display()} {self.serie}/{self.numero}"
+
+    @property
+    def pode_editar_observacao(self):
+        from .observacoes import pode_editar_observacao
+        return pode_editar_observacao(self)
+
+    @property
+    def pode_editar_entrada(self):
+        from .edicao import pode_editar_entrada
+        return pode_editar_entrada(self)
+
+    @property
+    def origem_descricao(self):
+        return str(self.venda or self.ordem_servico or self.referencia_entrada or 'Entrada de mercadorias')
 
     @property
     def numero_nfse(self):
@@ -198,11 +257,51 @@ class DocumentoFiscal(TimestampedModel):
         except ErroFiscal:return ''
 
 
+class RascunhoFiscal(TimestampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    operacao = models.CharField(max_length=1, choices=Operacao)
+    ambiente = models.CharField(max_length=12, choices=Ambiente)
+    modelo = models.CharField(max_length=4, choices=Modelo)
+    serie = models.PositiveIntegerField()
+    total = models.DecimalField(max_digits=12, decimal_places=2)
+    snapshot = models.JSONField(default=dict, editable=False)
+    dados_formulario = models.JSONField(default=dict, editable=False)
+    documento = models.ForeignKey(DocumentoFiscal, null=True, blank=True, on_delete=models.PROTECT)
+
+    class Meta:
+        ordering = ['-atualizado_em']
+
+
+
+class NotaCompraImportada(TimestampedModel):
+    configuracao = models.ForeignKey(ConfiguracaoFiscal,on_delete=models.PROTECT)
+    importado_por = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT)
+    ambiente = models.CharField(max_length=12,choices=Ambiente)
+    chave = models.CharField(max_length=44,validators=[digitos(44)])
+    numero = models.PositiveIntegerField()
+    serie = models.PositiveIntegerField()
+    fornecedor_nome = models.CharField(max_length=200)
+    fornecedor_documento = models.CharField(max_length=14)
+    emitido_em = models.DateTimeField()
+    total = models.DecimalField(max_digits=12,decimal_places=2)
+    protocolo = models.CharField(max_length=30)
+    dados = models.JSONField(default=dict,editable=False)
+    xml = models.TextField(editable=False)
+
+    class Meta:
+        ordering = ['-pk']
+        constraints = [models.UniqueConstraint(fields=['ambiente','chave'],name='fiscal_xml_compra_unico')]
+
+    def __str__(self):
+        return f'NF-e do fornecedor {self.serie}/{self.numero}'
+
+
 class EventoFiscal(TimestampedModel):
     documento = models.ForeignKey(DocumentoFiscal, null=True, blank=True, on_delete=models.PROTECT, related_name="eventos")
     configuracao = models.ForeignKey(ConfiguracaoFiscal, on_delete=models.PROTECT)
     operador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-    tipo = models.CharField(max_length=20, choices=[("cancelamento", "Cancelamento"), ("inutilizacao", "Inutilização"), ("consulta", "Consulta"), ("contingencia", "Contingência")])
+    tipo = models.CharField(max_length=20, choices=[("cancelamento", "Cancelamento"), ("correcao", "Carta de Correção Eletrônica"), ("inutilizacao", "Inutilização"), ("consulta", "Consulta"), ("contingencia", "Contingência")])
     idempotencia = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     status = models.CharField(max_length=30, choices=Status, default=Status.PENDENTE)
     ambiente = models.CharField(max_length=12, choices=Ambiente)
@@ -212,6 +311,9 @@ class EventoFiscal(TimestampedModel):
     numero_final = models.PositiveIntegerField(null=True, blank=True)
     ano = models.PositiveSmallIntegerField(null=True, blank=True)
     justificativa = models.CharField(max_length=255, blank=True)
+    sequencia = models.PositiveSmallIntegerField(default=1)
+    texto_correcao = models.TextField(blank=True,max_length=1000)
+    xml_autorizado = models.TextField(blank=True,editable=False)
     protocolo = models.CharField(max_length=80, blank=True)
     xml = models.TextField(blank=True, editable=False)
     codigo_resposta = models.CharField(max_length=20, blank=True)
@@ -219,7 +321,8 @@ class EventoFiscal(TimestampedModel):
 
     class Meta:
         ordering = ["-pk"]
-        constraints = [models.UniqueConstraint(fields=["documento", "tipo"], condition=Q(tipo="cancelamento"), name="fiscal_cancelamento_unico")]
+        constraints = [models.UniqueConstraint(fields=["documento", "tipo"], condition=Q(tipo="cancelamento"), name="fiscal_cancelamento_unico"),
+            models.UniqueConstraint(fields=["documento","tipo","sequencia"],condition=Q(tipo="correcao"),name="fiscal_correcao_sequencia_unica")]
 
 
 class TentativaTransmissao(models.Model):
